@@ -25,6 +25,7 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
 
     public interface OnActionListener {
         void onAccept(Participant participant);
+
         void onDecline(Participant participant);
     }
 
@@ -50,8 +51,9 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_interested_user, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_interested_user, parent, false);
         return new ViewHolder(view);
     }
 
@@ -98,10 +100,9 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
 
             // Show friend badge if applicable
             chipFriend.setVisibility(
-                participant.getIsFriend() != null && participant.getIsFriend()
-                    ? View.VISIBLE
-                    : View.GONE
-            );
+                    participant.getIsFriend() != null && participant.getIsFriend()
+                            ? View.VISIBLE
+                            : View.GONE);
 
             // Format joined at time
             if (participant.getJoinedAt() != null) {
@@ -122,17 +123,19 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
             }
 
             // Set click listeners
-            btnAccept.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onAccept(participant);
-                }
-            });
+            btnAccept.setOnClickListener(
+                    v -> {
+                        if (listener != null) {
+                            listener.onAccept(participant);
+                        }
+                    });
 
-            btnDecline.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onDecline(participant);
-                }
-            });
+            btnDecline.setOnClickListener(
+                    v -> {
+                        if (listener != null) {
+                            listener.onDecline(participant);
+                        }
+                    });
         }
 
         private String formatTimeAgo(String timestamp) {

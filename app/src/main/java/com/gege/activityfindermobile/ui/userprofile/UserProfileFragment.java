@@ -31,8 +31,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 @AndroidEntryPoint
 public class UserProfileFragment extends Fragment {
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
     private Long userId;
     private TextView tvFullName, tvBadge, tvRating, tvCompletedActivities, tvBio;
@@ -43,8 +42,10 @@ public class UserProfileFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_user_profile, container, false);
     }
 
@@ -82,27 +83,34 @@ public class UserProfileFragment extends Fragment {
     private void loadUserProfile() {
         progressLoading.setVisibility(View.VISIBLE);
 
-        userRepository.getUserById(userId, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                progressLoading.setVisibility(View.GONE);
-                displayUserProfile(user);
-            }
+        userRepository.getUserById(
+                userId,
+                new ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(User user) {
+                        progressLoading.setVisibility(View.GONE);
+                        displayUserProfile(user);
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                progressLoading.setVisibility(View.GONE);
-                Toast.makeText(requireContext(),
-                        "Failed to load profile: " + errorMessage,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        progressLoading.setVisibility(View.GONE);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load profile: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
     }
 
     private void displayUserProfile(User user) {
         Log.d("UserProfile", "Displaying user: " + user.getFullName());
         Log.d("UserProfile", "Bio: " + user.getBio());
-        Log.d("UserProfile", "Interests: " + (user.getInterests() != null ? user.getInterests().size() : "null"));
+        Log.d(
+                "UserProfile",
+                "Interests: "
+                        + (user.getInterests() != null ? user.getInterests().size() : "null"));
 
         // Set name
         if (user.getFullName() != null) {

@@ -1,7 +1,10 @@
 package com.gege.activityfindermobile.di;
 
 import com.gege.activityfindermobile.data.api.ActivityApiService;
+import com.gege.activityfindermobile.data.api.MessageApiService;
+import com.gege.activityfindermobile.data.api.NotificationApiService;
 import com.gege.activityfindermobile.data.api.ParticipantApiService;
+import com.gege.activityfindermobile.data.api.ReportApiService;
 import com.gege.activityfindermobile.data.api.ReviewApiService;
 import com.gege.activityfindermobile.data.api.UserApiService;
 import com.gege.activityfindermobile.utils.Constants;
@@ -28,9 +31,7 @@ public class NetworkModule {
     @Provides
     @Singleton
     public Gson provideGson() {
-        return new GsonBuilder()
-                .setLenient()
-                .create();
+        return new GsonBuilder().setLenient().create();
     }
 
     @Provides
@@ -43,8 +44,17 @@ public class NetworkModule {
 
     @Provides
     @Singleton
-    public OkHttpClient provideOkHttpClient(HttpLoggingInterceptor loggingInterceptor) {
+    public AuthInterceptor provideAuthInterceptor(
+            com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager) {
+        return new AuthInterceptor(prefsManager);
+    }
+
+    @Provides
+    @Singleton
+    public OkHttpClient provideOkHttpClient(
+            HttpLoggingInterceptor loggingInterceptor, AuthInterceptor authInterceptor) {
         return new OkHttpClient.Builder()
+                .addInterceptor(authInterceptor) // Add auth interceptor first
                 .addInterceptor(loggingInterceptor)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
@@ -84,5 +94,23 @@ public class NetworkModule {
     @Singleton
     public ReviewApiService provideReviewApiService(Retrofit retrofit) {
         return retrofit.create(ReviewApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public MessageApiService provideMessageApiService(Retrofit retrofit) {
+        return retrofit.create(MessageApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public NotificationApiService provideNotificationApiService(Retrofit retrofit) {
+        return retrofit.create(NotificationApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public ReportApiService provideReportApiService(Retrofit retrofit) {
+        return retrofit.create(ReportApiService.class);
     }
 }

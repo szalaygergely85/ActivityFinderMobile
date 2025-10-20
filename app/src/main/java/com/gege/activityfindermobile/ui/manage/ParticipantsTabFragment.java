@@ -28,8 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class ParticipantsTabFragment extends Fragment {
 
-    @Inject
-    ParticipantRepository participantRepository;
+    @Inject ParticipantRepository participantRepository;
 
     private Long activityId;
     private RecyclerView rvParticipants;
@@ -47,8 +46,10 @@ public class ParticipantsTabFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_participants_tab, container, false);
     }
 
@@ -81,40 +82,43 @@ public class ParticipantsTabFragment extends Fragment {
             return;
         }
 
-        participantRepository.getActivityParticipants(activityId,
+        participantRepository.getActivityParticipants(
+                activityId,
                 new ApiCallback<List<Participant>>() {
-            @Override
-            public void onSuccess(List<Participant> participants) {
-                swipeRefresh.setRefreshing(false);
+                    @Override
+                    public void onSuccess(List<Participant> participants) {
+                        swipeRefresh.setRefreshing(false);
 
-                // Filter to show only ACCEPTED and JOINED participants
-                List<Participant> confirmedParticipants = new ArrayList<>();
-                if (participants != null) {
-                    for (Participant p : participants) {
-                        String status = p.getStatus();
-                        if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
-                            confirmedParticipants.add(p);
+                        // Filter to show only ACCEPTED and JOINED participants
+                        List<Participant> confirmedParticipants = new ArrayList<>();
+                        if (participants != null) {
+                            for (Participant p : participants) {
+                                String status = p.getStatus();
+                                if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                                    confirmedParticipants.add(p);
+                                }
+                            }
+                        }
+
+                        if (!confirmedParticipants.isEmpty()) {
+                            adapter.setParticipants(confirmedParticipants);
+                            showContent();
+                        } else {
+                            showEmpty();
                         }
                     }
-                }
 
-                if (!confirmedParticipants.isEmpty()) {
-                    adapter.setParticipants(confirmedParticipants);
-                    showContent();
-                } else {
-                    showEmpty();
-                }
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                swipeRefresh.setRefreshing(false);
-                Toast.makeText(requireContext(),
-                        "Failed to load participants: " + errorMessage,
-                        Toast.LENGTH_SHORT).show();
-                showEmpty();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        swipeRefresh.setRefreshing(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load participants: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        showEmpty();
+                    }
+                });
     }
 
     private void showContent() {

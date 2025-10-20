@@ -1,0 +1,22 @@
+package com.gege.activityfindermobile.data.model;
+
+/** Enum for notification types */
+public enum NotificationType {
+    ACTIVITY_CREATED,
+    ACTIVITY_UPDATED,
+    ACTIVITY_CANCELLED,
+    ACTIVITY_COMPLETED,
+    ACTIVITY_REMINDER,
+    PARTICIPANT_INTERESTED,
+    PARTICIPANT_ACCEPTED,
+    PARTICIPANT_DECLINED,
+    PARTICIPANT_JOINED,
+    PARTICIPANT_LEFT,
+    REVIEW_RECEIVED,
+    NEW_MESSAGE,
+    REPORT_SUBMITTED,
+    REPORT_RESOLVED,
+    BADGE_EARNED,
+    MILESTONE_REACHED,
+    GENERAL
+}

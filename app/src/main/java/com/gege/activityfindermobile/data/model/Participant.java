@@ -3,7 +3,9 @@ package com.gege.activityfindermobile.data.model;
 import com.google.gson.annotations.SerializedName;
 
 public class Participant {
-    @SerializedName(value = "id", alternate = {"participantId"})
+    @SerializedName(
+            value = "id",
+            alternate = {"participantId"})
     private Long id;
 
     @SerializedName("activity")
@@ -47,11 +49,21 @@ public class Participant {
     public Participant() {}
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Activity getActivity() { return activity; }
-    public void setActivity(Activity activity) { this.activity = activity; }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
 
     public Long getActivityId() {
         if (activity != null && activity.getId() != null) {
@@ -59,7 +71,10 @@ public class Participant {
         }
         return activityId;
     }
-    public void setActivityId(Long activityId) { this.activityId = activityId; }
+
+    public void setActivityId(Long activityId) {
+        this.activityId = activityId;
+    }
 
     public String getActivityTitle() {
         if (activity != null && activity.getTitle() != null) {
@@ -67,10 +82,18 @@ public class Participant {
         }
         return activityTitle;
     }
-    public void setActivityTitle(String activityTitle) { this.activityTitle = activityTitle; }
 
-    public UserSimple getUser() { return user; }
-    public void setUser(UserSimple user) { this.user = user; }
+    public void setActivityTitle(String activityTitle) {
+        this.activityTitle = activityTitle;
+    }
+
+    public UserSimple getUser() {
+        return user;
+    }
+
+    public void setUser(UserSimple user) {
+        this.user = user;
+    }
 
     // Smart getters that check both nested user object and flat fields
     public Long getUserId() {
@@ -79,7 +102,10 @@ public class Participant {
         }
         return userId;
     }
-    public void setUserId(Long userId) { this.userId = userId; }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getUserName() {
         if (user != null && user.getFullName() != null) {
@@ -87,7 +113,10 @@ public class Participant {
         }
         return userName;
     }
-    public void setUserName(String userName) { this.userName = userName; }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
     public String getUserAvatar() {
         if (user != null && user.getProfileImageUrl() != null) {
@@ -95,7 +124,10 @@ public class Participant {
         }
         return userAvatar;
     }
-    public void setUserAvatar(String userAvatar) { this.userAvatar = userAvatar; }
+
+    public void setUserAvatar(String userAvatar) {
+        this.userAvatar = userAvatar;
+    }
 
     public Double getUserRating() {
         if (user != null && user.getRating() != null) {
@@ -103,7 +135,10 @@ public class Participant {
         }
         return userRating;
     }
-    public void setUserRating(Double userRating) { this.userRating = userRating; }
+
+    public void setUserRating(Double userRating) {
+        this.userRating = userRating;
+    }
 
     public String getUserBadge() {
         if (user != null && user.getBadge() != null) {
@@ -111,14 +146,32 @@ public class Participant {
         }
         return userBadge;
     }
-    public void setUserBadge(String userBadge) { this.userBadge = userBadge; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setUserBadge(String userBadge) {
+        this.userBadge = userBadge;
+    }
 
-    public Boolean getIsFriend() { return isFriend; }
-    public void setIsFriend(Boolean isFriend) { this.isFriend = isFriend; }
+    public String getStatus() {
+        return status;
+    }
 
-    public String getJoinedAt() { return joinedAt; }
-    public void setJoinedAt(String joinedAt) { this.joinedAt = joinedAt; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Boolean getIsFriend() {
+        return isFriend;
+    }
+
+    public void setIsFriend(Boolean isFriend) {
+        this.isFriend = isFriend;
+    }
+
+    public String getJoinedAt() {
+        return joinedAt;
+    }
+
+    public void setJoinedAt(String joinedAt) {
+        this.joinedAt = joinedAt;
+    }
 }

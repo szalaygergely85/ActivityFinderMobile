@@ -1,8 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
 
-    
+
         id 'com.google.dagger.hilt.android'
+    alias(libs.plugins.google.gms.google.services)
+
+    id 'com.diffplug.spotless' version '6.25.0'
 
 }
 
@@ -38,6 +41,7 @@ dependencies {
     implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
+    implementation libs.firebase.messaging
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
@@ -81,5 +85,40 @@ dependencies {
     // SwipeRefreshLayout
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        googleJavaFormat('1.19.1').aosp().reflowLongStrings()
+
+        // Remove unused imports
+        removeUnusedImports()
+
+        // Trim trailing whitespace
+        trimTrailingWhitespace()
+
+        // End files with a newline
+        endWithNewline()
+
+        // Custom formatting rules - you can add more here
+        importOrder('android', 'androidx', 'com', 'junit', 'net', 'org', 'java', 'javax', '')
+
+        // Optional: Use a custom rules file (create spotless.xml in your project root)
+        // eclipseFormatFile('spotless.xml')
+    }
+
+    format 'xml', {
+        target 'src/**/*.xml'
+        trimTrailingWhitespace()
+        endWithNewline()
+        indentWithSpaces(4)
+    }
+
+    format 'misc', {
+        target '**/*.gradle', '**/*.md', '**/.gitignore'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 

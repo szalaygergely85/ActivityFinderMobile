@@ -34,11 +34,9 @@ import de.hdodenhof.circleimageview.CircleImageView;
 @AndroidEntryPoint
 public class ProfileFragment extends Fragment {
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
     private CircleImageView ivProfileAvatar;
     private TextView tvName, tvEmail, tvBio, tvRatingValue, tvActivitiesCount;
@@ -49,8 +47,10 @@ public class ProfileFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
@@ -108,22 +108,28 @@ public class ProfileFragment extends Fragment {
         progressLoading.setVisibility(View.VISIBLE);
 
         // Fetch user profile
-        userRepository.getUserById(userId, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                progressLoading.setVisibility(View.GONE);
-                displayUserProfile(user);
-            }
+        userRepository.getUserById(
+                userId,
+                new ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(User user) {
+                        progressLoading.setVisibility(View.GONE);
+                        displayUserProfile(user);
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                progressLoading.setVisibility(View.GONE);
-                Toast.makeText(requireContext(), "Failed to load profile: " + errorMessage, Toast.LENGTH_LONG).show();
+                    @Override
+                    public void onError(String errorMessage) {
+                        progressLoading.setVisibility(View.GONE);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load profile: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
 
-                // Show placeholder data if API fails
-                displayPlaceholderData();
-            }
-        });
+                        // Show placeholder data if API fails
+                        displayPlaceholderData();
+                    }
+                });
     }
 
     private void displayUserProfile(User user) {
@@ -197,9 +203,11 @@ public class ProfileFragment extends Fragment {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
-                .setPositiveButton("Logout", (dialog, which) -> {
-                    performLogout();
-                })
+                .setPositiveButton(
+                        "Logout",
+                        (dialog, which) -> {
+                            performLogout();
+                        })
                 .setNegativeButton("Cancel", null)
                 .show();
     }

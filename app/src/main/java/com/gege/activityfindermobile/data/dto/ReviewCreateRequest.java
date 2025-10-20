@@ -18,7 +18,8 @@ public class ReviewCreateRequest {
     // Constructor
     public ReviewCreateRequest() {}
 
-    public ReviewCreateRequest(Long reviewedUserId, Long activityId, Integer rating, String comment) {
+    public ReviewCreateRequest(
+            Long reviewedUserId, Long activityId, Integer rating, String comment) {
         this.reviewedUserId = reviewedUserId;
         this.activityId = activityId;
         this.rating = rating;
@@ -26,15 +27,35 @@ public class ReviewCreateRequest {
     }
 
     // Getters and Setters
-    public Long getReviewedUserId() { return reviewedUserId; }
-    public void setReviewedUserId(Long reviewedUserId) { this.reviewedUserId = reviewedUserId; }
+    public Long getReviewedUserId() {
+        return reviewedUserId;
+    }
 
-    public Long getActivityId() { return activityId; }
-    public void setActivityId(Long activityId) { this.activityId = activityId; }
+    public void setReviewedUserId(Long reviewedUserId) {
+        this.reviewedUserId = reviewedUserId;
+    }
 
-    public Integer getRating() { return rating; }
-    public void setRating(Integer rating) { this.rating = rating; }
+    public Long getActivityId() {
+        return activityId;
+    }
 
-    public String getComment() { return comment; }
-    public void setComment(String comment) { this.comment = comment; }
+    public void setActivityId(Long activityId) {
+        this.activityId = activityId;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 }

@@ -32,8 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class FeedFragment extends Fragment {
 
-    @Inject
-    ActivityRepository activityRepository;
+    @Inject ActivityRepository activityRepository;
 
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
@@ -43,8 +42,10 @@ public class FeedFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_feed, container, false);
     }
 
@@ -59,21 +60,25 @@ public class FeedFragment extends Fragment {
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
 
         // Setup adapter
-        adapter = new ActivityAdapter(activity -> {
-            navigateToDetail(activity);
-        });
+        adapter =
+                new ActivityAdapter(
+                        activity -> {
+                            navigateToDetail(activity);
+                        });
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh
-        swipeRefresh.setOnRefreshListener(() -> {
-            loadActivitiesFromApi();
-        });
+        swipeRefresh.setOnRefreshListener(
+                () -> {
+                    loadActivitiesFromApi();
+                });
 
         // FAB click
-        fabCreate.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_nav_feed_to_createActivityFragment);
-        });
+        fabCreate.setOnClickListener(
+                v -> {
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.action_nav_feed_to_createActivityFragment);
+                });
 
         // Load activities from API
         loadActivitiesFromApi();
@@ -82,32 +87,37 @@ public class FeedFragment extends Fragment {
     private void loadActivitiesFromApi() {
         setLoading(true);
 
-        activityRepository.getUpcomingActivities(new ApiCallback<List<Activity>>() {
-            @Override
-            public void onSuccess(List<Activity> activities) {
-                setLoading(false);
-                swipeRefresh.setRefreshing(false);
+        activityRepository.getUpcomingActivities(
+                new ApiCallback<List<Activity>>() {
+                    @Override
+                    public void onSuccess(List<Activity> activities) {
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
 
-                if (activities != null && !activities.isEmpty()) {
-                    adapter.setActivities(activities);
-                    showContent();
-                } else {
-                    adapter.setActivities(new ArrayList<>());
-                    showEmptyView();
-                }
-            }
+                        if (activities != null && !activities.isEmpty()) {
+                            adapter.setActivities(activities);
+                            showContent();
+                        } else {
+                            adapter.setActivities(new ArrayList<>());
+                            showEmptyView();
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                swipeRefresh.setRefreshing(false);
-                Toast.makeText(requireContext(), "Failed to load activities: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load activities: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
 
-                // Show empty view on error
-                adapter.setActivities(new ArrayList<>());
-                showEmptyView();
-            }
-        });
+                        // Show empty view on error
+                        adapter.setActivities(new ArrayList<>());
+                        showEmptyView();
+                    }
+                });
     }
 
     private void setLoading(boolean loading) {
@@ -135,16 +145,25 @@ public class FeedFragment extends Fragment {
         bundle.putLong("activityId", activity.getId() != null ? activity.getId() : 0L);
         bundle.putLong("creatorId", activity.getCreatorId() != null ? activity.getCreatorId() : 0L);
         bundle.putString("title", activity.getTitle() != null ? activity.getTitle() : "");
-        bundle.putString("description", activity.getDescription() != null ? activity.getDescription() : "");
+        bundle.putString(
+                "description", activity.getDescription() != null ? activity.getDescription() : "");
         bundle.putString("date", activity.getDate() != null ? activity.getDate() : "");
         bundle.putString("time", activity.getTime() != null ? activity.getTime() : "");
         bundle.putString("location", activity.getLocation() != null ? activity.getLocation() : "");
         bundle.putString("category", activity.getCategory() != null ? activity.getCategory() : "");
-        bundle.putInt("totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
-        bundle.putInt("availableSpots", activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
-        bundle.putBoolean("trending", activity.getTrending() != null ? activity.getTrending() : false);
-        bundle.putString("creatorName", activity.getCreatorName() != null ? activity.getCreatorName() : "Unknown");
-        bundle.putDouble("creatorRating", activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+        bundle.putInt(
+                "totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
+        bundle.putInt(
+                "availableSpots",
+                activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
+        bundle.putBoolean(
+                "trending", activity.getTrending() != null ? activity.getTrending() : false);
+        bundle.putString(
+                "creatorName",
+                activity.getCreatorName() != null ? activity.getCreatorName() : "Unknown");
+        bundle.putDouble(
+                "creatorRating",
+                activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_feed_to_activityDetailFragment, bundle);

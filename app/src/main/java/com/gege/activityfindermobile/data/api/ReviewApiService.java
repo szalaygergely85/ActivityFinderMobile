@@ -16,10 +16,7 @@ import retrofit2.http.Path;
 public interface ReviewApiService {
 
     @POST("api/reviews")
-    Call<Review> createReview(
-            @Header("User-Id") Long userId,
-            @Body ReviewCreateRequest request
-    );
+    Call<Review> createReview(@Header("User-Id") Long userId, @Body ReviewCreateRequest request);
 
     @GET("api/reviews/user/{userId}")
     Call<List<Review>> getReviewsForUser(@Path("userId") Long userId);
@@ -28,8 +25,5 @@ public interface ReviewApiService {
     Call<List<Review>> getReviewsForActivity(@Path("activityId") Long activityId);
 
     @DELETE("api/reviews/{id}")
-    Call<Void> deleteReview(
-            @Path("id") Long id,
-            @Header("User-Id") Long userId
-    );
+    Call<Void> deleteReview(@Path("id") Long id, @Header("User-Id") Long userId);
 }

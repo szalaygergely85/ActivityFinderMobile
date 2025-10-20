@@ -24,8 +24,10 @@ public class ManageActivityFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_manage_activity, container, false);
     }
 
@@ -49,13 +51,17 @@ public class ManageActivityFragment extends Fragment {
         viewPager.setAdapter(adapter);
 
         // Link TabLayout and ViewPager
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            if (position == 0) {
-                tab.setText("Requests");
-            } else {
-                tab.setText("Participants");
-            }
-        }).attach();
+        new TabLayoutMediator(
+                        tabLayout,
+                        viewPager,
+                        (tab, position) -> {
+                            if (position == 0) {
+                                tab.setText("Requests");
+                            } else {
+                                tab.setText("Participants");
+                            }
+                        })
+                .attach();
     }
 
     private static class ManagePagerAdapter extends FragmentStateAdapter {

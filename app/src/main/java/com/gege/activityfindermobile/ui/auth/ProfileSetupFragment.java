@@ -38,11 +38,9 @@ import de.hdodenhof.circleimageview.CircleImageView;
 @AndroidEntryPoint
 public class ProfileSetupFragment extends Fragment {
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private CircleImageView ivProfilePicture;
     private MaterialButton btnChoosePhoto, btnRemovePhoto, btnContinue, btnSkip;
@@ -58,21 +56,24 @@ public class ProfileSetupFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         // Register image picker
-        imagePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                uri -> {
-                    if (uri != null) {
-                        selectedImageUri = uri;
-                        ivProfilePicture.setImageURI(uri);
-                        btnRemovePhoto.setVisibility(View.VISIBLE);
-                    }
-                });
+        imagePickerLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.GetContent(),
+                        uri -> {
+                            if (uri != null) {
+                                selectedImageUri = uri;
+                                ivProfilePicture.setImageURI(uri);
+                                btnRemovePhoto.setVisibility(View.VISIBLE);
+                            }
+                        });
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile_setup, container, false);
     }
 
@@ -98,11 +99,12 @@ public class ProfileSetupFragment extends Fragment {
     private void setupListeners() {
         btnChoosePhoto.setOnClickListener(v -> openImagePicker());
 
-        btnRemovePhoto.setOnClickListener(v -> {
-            selectedImageUri = null;
-            ivProfilePicture.setImageResource(R.drawable.ic_person);
-            btnRemovePhoto.setVisibility(View.GONE);
-        });
+        btnRemovePhoto.setOnClickListener(
+                v -> {
+                    selectedImageUri = null;
+                    ivProfilePicture.setImageResource(R.drawable.ic_person);
+                    btnRemovePhoto.setVisibility(View.GONE);
+                });
 
         btnContinue.setOnClickListener(v -> saveProfileAndContinue());
 
@@ -146,22 +148,34 @@ public class ProfileSetupFragment extends Fragment {
         // In production, you'd upload the image to server and get URL
 
         // Update profile
-        userRepository.updateUserProfile(userId, userId, request, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                setLoading(false);
-                Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                navigateToFeed();
-            }
+        userRepository.updateUserProfile(
+                userId,
+                userId,
+                request,
+                new ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(User user) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Profile updated successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        navigateToFeed();
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                // Even if update fails, still let them continue
-                Toast.makeText(requireContext(), "Could not update profile, but you can edit it later", Toast.LENGTH_SHORT).show();
-                navigateToFeed();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        // Even if update fails, still let them continue
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Could not update profile, but you can edit it later",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        navigateToFeed();
+                    }
+                });
     }
 
     private List<String> getSelectedInterests() {

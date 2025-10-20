@@ -9,8 +9,8 @@
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:elevation="4dp">
+        android:background="@drawable/gradient_primary"
+        app:elevation="0dp">
 
         <!-- Search Bar -->
         <com.google.android.material.search.SearchBar
@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/margin_medium"
             android:hint="Search activities..."
+            android:background="@color/white"
             app:navigationIcon="@drawable/ic_explore" />
 
         <!-- Filter Chips -->
@@ -50,35 +51,46 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔥 Trending" />
+                    android:text="🔥 Trending"
+                    android:textColor="@color/white" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_upcoming"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Upcoming" />
+                    android:text="Upcoming"
+                    android:textColor="@color/white" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_sports"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sports" />
+                    android:text="Sports"
+                    app:chipIcon="@drawable/ic_sports"
+                    app:chipIconTint="@color/white"
+                    android:textColor="@color/white" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_social"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Social" />
+                    android:text="Social"
+                    app:chipIcon="@drawable/ic_social"
+                    app:chipIconTint="@color/white"
+                    android:textColor="@color/white" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_outdoor"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Outdoor" />
+                    android:text="Outdoor"
+                    app:chipIcon="@drawable/ic_outdoor"
+                    app:chipIconTint="@color/white"
+                    android:textColor="@color/white" />
 
             </com.google.android.material.chip.ChipGroup>
 
@@ -150,8 +162,10 @@
         android:layout_margin="@dimen/margin_medium"
         android:text="@string/create_activity"
         android:textColor="@color/white"
+        android:textStyle="bold"
+        android:elevation="6dp"
         app:icon="@drawable/ic_add"
         app:iconTint="@color/white"
-        app:backgroundTint="@color/primary" />
+        app:backgroundTint="@color/accent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

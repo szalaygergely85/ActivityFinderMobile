@@ -15,6 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
+import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.repository.UserRepository;
@@ -31,11 +32,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class RegisterFragment extends Fragment {
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private TextInputLayout tilFullName, tilEmail, tilPassword, tilConfirmPassword;
     private TextInputEditText etFullName, etEmail, etPassword, etConfirmPassword;
@@ -45,8 +44,10 @@ public class RegisterFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_register, container, false);
     }
 
@@ -75,10 +76,11 @@ public class RegisterFragment extends Fragment {
     private void setupListeners() {
         btnRegister.setOnClickListener(v -> attemptRegister());
 
-        tvSignIn.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigateUp();
-        });
+        tvSignIn.setOnClickListener(
+                v -> {
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigateUp();
+                });
     }
 
     private void attemptRegister() {
@@ -149,33 +151,64 @@ public class RegisterFragment extends Fragment {
         UserRegistrationRequest request = new UserRegistrationRequest(fullName, email, password);
 
         // Call API
-        userRepository.registerUser(request, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                setLoading(false);
+        userRepository.registerUser(
+                request,
+                new ApiCallback<LoginResponse>() {
+                    @Override
+                    public void onSuccess(LoginResponse loginResponse) {
+                        setLoading(false);
 
-                // Check if user data is valid
-                if (user == null || user.getId() == null) {
-                    Toast.makeText(requireContext(), "Registration failed: Invalid user data received", Toast.LENGTH_LONG).show();
-                    return;
-                }
+                        // Check if response data is valid
+                        if (loginResponse == null
+                                || loginResponse.getUser() == null
+                                || loginResponse.getUser().getId() == null) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Registration failed: Invalid response data",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+                        }
 
-                // Save user session
-                prefsManager.saveUserSession(user.getId(), "token_" + user.getId());
+                        // Check if token is present
+                        if (loginResponse.getToken() == null
+                                || loginResponse.getToken().isEmpty()) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Registration failed: No authentication token received",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+                        }
 
-                Toast.makeText(requireContext(), "Welcome, " + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
+                        User user = loginResponse.getUser();
+                        String token = loginResponse.getToken();
 
-                // Navigate to profile setup
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.action_registerFragment_to_profileSetupFragment);
-            }
+                        // Save user session with JWT token
+                        prefsManager.saveUserSession(user.getId(), token);
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                Toast.makeText(requireContext(), "Registration failed: " + errorMessage, Toast.LENGTH_LONG).show();
-            }
-        });
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Welcome, " + user.getFullName() + "!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+
+                        // Navigate to profile setup
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.navigate(
+                                R.id.action_registerFragment_to_profileSetupFragment);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Registration failed: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     private void setLoading(boolean loading) {

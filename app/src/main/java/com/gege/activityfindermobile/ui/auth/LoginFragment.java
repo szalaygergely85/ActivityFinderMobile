@@ -16,6 +16,7 @@ import androidx.navigation.Navigation;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
+import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
@@ -31,11 +32,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText etEmail, etPassword;
@@ -45,8 +44,10 @@ public class LoginFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
@@ -72,14 +73,20 @@ public class LoginFragment extends Fragment {
     private void setupListeners() {
         btnLogin.setOnClickListener(v -> attemptLogin());
 
-        tvSignUp.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_loginFragment_to_registerFragment);
-        });
+        tvSignUp.setOnClickListener(
+                v -> {
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.action_loginFragment_to_registerFragment);
+                });
 
-        tvForgotPassword.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Forgot password feature coming soon!", Toast.LENGTH_SHORT).show();
-        });
+        tvForgotPassword.setOnClickListener(
+                v -> {
+                    Toast.makeText(
+                                    requireContext(),
+                                    "Forgot password feature coming soon!",
+                                    Toast.LENGTH_SHORT)
+                            .show();
+                });
     }
 
     private void attemptLogin() {
@@ -122,33 +129,63 @@ public class LoginFragment extends Fragment {
         LoginRequest request = new LoginRequest(email, password);
 
         // Call API
-        userRepository.loginUser(request, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                setLoading(false);
+        userRepository.loginUser(
+                request,
+                new ApiCallback<LoginResponse>() {
+                    @Override
+                    public void onSuccess(LoginResponse loginResponse) {
+                        setLoading(false);
 
-                // Check if user data is valid
-                if (user == null || user.getId() == null) {
-                    Toast.makeText(requireContext(), "Login failed: Invalid user data received", Toast.LENGTH_LONG).show();
-                    return;
-                }
+                        // Check if response data is valid
+                        if (loginResponse == null
+                                || loginResponse.getUser() == null
+                                || loginResponse.getUser().getId() == null) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Login failed: Invalid response data",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+                        }
 
-                // Save user session
-                prefsManager.saveUserSession(user.getId(), "token_" + user.getId());
+                        // Check if token is present
+                        if (loginResponse.getToken() == null
+                                || loginResponse.getToken().isEmpty()) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Login failed: No authentication token received",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+                        }
 
-                Toast.makeText(requireContext(), "Welcome back, " + user.getFullName() + "!", Toast.LENGTH_SHORT).show();
+                        User user = loginResponse.getUser();
+                        String token = loginResponse.getToken();
 
-                // Navigate to main screen
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.action_loginFragment_to_nav_feed);
-            }
+                        // Save user session with JWT token
+                        prefsManager.saveUserSession(user.getId(), token);
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                Toast.makeText(requireContext(), "Login failed: " + errorMessage, Toast.LENGTH_LONG).show();
-            }
-        });
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Welcome back, " + user.getFullName() + "!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+
+                        // Navigate to main screen
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.navigate(R.id.action_loginFragment_to_nav_feed);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Login failed: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     private void setLoading(boolean loading) {

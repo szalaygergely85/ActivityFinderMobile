@@ -27,9 +27,14 @@ public class ActivityCreateRequest {
     // Constructor
     public ActivityCreateRequest() {}
 
-    public ActivityCreateRequest(String title, String description, String activityDate,
-                                 String location, Integer totalSpots, Integer reservedForFriendsSpots,
-                                 String category) {
+    public ActivityCreateRequest(
+            String title,
+            String description,
+            String activityDate,
+            String location,
+            Integer totalSpots,
+            Integer reservedForFriendsSpots,
+            String category) {
         this.title = title;
         this.description = description;
         this.activityDate = activityDate;
@@ -40,26 +45,59 @@ public class ActivityCreateRequest {
     }
 
     // Getters and Setters
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getTitle() {
+        return title;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public String getActivityDate() { return activityDate; }
-    public void setActivityDate(String activityDate) { this.activityDate = activityDate; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Integer getTotalSpots() { return totalSpots; }
-    public void setTotalSpots(Integer totalSpots) { this.totalSpots = totalSpots; }
+    public String getActivityDate() {
+        return activityDate;
+    }
 
-    public Integer getReservedForFriendsSpots() { return reservedForFriendsSpots; }
+    public void setActivityDate(String activityDate) {
+        this.activityDate = activityDate;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Integer getTotalSpots() {
+        return totalSpots;
+    }
+
+    public void setTotalSpots(Integer totalSpots) {
+        this.totalSpots = totalSpots;
+    }
+
+    public Integer getReservedForFriendsSpots() {
+        return reservedForFriendsSpots;
+    }
+
     public void setReservedForFriendsSpots(Integer reservedForFriendsSpots) {
         this.reservedForFriendsSpots = reservedForFriendsSpots;
     }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 }

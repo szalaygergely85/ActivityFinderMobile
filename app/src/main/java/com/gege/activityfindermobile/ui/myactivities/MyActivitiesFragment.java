@@ -33,11 +33,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MyActivitiesFragment extends Fragment {
 
-    @Inject
-    ActivityRepository activityRepository;
+    @Inject ActivityRepository activityRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
@@ -48,8 +46,10 @@ public class MyActivitiesFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_my_activities, container, false);
     }
 
@@ -64,21 +64,25 @@ public class MyActivitiesFragment extends Fragment {
         btnCreateFirst = view.findViewById(R.id.btn_create_first);
 
         // Setup adapter
-        adapter = new ActivityAdapter(activity -> {
-            navigateToDetail(activity);
-        });
+        adapter =
+                new ActivityAdapter(
+                        activity -> {
+                            navigateToDetail(activity);
+                        });
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh
-        swipeRefresh.setOnRefreshListener(() -> {
-            loadMyActivities();
-        });
+        swipeRefresh.setOnRefreshListener(
+                () -> {
+                    loadMyActivities();
+                });
 
         // Create first activity button
-        btnCreateFirst.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_nav_my_activities_to_createActivityFragment);
-        });
+        btnCreateFirst.setOnClickListener(
+                v -> {
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.action_nav_my_activities_to_createActivityFragment);
+                });
 
         // Load user's activities
         loadMyActivities();
@@ -94,32 +98,38 @@ public class MyActivitiesFragment extends Fragment {
 
         setLoading(true);
 
-        activityRepository.getMyActivities(userId, new ApiCallback<List<Activity>>() {
-            @Override
-            public void onSuccess(List<Activity> activities) {
-                setLoading(false);
-                swipeRefresh.setRefreshing(false);
+        activityRepository.getMyActivities(
+                userId,
+                new ApiCallback<List<Activity>>() {
+                    @Override
+                    public void onSuccess(List<Activity> activities) {
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
 
-                if (activities != null && !activities.isEmpty()) {
-                    adapter.setActivities(activities);
-                    showContent();
-                } else {
-                    adapter.setActivities(new ArrayList<>());
-                    showEmptyView();
-                }
-            }
+                        if (activities != null && !activities.isEmpty()) {
+                            adapter.setActivities(activities);
+                            showContent();
+                        } else {
+                            adapter.setActivities(new ArrayList<>());
+                            showEmptyView();
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                swipeRefresh.setRefreshing(false);
-                Toast.makeText(requireContext(), "Failed to load activities: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load activities: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
 
-                // Show empty view on error
-                adapter.setActivities(new ArrayList<>());
-                showEmptyView();
-            }
-        });
+                        // Show empty view on error
+                        adapter.setActivities(new ArrayList<>());
+                        showEmptyView();
+                    }
+                });
     }
 
     private void setLoading(boolean loading) {
@@ -146,16 +156,25 @@ public class MyActivitiesFragment extends Fragment {
         Bundle bundle = new Bundle();
         bundle.putLong("activityId", activity.getId() != null ? activity.getId() : 0L);
         bundle.putString("title", activity.getTitle() != null ? activity.getTitle() : "");
-        bundle.putString("description", activity.getDescription() != null ? activity.getDescription() : "");
+        bundle.putString(
+                "description", activity.getDescription() != null ? activity.getDescription() : "");
         bundle.putString("date", activity.getDate() != null ? activity.getDate() : "");
         bundle.putString("time", activity.getTime() != null ? activity.getTime() : "");
         bundle.putString("location", activity.getLocation() != null ? activity.getLocation() : "");
         bundle.putString("category", activity.getCategory() != null ? activity.getCategory() : "");
-        bundle.putInt("totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
-        bundle.putInt("availableSpots", activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
-        bundle.putBoolean("trending", activity.getTrending() != null ? activity.getTrending() : false);
-        bundle.putString("creatorName", activity.getCreatorName() != null ? activity.getCreatorName() : "You");
-        bundle.putDouble("creatorRating", activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+        bundle.putInt(
+                "totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
+        bundle.putInt(
+                "availableSpots",
+                activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
+        bundle.putBoolean(
+                "trending", activity.getTrending() != null ? activity.getTrending() : false);
+        bundle.putString(
+                "creatorName",
+                activity.getCreatorName() != null ? activity.getCreatorName() : "You");
+        bundle.putDouble(
+                "creatorRating",
+                activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_my_activities_to_activityDetailFragment, bundle);

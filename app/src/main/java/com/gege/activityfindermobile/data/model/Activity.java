@@ -48,7 +48,9 @@ public class Activity {
     @SerializedName("creatorName")
     private String creatorName;
 
-    @SerializedName(value = "creatorImageUrl", alternate = {"creatorAvatar"})
+    @SerializedName(
+            value = "creatorImageUrl",
+            alternate = {"creatorAvatar"})
     private String creatorAvatar;
 
     @SerializedName("creatorRating")
@@ -57,7 +59,9 @@ public class Activity {
     @SerializedName("creatorBadge")
     private String creatorBadge;
 
-    @SerializedName(value = "participantsCount", alternate = {"interestedUsersCount"})
+    @SerializedName(
+            value = "participantsCount",
+            alternate = {"interestedUsersCount"})
     private Integer interestedUsersCount;
 
     @SerializedName("createdAt")
@@ -67,16 +71,34 @@ public class Activity {
     public Activity() {}
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getTitle() {
+        return title;
+    }
 
-    public String getActivityDate() { return activityDate; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getActivityDate() {
+        return activityDate;
+    }
+
     public void setActivityDate(String activityDate) {
         this.activityDate = activityDate;
         parseActivityDate();
@@ -88,7 +110,10 @@ public class Activity {
         }
         return date;
     }
-    public void setDate(String date) { this.date = date; }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 
     public String getTime() {
         if (time == null && activityDate != null) {
@@ -96,11 +121,12 @@ public class Activity {
         }
         return time;
     }
-    public void setTime(String time) { this.time = time; }
 
-    /**
-     * Parse activityDate (ISO 8601 format: "2024-10-25T08:00:00") into separate date and time
-     */
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    /** Parse activityDate (ISO 8601 format: "2024-10-25T08:00:00") into separate date and time */
     private void parseActivityDate() {
         if (activityDate == null || activityDate.isEmpty()) {
             return;
@@ -117,8 +143,10 @@ public class Activity {
                     int month = Integer.parseInt(dateParts[1]);
                     int day = Integer.parseInt(dateParts[2]);
 
-                    String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+                    String[] monthNames = {
+                        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+                        "Dec"
+                    };
                     this.date = monthNames[month - 1] + " " + day + ", " + year;
                 }
 
@@ -145,52 +173,113 @@ public class Activity {
         }
     }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public String getLocation() {
+        return location;
+    }
 
-    public Integer getTotalSpots() { return totalSpots; }
-    public void setTotalSpots(Integer totalSpots) { this.totalSpots = totalSpots; }
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-    public Integer getAvailableSpots() { return availableSpots; }
-    public void setAvailableSpots(Integer availableSpots) { this.availableSpots = availableSpots; }
+    public Integer getTotalSpots() {
+        return totalSpots;
+    }
 
-    public Integer getReservedForFriendsSpots() { return reservedForFriendsSpots; }
+    public void setTotalSpots(Integer totalSpots) {
+        this.totalSpots = totalSpots;
+    }
+
+    public Integer getAvailableSpots() {
+        return availableSpots;
+    }
+
+    public void setAvailableSpots(Integer availableSpots) {
+        this.availableSpots = availableSpots;
+    }
+
+    public Integer getReservedForFriendsSpots() {
+        return reservedForFriendsSpots;
+    }
+
     public void setReservedForFriendsSpots(Integer reservedForFriendsSpots) {
         this.reservedForFriendsSpots = reservedForFriendsSpots;
     }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public String getCategory() {
+        return category;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-    public Boolean getTrending() { return trending; }
-    public void setTrending(Boolean trending) { this.trending = trending; }
+    public String getStatus() {
+        return status;
+    }
 
-    public Long getCreatorId() { return creatorId; }
-    public void setCreatorId(Long creatorId) { this.creatorId = creatorId; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    public String getCreatorName() { return creatorName; }
-    public void setCreatorName(String creatorName) { this.creatorName = creatorName; }
+    public Boolean getTrending() {
+        return trending;
+    }
 
-    public String getCreatorAvatar() { return creatorAvatar; }
-    public void setCreatorAvatar(String creatorAvatar) { this.creatorAvatar = creatorAvatar; }
+    public void setTrending(Boolean trending) {
+        this.trending = trending;
+    }
 
-    public Double getCreatorRating() { return creatorRating; }
-    public void setCreatorRating(Double creatorRating) { this.creatorRating = creatorRating; }
+    public Long getCreatorId() {
+        return creatorId;
+    }
 
-    public String getCreatorBadge() { return creatorBadge; }
-    public void setCreatorBadge(String creatorBadge) { this.creatorBadge = creatorBadge; }
+    public void setCreatorId(Long creatorId) {
+        this.creatorId = creatorId;
+    }
 
-    public Integer getInterestedUsersCount() { return interestedUsersCount; }
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
+
+    public String getCreatorAvatar() {
+        return creatorAvatar;
+    }
+
+    public void setCreatorAvatar(String creatorAvatar) {
+        this.creatorAvatar = creatorAvatar;
+    }
+
+    public Double getCreatorRating() {
+        return creatorRating;
+    }
+
+    public void setCreatorRating(Double creatorRating) {
+        this.creatorRating = creatorRating;
+    }
+
+    public String getCreatorBadge() {
+        return creatorBadge;
+    }
+
+    public void setCreatorBadge(String creatorBadge) {
+        this.creatorBadge = creatorBadge;
+    }
+
+    public Integer getInterestedUsersCount() {
+        return interestedUsersCount;
+    }
+
     public void setInterestedUsersCount(Integer interestedUsersCount) {
         this.interestedUsersCount = interestedUsersCount;
     }
 
     /**
-     * Get current participant count
-     * First tries participantsCount from API, then falls back to calculation
+     * Get current participant count First tries participantsCount from API, then falls back to
+     * calculation
      */
     public Integer getParticipantsCount() {
         if (interestedUsersCount != null) {
@@ -203,6 +292,11 @@ public class Activity {
         return 0;
     }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
 }

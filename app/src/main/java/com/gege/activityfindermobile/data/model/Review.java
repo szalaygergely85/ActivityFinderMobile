@@ -40,36 +40,91 @@ public class Review {
     public Review() {}
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getReviewerId() { return reviewerId; }
-    public void setReviewerId(Long reviewerId) { this.reviewerId = reviewerId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getReviewerName() { return reviewerName; }
-    public void setReviewerName(String reviewerName) { this.reviewerName = reviewerName; }
+    public Long getReviewerId() {
+        return reviewerId;
+    }
 
-    public String getReviewerAvatar() { return reviewerAvatar; }
-    public void setReviewerAvatar(String reviewerAvatar) { this.reviewerAvatar = reviewerAvatar; }
+    public void setReviewerId(Long reviewerId) {
+        this.reviewerId = reviewerId;
+    }
 
-    public Long getReviewedUserId() { return reviewedUserId; }
-    public void setReviewedUserId(Long reviewedUserId) { this.reviewedUserId = reviewedUserId; }
+    public String getReviewerName() {
+        return reviewerName;
+    }
 
-    public String getReviewedUserName() { return reviewedUserName; }
-    public void setReviewedUserName(String reviewedUserName) { this.reviewedUserName = reviewedUserName; }
+    public void setReviewerName(String reviewerName) {
+        this.reviewerName = reviewerName;
+    }
 
-    public Long getActivityId() { return activityId; }
-    public void setActivityId(Long activityId) { this.activityId = activityId; }
+    public String getReviewerAvatar() {
+        return reviewerAvatar;
+    }
 
-    public String getActivityTitle() { return activityTitle; }
-    public void setActivityTitle(String activityTitle) { this.activityTitle = activityTitle; }
+    public void setReviewerAvatar(String reviewerAvatar) {
+        this.reviewerAvatar = reviewerAvatar;
+    }
 
-    public Integer getRating() { return rating; }
-    public void setRating(Integer rating) { this.rating = rating; }
+    public Long getReviewedUserId() {
+        return reviewedUserId;
+    }
 
-    public String getComment() { return comment; }
-    public void setComment(String comment) { this.comment = comment; }
+    public void setReviewedUserId(Long reviewedUserId) {
+        this.reviewedUserId = reviewedUserId;
+    }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public String getReviewedUserName() {
+        return reviewedUserName;
+    }
+
+    public void setReviewedUserName(String reviewedUserName) {
+        this.reviewedUserName = reviewedUserName;
+    }
+
+    public Long getActivityId() {
+        return activityId;
+    }
+
+    public void setActivityId(Long activityId) {
+        this.activityId = activityId;
+    }
+
+    public String getActivityTitle() {
+        return activityTitle;
+    }
+
+    public void setActivityTitle(String activityTitle) {
+        this.activityTitle = activityTitle;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
 }

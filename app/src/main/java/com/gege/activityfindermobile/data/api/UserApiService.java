@@ -1,6 +1,7 @@
 package com.gege.activityfindermobile.data.api;
 
 import com.gege.activityfindermobile.data.dto.LoginRequest;
+import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.model.User;
@@ -20,10 +21,17 @@ import retrofit2.http.Query;
 public interface UserApiService {
 
     @POST("api/users/register")
-    Call<User> registerUser(@Body UserRegistrationRequest request);
+    Call<LoginResponse> registerUser(@Body UserRegistrationRequest request);
 
     @POST("api/users/login")
-    Call<User> loginUser(@Body LoginRequest request);
+    Call<LoginResponse> loginUser(@Body LoginRequest request);
+
+    // Also support the new /api/auth endpoints from backend
+    @POST("api/auth/register")
+    Call<LoginResponse> registerUserAuth(@Body UserRegistrationRequest request);
+
+    @POST("api/auth/login")
+    Call<LoginResponse> loginUserAuth(@Body LoginRequest request);
 
     @GET("api/users/{id}")
     Call<User> getUserById(@Path("id") Long id);
@@ -35,8 +43,7 @@ public interface UserApiService {
     Call<User> updateUserProfile(
             @Path("id") Long id,
             @Header("User-Id") Long userId,
-            @Body UserProfileUpdateRequest request
-    );
+            @Body UserProfileUpdateRequest request);
 
     @GET("api/users")
     Call<List<User>> getAllActiveUsers();

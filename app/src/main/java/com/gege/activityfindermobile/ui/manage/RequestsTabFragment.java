@@ -28,11 +28,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class RequestsTabFragment extends Fragment {
 
-    @Inject
-    ParticipantRepository participantRepository;
+    @Inject ParticipantRepository participantRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private Long activityId;
     private RecyclerView rvRequests;
@@ -50,8 +48,10 @@ public class RequestsTabFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_requests_tab, container, false);
     }
 
@@ -68,17 +68,19 @@ public class RequestsTabFragment extends Fragment {
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
 
         // Setup adapter
-        adapter = new InterestedUserAdapter(new InterestedUserAdapter.OnActionListener() {
-            @Override
-            public void onAccept(Participant participant) {
-                acceptParticipant(participant);
-            }
+        adapter =
+                new InterestedUserAdapter(
+                        new InterestedUserAdapter.OnActionListener() {
+                            @Override
+                            public void onAccept(Participant participant) {
+                                acceptParticipant(participant);
+                            }
 
-            @Override
-            public void onDecline(Participant participant) {
-                declineParticipant(participant);
-            }
-        });
+                            @Override
+                            public void onDecline(Participant participant) {
+                                declineParticipant(participant);
+                            }
+                        });
         rvRequests.setAdapter(adapter);
 
         // Setup swipe refresh
@@ -95,28 +97,32 @@ public class RequestsTabFragment extends Fragment {
             return;
         }
 
-        participantRepository.getInterestedUsers(activityId, creatorId,
+        participantRepository.getInterestedUsers(
+                activityId,
+                creatorId,
                 new ApiCallback<List<Participant>>() {
-            @Override
-            public void onSuccess(List<Participant> participants) {
-                swipeRefresh.setRefreshing(false);
-                if (participants != null && !participants.isEmpty()) {
-                    adapter.setInterestedUsers(participants);
-                    showContent();
-                } else {
-                    showEmpty();
-                }
-            }
+                    @Override
+                    public void onSuccess(List<Participant> participants) {
+                        swipeRefresh.setRefreshing(false);
+                        if (participants != null && !participants.isEmpty()) {
+                            adapter.setInterestedUsers(participants);
+                            showContent();
+                        } else {
+                            showEmpty();
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                swipeRefresh.setRefreshing(false);
-                Toast.makeText(requireContext(),
-                        "Failed to load requests: " + errorMessage,
-                        Toast.LENGTH_SHORT).show();
-                showEmpty();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        swipeRefresh.setRefreshing(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load requests: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        showEmpty();
+                    }
+                });
     }
 
     private void acceptParticipant(Participant participant) {
@@ -128,25 +134,29 @@ public class RequestsTabFragment extends Fragment {
                 creatorId,
                 "ACCEPTED",
                 new ApiCallback<Participant>() {
-            @Override
-            public void onSuccess(Participant updatedParticipant) {
-                Toast.makeText(requireContext(),
-                        "Accepted " + participant.getUserName(),
-                        Toast.LENGTH_SHORT).show();
-                // Remove from list
-                adapter.removeParticipant(participant.getId());
-                if (adapter.getItemCount() == 0) {
-                    showEmpty();
-                }
-            }
+                    @Override
+                    public void onSuccess(Participant updatedParticipant) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Accepted " + participant.getUserName(),
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        // Remove from list
+                        adapter.removeParticipant(participant.getId());
+                        if (adapter.getItemCount() == 0) {
+                            showEmpty();
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(requireContext(),
-                        "Failed to accept: " + errorMessage,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to accept: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
     }
 
     private void declineParticipant(Participant participant) {
@@ -158,25 +168,29 @@ public class RequestsTabFragment extends Fragment {
                 creatorId,
                 "DECLINED",
                 new ApiCallback<Participant>() {
-            @Override
-            public void onSuccess(Participant updatedParticipant) {
-                Toast.makeText(requireContext(),
-                        "Declined " + participant.getUserName(),
-                        Toast.LENGTH_SHORT).show();
-                // Remove from list
-                adapter.removeParticipant(participant.getId());
-                if (adapter.getItemCount() == 0) {
-                    showEmpty();
-                }
-            }
+                    @Override
+                    public void onSuccess(Participant updatedParticipant) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Declined " + participant.getUserName(),
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        // Remove from list
+                        adapter.removeParticipant(participant.getId());
+                        if (adapter.getItemCount() == 0) {
+                            showEmpty();
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(requireContext(),
-                        "Failed to decline: " + errorMessage,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to decline: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
     }
 
     private void showContent() {

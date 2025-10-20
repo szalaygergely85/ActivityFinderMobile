@@ -19,9 +19,7 @@ public interface ActivityApiService {
 
     @POST("api/activities")
     Call<Activity> createActivity(
-            @Query("creatorId") Long creatorId,
-            @Body ActivityCreateRequest request
-    );
+            @Query("creatorId") Long creatorId, @Body ActivityCreateRequest request);
 
     @GET("api/activities/{id}")
     Call<Activity> getActivityById(@Path("id") Long id);
@@ -54,12 +52,8 @@ public interface ActivityApiService {
     Call<Activity> updateActivity(
             @Path("id") Long id,
             @Header("User-Id") Long userId,
-            @Body ActivityCreateRequest request
-    );
+            @Body ActivityCreateRequest request);
 
     @DELETE("api/activities/{id}")
-    Call<Void> cancelActivity(
-            @Path("id") Long id,
-            @Header("User-Id") Long userId
-    );
+    Call<Void> cancelActivity(@Path("id") Long id, @Header("User-Id") Long userId);
 }

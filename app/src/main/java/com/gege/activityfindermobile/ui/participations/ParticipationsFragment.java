@@ -35,14 +35,11 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class ParticipationsFragment extends Fragment {
 
-    @Inject
-    ParticipantRepository participantRepository;
+    @Inject ParticipantRepository participantRepository;
 
-    @Inject
-    ActivityRepository activityRepository;
+    @Inject ActivityRepository activityRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private RecyclerView rvParticipations;
     private ActivityAdapter adapter;
@@ -52,8 +49,10 @@ public class ParticipationsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_participations, container, false);
     }
 
@@ -67,15 +66,18 @@ public class ParticipationsFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
 
         // Setup adapter
-        adapter = new ActivityAdapter(activity -> {
-            navigateToDetail(activity);
-        });
+        adapter =
+                new ActivityAdapter(
+                        activity -> {
+                            navigateToDetail(activity);
+                        });
         rvParticipations.setAdapter(adapter);
 
         // Swipe refresh
-        swipeRefresh.setOnRefreshListener(() -> {
-            loadParticipations();
-        });
+        swipeRefresh.setOnRefreshListener(
+                () -> {
+                    loadParticipations();
+                });
 
         // Load joined activities
         loadParticipations();
@@ -92,50 +94,60 @@ public class ParticipationsFragment extends Fragment {
         setLoading(true);
 
         // First get the list of participations
-        participantRepository.getMyParticipations(userId, new ApiCallback<List<Participant>>() {
-            @Override
-            public void onSuccess(List<Participant> participants) {
-                Log.d("Participations", "Fetched " + (participants != null ? participants.size() : 0) + " participations");
+        participantRepository.getMyParticipations(
+                userId,
+                new ApiCallback<List<Participant>>() {
+                    @Override
+                    public void onSuccess(List<Participant> participants) {
+                        Log.d(
+                                "Participations",
+                                "Fetched "
+                                        + (participants != null ? participants.size() : 0)
+                                        + " participations");
 
-                if (participants == null || participants.isEmpty()) {
-                    setLoading(false);
-                    swipeRefresh.setRefreshing(false);
-                    adapter.setActivities(new ArrayList<>());
-                    showEmptyView();
-                    return;
-                }
+                        if (participants == null || participants.isEmpty()) {
+                            setLoading(false);
+                            swipeRefresh.setRefreshing(false);
+                            adapter.setActivities(new ArrayList<>());
+                            showEmptyView();
+                            return;
+                        }
 
-                // Extract activities from participants (already included in response!)
-                List<Activity> activities = new ArrayList<>();
-                for (Participant participant : participants) {
-                    Activity activity = participant.getActivity();
-                    if (activity != null) {
-                        activities.add(activity);
+                        // Extract activities from participants (already included in response!)
+                        List<Activity> activities = new ArrayList<>();
+                        for (Participant participant : participants) {
+                            Activity activity = participant.getActivity();
+                            if (activity != null) {
+                                activities.add(activity);
+                            }
+                        }
+
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
+
+                        if (!activities.isEmpty()) {
+                            adapter.setActivities(activities);
+                            showContent();
+                        } else {
+                            showEmptyView();
+                        }
                     }
-                }
 
-                setLoading(false);
-                swipeRefresh.setRefreshing(false);
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load participations: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
 
-                if (!activities.isEmpty()) {
-                    adapter.setActivities(activities);
-                    showContent();
-                } else {
-                    showEmptyView();
-                }
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                swipeRefresh.setRefreshing(false);
-                Toast.makeText(requireContext(), "Failed to load participations: " + errorMessage, Toast.LENGTH_SHORT).show();
-
-                // Show empty view on error
-                adapter.setActivities(new ArrayList<>());
-                showEmptyView();
-            }
-        });
+                        // Show empty view on error
+                        adapter.setActivities(new ArrayList<>());
+                        showEmptyView();
+                    }
+                });
     }
 
     private void setLoading(boolean loading) {
@@ -163,16 +175,25 @@ public class ParticipationsFragment extends Fragment {
         bundle.putLong("activityId", activity.getId() != null ? activity.getId() : 0L);
         bundle.putLong("creatorId", activity.getCreatorId() != null ? activity.getCreatorId() : 0L);
         bundle.putString("title", activity.getTitle() != null ? activity.getTitle() : "");
-        bundle.putString("description", activity.getDescription() != null ? activity.getDescription() : "");
+        bundle.putString(
+                "description", activity.getDescription() != null ? activity.getDescription() : "");
         bundle.putString("date", activity.getDate() != null ? activity.getDate() : "");
         bundle.putString("time", activity.getTime() != null ? activity.getTime() : "");
         bundle.putString("location", activity.getLocation() != null ? activity.getLocation() : "");
         bundle.putString("category", activity.getCategory() != null ? activity.getCategory() : "");
-        bundle.putInt("totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
-        bundle.putInt("availableSpots", activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
-        bundle.putBoolean("trending", activity.getTrending() != null ? activity.getTrending() : false);
-        bundle.putString("creatorName", activity.getCreatorName() != null ? activity.getCreatorName() : "Unknown");
-        bundle.putDouble("creatorRating", activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+        bundle.putInt(
+                "totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
+        bundle.putInt(
+                "availableSpots",
+                activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
+        bundle.putBoolean(
+                "trending", activity.getTrending() != null ? activity.getTrending() : false);
+        bundle.putString(
+                "creatorName",
+                activity.getCreatorName() != null ? activity.getCreatorName() : "Unknown");
+        bundle.putDouble(
+                "creatorRating",
+                activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_participations_to_activityDetailFragment, bundle);

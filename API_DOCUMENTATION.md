@@ -1,872 +1,624 @@
-# Activity Partner Backend API Documentation
+# Activity Partner API Documentation
 
 ## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Configuration](#configuration)
-3. [Authentication](#authentication)
-4. [API Endpoints](#api-endpoints)
+1. [Authentication](#authentication)
+2. [Activity Messages API](#activity-messages-api)
+3. [Notifications API](#notifications-api)
+4. [Reports API](#reports-api)
 5. [Data Models](#data-models)
-6. [Error Handling](#error-handling)
-
----
-
-## Project Overview
-
-**Activity Partner** is a Spring Boot REST API for managing activities and connecting users with similar interests.
-
-- **Base URL**: `http://localhost:8080`
-- **API Prefix**: `/api`
-- **Java Version**: 17
-- **Spring Boot**: 3.5.6
-- **Database**: MySQL
-
----
-
-## Configuration
-
-### Database
-```properties
-URL: jdbc:mysql://localhost:3306/activitypartner
-Username: root
-Password: password
-```
-
-### JWT Settings
-```properties
-Access Token Expiration: 24 hours (86400000 ms)
-Refresh Token Expiration: 7 days (604800000 ms)
-```
 
 ---
 
 ## Authentication
 
-### JWT Token-Based Authentication
+### JWT Token Authentication
+All API endpoints require JWT token authentication using Bearer token in the Authorization header.
 
-**Login Flow:**
-1. POST `/api/users/login` with email/password
-2. Receive `accessToken` and `refreshToken` in response
-3. Include access token in subsequent requests (when JWT auth is enabled)
-4. When access token expires, use `/api/users/refresh-token` to get new access token
-5. Call `/api/users/logout` to invalidate refresh token
-
-**Token Response Structure:**
-```json
-{
-  "accessToken": "eyJhbGc...",
-  "refreshToken": "eyJhbGc...",
-  "userId": 1,
-  "email": "user@example.com",
-  "fullName": "John Doe",
-  "profileImageUrl": "https://...",
-  "rating": 4.5,
-  "badge": "⭐"
-}
+**Header Format:**
 ```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Important Changes:**
+- The API has migrated to token-based authentication (JWT)
+- Firebase integration is available for push notifications
+- All authenticated endpoints require the `Authorization` header
 
 ---
 
-## API Endpoints
+## Activity Messages API
 
-### User Management (`/api/users`)
+Base Path: `/api/activities/{activityId}/messages`
 
-#### POST `/api/users/login`
-Authenticate user and receive JWT tokens.
+### 1. Send Message
+Send a message in an activity chat.
+
+**Endpoint:** `POST /api/activities/{activityId}/messages`
+
+**Authentication:** Required
 
 **Request Body:**
 ```json
 {
-  "email": "user@example.com",
-  "password": "password123"
+  "messageText": "Hello everyone!"
 }
 ```
 
-**Response:** `LoginResponse` (see above)
-
----
-
-#### POST `/api/users/register`
-Register a new user.
-
-**Request Body:**
-```json
-{
-  "fullName": "John Doe",
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**Response:**
+**Response:** `201 Created`
 ```json
 {
   "id": 1,
-  "fullName": "John Doe",
-  "email": "user@example.com",
-  "bio": null,
-  "profileImageUrl": null,
-  "rating": 0.0,
-  "completedActivities": 0,
-  "interests": [],
-  "badge": null,
-  "createdAt": "2024-10-18T10:30:00"
+  "activityId": 123,
+  "userId": 456,
+  "userName": "John Doe",
+  "messageText": "Hello everyone!",
+  "createdAt": "2024-01-20T10:30:00",
+  "isDeleted": false
 }
 ```
 
 ---
 
-#### POST `/api/users/refresh-token`
-Refresh access token using refresh token.
+### 2. Get All Messages
+Get all messages for an activity.
 
-**Request Body:**
+**Endpoint:** `GET /api/activities/{activityId}/messages`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
 ```json
-{
-  "refreshToken": "eyJhbGc..."
-}
-```
-
-**Response:** `LoginResponse`
-
----
-
-#### POST `/api/users/logout?userId={userId}`
-Logout from current device (invalidates refresh token).
-
-**Response:** 204 No Content
-
----
-
-#### POST `/api/users/logout-all/{userId}`
-Logout from all devices.
-
-**Response:** 204 No Content
-
----
-
-#### GET `/api/users/`
-Get all active users.
-
-**Response:** Array of `UserResponse`
-
----
-
-#### GET `/api/users/{id}`
-Get user by ID.
-
-**Response:** `UserResponse`
-
----
-
-#### GET `/api/users/email/{email}`
-Get user by email.
-
-**Response:** `UserResponse`
-
----
-
-#### GET `/api/users/search?name={name}`
-Search users by name (partial match).
-
-**Response:** Array of `UserResponse`
-
----
-
-#### GET `/api/users/interest/{interest}`
-Get users with specific interest.
-
-**Response:** Array of `UserSimpleResponse`
-
----
-
-#### GET `/api/users/top-rated`
-Get users sorted by rating (highest first).
-
-**Response:** Array of `UserSimpleResponse`
-
----
-
-#### PUT `/api/users/{id}`
-Update user profile.
-
-**Request Body:**
-```json
-{
-  "fullName": "John Updated",
-  "bio": "I love outdoor activities!",
-  "profileImageUrl": "https://example.com/image.jpg",
-  "interests": ["hiking", "cycling", "photography"]
-}
-```
-
-**Response:** `UserResponse`
-
----
-
-#### DELETE `/api/users/{id}`
-Deactivate user account.
-
-**Response:** 204 No Content
-
----
-
-### Activity Management (`/api/activities`)
-
-#### POST `/api/activities?creatorId={userId}`
-Create a new activity.
-
-**Request Body:**
-```json
-{
-  "title": "Morning Hike at Mt. Rainier",
-  "description": "Join us for a scenic morning hike!",
-  "activityDate": "2024-10-25T08:00:00",
-  "location": "Mt. Rainier National Park",
-  "category": "Hiking",
-  "totalSpots": 10,
-  "reservedForFriendsSpots": 2,
-  "minParticipants": 5,
-  "difficulty": "Moderate",
-  "cost": 25.00,
-  "minAge": 18
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "title": "Morning Hike at Mt. Rainier",
-  "description": "Join us for a scenic morning hike!",
-  "activityDate": "2024-10-25T08:00:00",
-  "location": "Mt. Rainier National Park",
-  "category": "Hiking",
-  "totalSpots": 10,
-  "reservedForFriendsSpots": 2,
-  "minParticipants": 5,
-  "status": "OPEN",
-  "trending": false,
-  "difficulty": "Moderate",
-  "cost": 25.00,
-  "minAge": 18,
-  "creatorId": 1,
-  "creatorName": "John Doe",
-  "creatorImageUrl": "https://...",
-  "participantsCount": 0,
-  "availableSpots": 10,
-  "createdAt": "2024-10-18T10:30:00",
-  "updatedAt": "2024-10-18T10:30:00"
-}
-```
-
----
-
-#### GET `/api/activities/`
-Get all activities.
-
-**Response:** Array of `ActivityResponseDTO`
-
----
-
-#### GET `/api/activities/{id}`
-Get activity by ID.
-
-**Response:** `ActivityResponseDTO`
-
----
-
-#### GET `/api/activities/creator/{creatorId}`
-Get all activities created by a user.
-
-**Response:** Array of `ActivityResponseDTO`
-
----
-
-#### GET `/api/activities/category/{category}`
-Get activities by category.
-
-**Response:** Array of `ActivityResponseDTO`
-
----
-
-#### GET `/api/activities/upcoming`
-Get all available upcoming activities (status=OPEN, future dates).
-
-**Response:** Array of `ActivityResponseDTO`
-
----
-
-#### GET `/api/activities/trending`
-Get trending activities.
-
-**Response:** Array of `ActivityResponseDTO`
-
----
-
-#### PATCH `/api/activities/{id}?userId={userId}`
-Update activity (creator only).
-
-**Request Body:** (all fields optional)
-```json
-{
-  "title": "Updated Title",
-  "description": "Updated description",
-  "totalSpots": 15
-}
-```
-
-**Response:** `ActivityResponseDTO`
-
----
-
-#### PATCH `/api/activities/{id}/cancel?userId={userId}`
-Cancel activity (creator only).
-
-**Response:** `ActivityResponseDTO` with status=CANCELLED
-
----
-
-#### PATCH `/api/activities/{id}/complete?userId={userId}`
-Mark activity as completed (creator only).
-
-**Response:** `ActivityResponseDTO` with status=COMPLETED
-
----
-
-#### DELETE `/api/activities/{id}?userId={userId}`
-Delete activity (creator only).
-
-**Response:** 204 No Content
-
----
-
-### Category Management (`/api/categories`)
-
-#### POST `/api/categories`
-Create a new category (admin only).
-
-**Request Body:**
-```json
-{
-  "name": "Hiking",
-  "description": "Outdoor hiking activities",
-  "icon": "🥾"
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "name": "Hiking",
-  "description": "Outdoor hiking activities",
-  "icon": "🥾",
-  "isActive": true,
-  "activityCount": 0,
-  "createdAt": "2024-10-18T10:30:00"
-}
-```
-
----
-
-#### GET `/api/categories/`
-Get all active categories.
-
-**Response:** Array of `CategoryResponse`
-
----
-
-#### GET `/api/categories/popular`
-Get categories sorted by activity count.
-
-**Response:** Array of `CategoryResponse`
-
----
-
-#### GET `/api/categories/{id}`
-Get category by ID.
-
-**Response:** `CategoryResponse`
-
----
-
-#### PUT `/api/categories/{id}`
-Update category (admin only).
-
-**Request Body:**
-```json
-{
-  "name": "Mountain Hiking",
-  "description": "Updated description",
-  "icon": "⛰️",
-  "isActive": true
-}
-```
-
-**Response:** `CategoryResponse`
-
----
-
-#### DELETE `/api/categories/{id}`
-Deactivate category (admin only).
-
-**Response:** 204 No Content
-
----
-
-### Activity Participation (`/api/participants`)
-
-#### POST `/api/participants/activities/{activityId}/interest?userId={userId}`
-Express interest in an activity.
-
-**Response:**
-```json
-{
-  "id": 1,
-  "activityId": 1,
-  "activityTitle": "Morning Hike at Mt. Rainier",
-  "user": {
-    "id": 2,
-    "fullName": "Jane Smith",
-    "profileImageUrl": "https://...",
-    "rating": 4.5,
-    "badge": "⭐"
-  },
-  "status": "INTERESTED",
-  "isFriend": false,
-  "joinedAt": "2024-10-18T10:30:00",
-  "updatedAt": "2024-10-18T10:30:00"
-}
-```
-
----
-
-#### GET `/api/participants/activities/{activityId}`
-Get all participants for an activity.
-
-**Response:** Array of `ParticipantResponse`
-
----
-
-#### GET `/api/participants/activities/{activityId}/interested?creatorId={userId}`
-Get interested users for an activity (creator only).
-
-**Response:** Array of `ParticipantResponse` with status=INTERESTED
-
----
-
-#### GET `/api/participants/my-participations?userId={userId}`
-Get all participations for a user.
-
-**Response:** Array of `ParticipantActivityResponse`
-
----
-
-#### GET `/api/participants/my-participations/status/{status}?userId={userId}`
-Get user's participations by status (INTERESTED, ACCEPTED, JOINED, etc.).
-
-**Response:** Array of `ParticipantActivityResponse`
-
----
-
-#### PATCH `/api/participants/{participantId}/status?creatorId={userId}`
-Update participant status (creator only).
-
-**Request Body:**
-```json
-{
-  "status": "ACCEPTED"
-}
-```
-
-**Valid statuses:** `INTERESTED`, `ACCEPTED`, `DECLINED`, `JOINED`, `LEFT`
-
-**Response:** `ParticipantResponse`
-
----
-
-#### POST `/api/participants/{participantId}/confirm?userId={userId}`
-Confirm joining after being accepted (changes status from ACCEPTED to JOINED).
-
-**Response:** `ParticipantResponse`
-
----
-
-#### DELETE `/api/participants/activities/{activityId}/leave?userId={userId}`
-Leave an activity.
-
-**Response:** 204 No Content
-
----
-
-#### DELETE `/api/participants/activities/{activityId}/interest?userId={userId}`
-Delete interest before acceptance.
-
-**Response:** 204 No Content
-
----
-
-### Review Management (`/api/reviews`)
-
-#### POST `/api/reviews?reviewerId={userId}`
-Create a review for a user after an activity.
-
-**Request Body:**
-```json
-{
-  "rating": 5,
-  "comment": "Great hiking partner! Very punctual and friendly.",
-  "activityId": 1,
-  "reviewedUserId": 2
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "rating": 5,
-  "comment": "Great hiking partner! Very punctual and friendly.",
-  "activityId": 1,
-  "reviewer": {
+[
+  {
     "id": 1,
-    "fullName": "John Doe",
-    "profileImageUrl": "https://...",
-    "rating": 4.5,
-    "badge": "⭐"
-  },
-  "reviewedUser": {
+    "activityId": 123,
+    "userId": 456,
+    "userName": "John Doe",
+    "messageText": "Hello everyone!",
+    "createdAt": "2024-01-20T10:30:00",
+    "isDeleted": false
+  }
+]
+```
+
+---
+
+### 3. Get Messages Since Timestamp
+Get new messages since a specific timestamp (useful for polling).
+
+**Endpoint:** `GET /api/activities/{activityId}/messages/since`
+
+**Authentication:** Required
+
+**Query Parameters:**
+- `timestamp` (required): ISO 8601 datetime format (e.g., `2024-01-20T10:30:00`)
+
+**Example:**
+```
+GET /api/activities/123/messages/since?timestamp=2024-01-20T10:30:00
+```
+
+**Response:** `200 OK`
+```json
+[
+  {
     "id": 2,
-    "fullName": "Jane Smith",
-    "profileImageUrl": "https://...",
-    "rating": 4.8,
-    "badge": "👑"
-  },
-  "createdAt": "2024-10-18T10:30:00"
+    "activityId": 123,
+    "userId": 789,
+    "userName": "Jane Smith",
+    "messageText": "See you there!",
+    "createdAt": "2024-01-20T10:35:00",
+    "isDeleted": false
+  }
+]
+```
+
+---
+
+### 4. Get Message Count
+Get the total message count for an activity.
+
+**Endpoint:** `GET /api/activities/{activityId}/messages/count`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "messageCount": 42
 }
 ```
 
 ---
 
-#### GET `/api/reviews/user/{userId}`
-Get all reviews received by a user.
+### 5. Delete Message
+Delete a message (soft delete).
 
-**Response:** Array of `ReviewResponse`
+**Endpoint:** `DELETE /api/activities/{activityId}/messages/{messageId}`
 
----
+**Authentication:** Required (must be message owner)
 
-#### GET `/api/reviews/reviewer/{reviewerId}`
-Get all reviews written by a user.
-
-**Response:** Array of `ReviewResponse`
-
----
-
-#### GET `/api/reviews/activity/{activityId}`
-Get all reviews for an activity.
-
-**Response:** Array of `ReviewResponse`
+**Response:** `200 OK`
+```json
+{
+  "message": "Message deleted successfully"
+}
+```
 
 ---
 
-#### PUT `/api/reviews/{id}?reviewerId={userId}`
-Update a review (reviewer only).
+## Notifications API
+
+Base Path: `/api/notifications`
+
+### 1. Register Device Token
+Register or update FCM device token for push notifications.
+
+**Endpoint:** `POST /api/notifications/device-token`
+
+**Authentication:** Required
 
 **Request Body:**
 ```json
 {
-  "rating": 4,
-  "comment": "Updated review text"
+  "fcmToken": "dXp4k3m2n5o8p1q6r9s2t5u8v1w4x7y0"
 }
 ```
 
-**Response:** `ReviewResponse`
+**Response:** `200 OK`
+```json
+{
+  "message": "Device token registered successfully"
+}
+```
 
 ---
 
-#### DELETE `/api/reviews/{id}?reviewerId={userId}`
-Delete a review (reviewer only).
+### 2. Update Notification Preferences
+Enable or disable push notifications.
 
-**Response:** 204 No Content
+**Endpoint:** `PUT /api/notifications/preferences`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "notificationsEnabled": true
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Notification preferences updated",
+  "notificationsEnabled": "true"
+}
+```
+
+---
+
+### 3. Get All Notifications
+Get all notifications for the current user.
+
+**Endpoint:** `GET /api/notifications`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "title": "New Message",
+    "message": "John Doe sent a message in 'Morning Run'",
+    "type": "NEW_MESSAGE",
+    "isRead": false,
+    "activityId": 123,
+    "participantId": null,
+    "reviewId": null,
+    "createdAt": "2024-01-20T10:30:00",
+    "readAt": null
+  }
+]
+```
+
+---
+
+### 4. Get Unread Notifications
+Get only unread notifications.
+
+**Endpoint:** `GET /api/notifications/unread`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "title": "New Message",
+    "message": "John Doe sent a message in 'Morning Run'",
+    "type": "NEW_MESSAGE",
+    "isRead": false,
+    "activityId": 123,
+    "participantId": null,
+    "reviewId": null,
+    "createdAt": "2024-01-20T10:30:00",
+    "readAt": null
+  }
+]
+```
+
+---
+
+### 5. Get Unread Count
+Get the count of unread notifications.
+
+**Endpoint:** `GET /api/notifications/unread/count`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "unreadCount": 5
+}
+```
+
+---
+
+### 6. Mark Notification as Read
+Mark a specific notification as read.
+
+**Endpoint:** `PATCH /api/notifications/{id}/read`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Notification marked as read"
+}
+```
+
+---
+
+### 7. Mark All Notifications as Read
+Mark all notifications as read for the current user.
+
+**Endpoint:** `PATCH /api/notifications/read-all`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "message": "All notifications marked as read"
+}
+```
+
+---
+
+### 8. Delete Notification
+Delete a notification.
+
+**Endpoint:** `DELETE /api/notifications/{id}`
+
+**Authentication:** Required
+
+**Response:** `204 No Content`
+
+---
+
+## Reports API
+
+Base Path: `/api/reports`
+
+### 1. Submit Report
+Submit a new report for an activity, message, or user.
+
+**Endpoint:** `POST /api/reports`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "reportType": "ACTIVITY",
+  "reportedActivityId": 123,
+  "reportedMessageId": null,
+  "reportedUserId": null,
+  "reason": "Inappropriate content or spam"
+}
+```
+
+**Report Types:**
+- `ACTIVITY` - Report an activity (requires `reportedActivityId`)
+- `MESSAGE` - Report a message (requires `reportedMessageId`)
+- `USER` - Report a user (requires `reportedUserId`)
+
+**Response:** `201 Created`
+```json
+{
+  "id": 1,
+  "reporterId": 456,
+  "reporterName": "John Doe",
+  "reportType": "ACTIVITY",
+  "reportedActivityId": 123,
+  "reportedMessageId": null,
+  "reportedUserId": null,
+  "reason": "Inappropriate content or spam",
+  "status": "PENDING",
+  "createdAt": "2024-01-20T10:30:00",
+  "resolvedAt": null
+}
+```
+
+---
+
+### 2. Get My Reports
+Get all reports submitted by the current user.
+
+**Endpoint:** `GET /api/reports/my-reports`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "reporterId": 456,
+    "reporterName": "John Doe",
+    "reportType": "ACTIVITY",
+    "reportedActivityId": 123,
+    "reportedMessageId": null,
+    "reportedUserId": null,
+    "reason": "Inappropriate content or spam",
+    "status": "PENDING",
+    "createdAt": "2024-01-20T10:30:00",
+    "resolvedAt": null
+  }
+]
+```
+
+---
+
+### 3. Get Pending Reports (Admin Only)
+Get all pending reports.
+
+**Endpoint:** `GET /api/reports/pending`
+
+**Authentication:** Required (Admin role)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "reporterId": 456,
+    "reporterName": "John Doe",
+    "reportType": "ACTIVITY",
+    "reportedActivityId": 123,
+    "reportedMessageId": null,
+    "reportedUserId": null,
+    "reason": "Inappropriate content or spam",
+    "status": "PENDING",
+    "createdAt": "2024-01-20T10:30:00",
+    "resolvedAt": null
+  }
+]
+```
+
+---
+
+### 4. Get Reports by Type and Status (Admin Only)
+Filter reports by type and status.
+
+**Endpoint:** `GET /api/reports`
+
+**Authentication:** Required (Admin role)
+
+**Query Parameters:**
+- `type` (required): Report type (`ACTIVITY`, `MESSAGE`, `USER`)
+- `status` (required): Report status (`PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED`)
+
+**Example:**
+```
+GET /api/reports?type=ACTIVITY&status=PENDING
+```
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "reporterId": 456,
+    "reporterName": "John Doe",
+    "reportType": "ACTIVITY",
+    "reportedActivityId": 123,
+    "reportedMessageId": null,
+    "reportedUserId": null,
+    "reason": "Inappropriate content or spam",
+    "status": "PENDING",
+    "createdAt": "2024-01-20T10:30:00",
+    "resolvedAt": null
+  }
+]
+```
+
+---
+
+### 5. Update Report Status (Admin Only)
+Update the status of a report.
+
+**Endpoint:** `PATCH /api/reports/{reportId}/status`
+
+**Authentication:** Required (Admin role)
+
+**Query Parameters:**
+- `status` (required): New status (`PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED`)
+
+**Example:**
+```
+PATCH /api/reports/1/status?status=RESOLVED
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "reporterId": 456,
+  "reporterName": "John Doe",
+  "reportType": "ACTIVITY",
+  "reportedActivityId": 123,
+  "reportedMessageId": null,
+  "reportedUserId": null,
+  "reason": "Inappropriate content or spam",
+  "status": "RESOLVED",
+  "createdAt": "2024-01-20T10:30:00",
+  "resolvedAt": "2024-01-20T15:45:00"
+}
+```
+
+---
+
+### 6. Get Activity Report Count
+Get the number of reports for a specific activity.
+
+**Endpoint:** `GET /api/reports/activity/{activityId}/count`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "reportCount": 3
+}
+```
+
+---
+
+### 7. Get Message Report Count
+Get the number of reports for a specific message.
+
+**Endpoint:** `GET /api/reports/message/{messageId}/count`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "reportCount": 1
+}
+```
 
 ---
 
 ## Data Models
 
-### User
-```typescript
+### NotificationType Enum
+```
+ACTIVITY_CREATED           // New activity by someone you follow
+ACTIVITY_UPDATED           // Activity you joined was updated
+ACTIVITY_CANCELLED         // Activity you joined was cancelled
+ACTIVITY_COMPLETED         // Activity you joined was completed
+ACTIVITY_REMINDER          // Reminder before activity starts
+PARTICIPANT_INTERESTED     // Someone expressed interest in your activity
+PARTICIPANT_ACCEPTED       // Your interest was accepted
+PARTICIPANT_DECLINED       // Your interest was declined
+PARTICIPANT_JOINED         // Someone confirmed joining your activity
+PARTICIPANT_LEFT           // Someone left your activity
+REVIEW_RECEIVED           // You received a new review
+NEW_MESSAGE               // New message in activity chat
+REPORT_SUBMITTED          // Your report was submitted
+REPORT_RESOLVED           // Report you submitted was resolved
+BADGE_EARNED              // You earned a new badge
+MILESTONE_REACHED         // Completed activities milestone
+GENERAL                   // General notification
+```
+
+### ReportType Enum
+```
+ACTIVITY    // Report an activity
+MESSAGE     // Report a message
+USER        // Report a user
+```
+
+### ReportStatus Enum
+```
+PENDING     // Report submitted, awaiting review
+REVIEWING   // Report is being reviewed by admin
+RESOLVED    // Report has been resolved
+DISMISSED   // Report was dismissed (no action taken)
+```
+
+---
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 401 Unauthorized
+```json
 {
-  id: number
-  fullName: string           // 2-100 chars
-  email: string              // valid email, unique
-  bio?: string              // max 500 chars
-  profileImageUrl?: string
-  rating: number            // 0.0-5.0, average from reviews
-  completedActivities: number
-  interests: string[]       // user interests
-  badge?: string           // special badges (⭐, 👑, 🏔️, 💎)
-  createdAt: string        // ISO datetime
+  "error": "Unauthorized",
+  "message": "Authentication required"
 }
 ```
 
-### Activity
-```typescript
+### 403 Forbidden
+```json
 {
-  id: number
-  title: string                    // 3-100 chars
-  description?: string            // max 1000 chars
-  activityDate: string            // ISO datetime, must be future
-  location: string
-  category: string
-  totalSpots: number              // 1-100
-  reservedForFriendsSpots?: number
-  minParticipants?: number
-  status: "OPEN" | "FULL" | "CANCELLED" | "COMPLETED"
-  trending: boolean
-  difficulty?: "Easy" | "Moderate" | "Hard"
-  cost?: number                   // default 0.0
-  minAge?: number                 // 0-100
-  creatorId: number
-  creatorName: string
-  creatorImageUrl?: string
-  participantsCount: number       // current joined count
-  availableSpots: number          // computed
-  createdAt: string
-  updatedAt: string
+  "error": "Forbidden",
+  "message": "Insufficient permissions"
 }
 ```
 
-### Category
-```typescript
+### 404 Not Found
+```json
 {
-  id: number
-  name: string                 // unique
-  description?: string        // max 200 chars
-  icon?: string              // max 10 chars (emoji)
-  isActive: boolean
-  activityCount: number      // denormalized count
-  createdAt: string
+  "error": "Not Found",
+  "message": "Resource not found"
 }
 ```
 
-### Participant
-```typescript
+### 400 Bad Request
+```json
 {
-  id: number
-  activityId: number
-  activityTitle: string
-  user: UserSimpleResponse
-  status: "INTERESTED" | "ACCEPTED" | "DECLINED" | "JOINED" | "LEFT"
-  isFriend: boolean
-  joinedAt: string
-  updatedAt: string
+  "error": "Bad Request",
+  "message": "Invalid request data"
 }
 ```
 
-### Review
-```typescript
+### 500 Internal Server Error
+```json
 {
-  id: number
-  rating: number              // 1-5
-  comment?: string           // max 500 chars
-  activityId: number
-  reviewer: UserSimpleResponse
-  reviewedUser: UserSimpleResponse
-  createdAt: string
-}
-```
-
-### UserSimpleResponse (Lightweight)
-```typescript
-{
-  id: number
-  fullName: string
-  profileImageUrl?: string
-  rating: number
-  badge?: string
+  "error": "Internal Server Error",
+  "message": "An unexpected error occurred"
 }
 ```
 
 ---
 
-## Error Handling
+## CORS Configuration
 
-### Error Response Format
-```json
-{
-  "status": 400,
-  "message": "Error description",
-  "timestamp": "2024-10-18T10:30:00.123456"
-}
-```
+All endpoints support CORS with `origins = "*"` for development purposes.
 
-### HTTP Status Codes
-
-| Code | Description |
-|------|-------------|
-| 200 | Success |
-| 201 | Created |
-| 204 | No Content (successful deletion/update) |
-| 400 | Bad Request (validation error) |
-| 401 | Unauthorized (invalid credentials) |
-| 404 | Not Found |
-| 409 | Conflict (duplicate resource) |
-| 500 | Internal Server Error |
-
-### Common Error Scenarios
-
-**404 - Resource Not Found**
-```json
-{
-  "status": 404,
-  "message": "User not found with id: 123",
-  "timestamp": "2024-10-18T10:30:00"
-}
-```
-
-**409 - Duplicate Resource**
-```json
-{
-  "status": 409,
-  "message": "User already exists with email: user@example.com",
-  "timestamp": "2024-10-18T10:30:00"
-}
-```
-
-**400 - Validation Error**
-```json
-{
-  "status": 400,
-  "message": "fullName: must not be blank; email: must be a valid email",
-  "timestamp": "2024-10-18T10:30:00"
-}
-```
-
-**401 - Invalid Credentials**
-```json
-{
-  "status": 401,
-  "message": "Invalid email or password",
-  "timestamp": "2024-10-18T10:30:00"
-}
-```
+**Important:** For production, configure specific allowed origins in the Security Configuration.
 
 ---
 
-## Important Notes
+## Frontend Integration Checklist
 
-### Current Authentication Status
-- JWT infrastructure is implemented but **not yet enforced**
-- Most endpoints currently accept `userId`, `creatorId`, or `reviewerId` as query parameters
-- **TODO**: Implement JWT authentication filter to extract user from token
-
-### Participant Status Flow
-```
-INTERESTED (user expresses interest)
-    ↓
-ACCEPTED (creator accepts)
-    ↓
-JOINED (user confirms participation)
-    ↓
-LEFT (user leaves) OR activity completes
-```
-
-### Activity Status Flow
-```
-OPEN (accepting participants)
-    ↓
-FULL (all spots taken) OR CANCELLED (creator cancels)
-    ↓
-COMPLETED (after activity date)
-```
-
-### Validation Rules
-- Email must be unique across users
-- Category name must be unique
-- One review per (reviewer, reviewedUser, activity) combination
-- One participation per (user, activity) combination
-- Activity date must be in the future
-- Total spots must be between 1-100
-- Rating must be between 1-5
-
-### CORS Configuration
-- Currently allows all origins (`*`)
-- Should be restricted to frontend domain in production
-
----
-
-## Example Integration (Frontend)
-
-### Login Example (JavaScript/TypeScript)
-```typescript
-async function login(email: string, password: string) {
-  const response = await fetch('http://localhost:8080/api/users/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  const data = await response.json();
-
-  // Store tokens
-  localStorage.setItem('accessToken', data.accessToken);
-  localStorage.setItem('refreshToken', data.refreshToken);
-  localStorage.setItem('userId', data.userId);
-
-  return data;
-}
-```
-
-### Create Activity Example
-```typescript
-async function createActivity(activityData: any, userId: number) {
-  const response = await fetch(
-    `http://localhost:8080/api/activities?creatorId=${userId}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(activityData)
-    }
-  );
-
-  return await response.json();
-}
-```
-
-### Get Upcoming Activities Example
-```typescript
-async function getUpcomingActivities() {
-  const response = await fetch('http://localhost:8080/api/activities/upcoming');
-  return await response.json();
-}
-```
-
----
-
-## Database Schema Summary
-
-### Tables
-- `users` - User accounts and profiles
-- `activities` - Activity listings
-- `categories` - Activity categories
-- `activity_participants` - User-activity participation tracking
-- `reviews` - User reviews after activities
-- `refresh_tokens` - JWT refresh token storage
-- `user_interests` - User interests (element collection)
-- `spring_session` - Session management (JDBC store)
-- `spring_session_attributes` - Session attributes
-
-### Key Relationships
-- User ← (1:N) → Activity (creator)
-- User ← (1:N) → ActivityParticipant
-- Activity ← (1:N) → ActivityParticipant
-- User ← (1:N) → Review (as reviewer)
-- User ← (1:N) → Review (as reviewedUser)
-- User ← (1:N) → RefreshToken
-
----
-
-## Contact & Support
-
-For issues or questions about this API, please refer to the backend repository or contact the development team.
-
-**Last Updated**: October 18, 2024
+- [ ] Update API client to use JWT Bearer token authentication
+- [ ] Implement activity messaging feature
+- [ ] Implement notifications system with FCM integration
+- [ ] Add report functionality for activities, messages, and users
+- [ ] Add admin panel for reviewing reports
+- [ ] Implement notification badge showing unread count
+- [ ] Add polling or WebSocket for real-time message updates
+- [ ] Handle all notification types with appropriate UI
+- [ ] Implement notification preferences toggle
+- [ ] Add error handling for all API endpoints

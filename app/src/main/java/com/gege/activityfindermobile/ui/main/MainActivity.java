@@ -19,8 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private NavController navController;
     private BottomNavigationView bottomNavigationView;
@@ -43,8 +42,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNavigation() {
         // Get NavHostFragment
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
+        NavHostFragment navHostFragment =
+                (NavHostFragment)
+                        getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
 
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
@@ -55,18 +55,19 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
         // Hide bottom nav on certain screens
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            if (destination.getId() == R.id.loginFragment ||
-                destination.getId() == R.id.registerFragment ||
-                destination.getId() == R.id.profileSetupFragment ||
-                destination.getId() == R.id.activityDetailFragment ||
-                destination.getId() == R.id.createActivityFragment ||
-                destination.getId() == R.id.userProfileFragment) {
-                bottomNavigationView.setVisibility(View.GONE);
-            } else {
-                bottomNavigationView.setVisibility(View.VISIBLE);
-            }
-        });
+        navController.addOnDestinationChangedListener(
+                (controller, destination, arguments) -> {
+                    if (destination.getId() == R.id.loginFragment
+                            || destination.getId() == R.id.registerFragment
+                            || destination.getId() == R.id.profileSetupFragment
+                            || destination.getId() == R.id.activityDetailFragment
+                            || destination.getId() == R.id.createActivityFragment
+                            || destination.getId() == R.id.userProfileFragment) {
+                        bottomNavigationView.setVisibility(View.GONE);
+                    } else {
+                        bottomNavigationView.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 
     @Override

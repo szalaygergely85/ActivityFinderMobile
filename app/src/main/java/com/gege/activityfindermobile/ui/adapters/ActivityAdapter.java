@@ -1,11 +1,14 @@
 package com.gege.activityfindermobile.ui.adapters;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
@@ -36,8 +39,9 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_activity_card, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_activity_card, parent, false);
         return new ViewHolder(view);
     }
 
@@ -70,14 +74,16 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             chipCategory = itemView.findViewById(R.id.chip_category);
             badgeTrending = itemView.findViewById(R.id.badge_trending);
 
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onActivityClick(activities.get(getAdapterPosition()));
-                }
-            });
+            itemView.setOnClickListener(
+                    v -> {
+                        if (listener != null) {
+                            listener.onActivityClick(activities.get(getAdapterPosition()));
+                        }
+                    });
         }
 
         void bind(Activity activity) {
+            Context context = itemView.getContext();
             tvTitle.setText(activity.getTitle());
             tvDescription.setText(activity.getDescription());
 
@@ -116,8 +122,73 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             int totalSpots = activity.getTotalSpots() != null ? activity.getTotalSpots() : 0;
             tvSpotsAvailable.setText(currentParticipants + "/" + totalSpots + " spots");
 
-            chipCategory.setText(activity.getCategory());
-            badgeTrending.setVisibility(activity.getTrending() != null && activity.getTrending() ? View.VISIBLE : View.GONE);
+            // Set category with dynamic color and icon
+            String category = activity.getCategory();
+            chipCategory.setText(category);
+            setCategoryStyleAndIcon(chipCategory, category, context);
+
+            badgeTrending.setVisibility(
+                    activity.getTrending() != null && activity.getTrending()
+                            ? View.VISIBLE
+                            : View.GONE);
+        }
+
+        private void setCategoryStyleAndIcon(Chip chip, String category, Context context) {
+            int colorRes;
+            int iconRes;
+
+            switch (category.toLowerCase()) {
+                case "sports":
+                    colorRes = R.color.category_sports;
+                    iconRes = R.drawable.ic_sports;
+                    break;
+                case "social":
+                    colorRes = R.color.category_social;
+                    iconRes = R.drawable.ic_social;
+                    break;
+                case "outdoor":
+                    colorRes = R.color.category_outdoor;
+                    iconRes = R.drawable.ic_outdoor;
+                    break;
+                case "food":
+                    colorRes = R.color.category_food;
+                    iconRes = R.drawable.ic_food;
+                    break;
+                case "travel":
+                    colorRes = R.color.category_travel;
+                    iconRes = R.drawable.ic_travel;
+                    break;
+                case "photography":
+                    colorRes = R.color.category_photography;
+                    iconRes = R.drawable.ic_photography;
+                    break;
+                case "music":
+                    colorRes = R.color.category_music;
+                    iconRes = R.drawable.ic_music;
+                    break;
+                case "art":
+                    colorRes = R.color.category_art;
+                    iconRes = R.drawable.ic_art;
+                    break;
+                case "gaming":
+                    colorRes = R.color.category_gaming;
+                    iconRes = R.drawable.ic_gaming;
+                    break;
+                case "fitness":
+                    colorRes = R.color.category_fitness;
+                    iconRes = R.drawable.ic_fitness;
+                    break;
+                default:
+                    colorRes = R.color.primary;
+                    iconRes = R.drawable.ic_category;
+                    break;
+            }
+
+            int color = ContextCompat.getColor(context, colorRes);
+            chip.setChipBackgroundColor(ColorStateList.valueOf(color));
+            chip.setChipIcon(ContextCompat.getDrawable(context, iconRes));
+            chip.setChipIconTint(
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.white)));
         }
     }
 }

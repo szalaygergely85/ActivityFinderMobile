@@ -9,8 +9,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
@@ -26,7 +24,6 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -36,11 +33,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class EditProfileFragment extends Fragment {
 
-    @Inject
-    UserRepository userRepository;
+    @Inject UserRepository userRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
 
     private TextInputEditText etFullName, etBio;
     private ChipGroup chipGroupInterests;
@@ -59,8 +54,10 @@ public class EditProfileFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_edit_profile, container, false);
     }
 
@@ -98,23 +95,27 @@ public class EditProfileFragment extends Fragment {
 
         setLoading(true);
 
-        userRepository.getUserById(userId, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User user) {
-                setLoading(false);
-                currentUser = user;
-                displayUserData(user);
-            }
+        userRepository.getUserById(
+                userId,
+                new ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(User user) {
+                        setLoading(false);
+                        currentUser = user;
+                        displayUserData(user);
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                Toast.makeText(requireContext(),
-                        "Failed to load profile: " + errorMessage,
-                        Toast.LENGTH_SHORT).show();
-                requireActivity().onBackPressed();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load profile: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        requireActivity().onBackPressed();
+                    }
+                });
     }
 
     private void displayUserData(User user) {
@@ -145,15 +146,16 @@ public class EditProfileFragment extends Fragment {
             chip.setCheckable(true);
             chip.setChecked(selectedInterests.contains(interest));
 
-            chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    if (!selectedInterests.contains(interest)) {
-                        selectedInterests.add(interest);
-                    }
-                } else {
-                    selectedInterests.remove(interest);
-                }
-            });
+            chip.setOnCheckedChangeListener(
+                    (buttonView, isChecked) -> {
+                        if (isChecked) {
+                            if (!selectedInterests.contains(interest)) {
+                                selectedInterests.add(interest);
+                            }
+                        } else {
+                            selectedInterests.remove(interest);
+                        }
+                    });
 
             chipGroupInterests.addView(chip);
         }
@@ -161,7 +163,8 @@ public class EditProfileFragment extends Fragment {
 
     private void saveProfile() {
         // Validate input
-        String fullName = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
+        String fullName =
+                etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
         String bio = etBio.getText() != null ? etBio.getText().toString().trim() : "";
 
         if (fullName.isEmpty()) {
@@ -188,26 +191,34 @@ public class EditProfileFragment extends Fragment {
 
         setLoading(true);
 
-        userRepository.updateUserProfile(userId, userId, request, new ApiCallback<User>() {
-            @Override
-            public void onSuccess(User updatedUser) {
-                setLoading(false);
-                Toast.makeText(requireContext(),
-                        "Profile updated successfully!",
-                        Toast.LENGTH_SHORT).show();
+        userRepository.updateUserProfile(
+                userId,
+                userId,
+                request,
+                new ApiCallback<User>() {
+                    @Override
+                    public void onSuccess(User updatedUser) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Profile updated successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
 
-                // Navigate back to profile
-                requireActivity().onBackPressed();
-            }
+                        // Navigate back to profile
+                        requireActivity().onBackPressed();
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                Toast.makeText(requireContext(),
-                        "Failed to update profile: " + errorMessage,
-                        Toast.LENGTH_LONG).show();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to update profile: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     private void setLoading(boolean loading) {

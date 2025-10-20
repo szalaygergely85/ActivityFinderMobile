@@ -14,6 +14,11 @@ public class ExpressInterestRequest {
     }
 
     // Getters and Setters
-    public Boolean getIsFriend() { return isFriend; }
-    public void setIsFriend(Boolean isFriend) { this.isFriend = isFriend; }
+    public Boolean getIsFriend() {
+        return isFriend;
+    }
+
+    public void setIsFriend(Boolean isFriend) {
+        this.isFriend = isFriend;
+    }
 }
