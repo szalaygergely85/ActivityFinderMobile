@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_feed">
+
+    <!-- Auth Fragments -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.gege.activityfindermobile.ui.auth.LoginFragment"
+        android:label="Login">
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_nav_feed"
+            app:destination="@id/nav_feed"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.gege.activityfindermobile.ui.auth.RegisterFragment"
+        android:label="Register">
+        <action
+            android:id="@+id/action_registerFragment_to_profileSetupFragment"
+            app:destination="@id/profileSetupFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileSetupFragment"
+        android:name="com.gege.activityfindermobile.ui.auth.ProfileSetupFragment"
+        android:label="Profile Setup">
+        <action
+            android:id="@+id/action_profileSetupFragment_to_nav_feed"
+            app:destination="@id/nav_feed"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Feed Fragment -->
+    <fragment
+        android:id="@+id/nav_feed"
+        android:name="com.gege.activityfindermobile.ui.feed.FeedFragment"
+        android:label="@string/nav_explore">
+        <action
+            android:id="@+id/action_nav_feed_to_activityDetailFragment"
+            app:destination="@id/activityDetailFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_nav_feed_to_createActivityFragment"
+            app:destination="@id/createActivityFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- My Activities Fragment -->
+    <fragment
+        android:id="@+id/nav_my_activities"
+        android:name="com.gege.activityfindermobile.ui.myactivities.MyActivitiesFragment"
+        android:label="@string/nav_my_activities">
+        <action
+            android:id="@+id/action_nav_my_activities_to_activityDetailFragment"
+            app:destination="@id/activityDetailFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_nav_my_activities_to_createActivityFragment"
+            app:destination="@id/createActivityFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- Participations Fragment -->
+    <fragment
+        android:id="@+id/nav_participations"
+        android:name="com.gege.activityfindermobile.ui.participations.ParticipationsFragment"
+        android:label="@string/nav_joined">
+        <action
+            android:id="@+id/action_nav_participations_to_activityDetailFragment"
+            app:destination="@id/activityDetailFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- Profile Fragment -->
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.gege.activityfindermobile.ui.profile.ProfileFragment"
+        android:label="@string/nav_profile">
+        <action
+            android:id="@+id/action_nav_profile_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_nav_profile_to_editProfileFragment"
+            app:destination="@id/editProfileFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- Edit Profile Fragment -->
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.gege.activityfindermobile.ui.profile.EditProfileFragment"
+        android:label="Edit Profile" />
+
+    <!-- Activity Detail Fragment -->
+    <fragment
+        android:id="@+id/activityDetailFragment"
+        android:name="com.gege.activityfindermobile.ui.detail.ActivityDetailFragment"
+        android:label="@string/activity_details">
+        <argument
+            android:name="activityId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_activityDetailFragment_to_manageActivityFragment"
+            app:destination="@id/manageActivityFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_activityDetailFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- Manage Activity Fragment -->
+    <fragment
+        android:id="@+id/manageActivityFragment"
+        android:name="com.gege.activityfindermobile.ui.manage.ManageActivityFragment"
+        android:label="Manage Activity">
+        <argument
+            android:name="activityId"
+            app:argType="long" />
+    </fragment>
+
+    <!-- Create Activity Fragment -->
+    <fragment
+        android:id="@+id/createActivityFragment"
+        android:name="com.gege.activityfindermobile.ui.create.CreateActivityFragment"
+        android:label="@string/create_activity" />
+
+    <!-- User Profile Fragment -->
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="com.gege.activityfindermobile.ui.userprofile.UserProfileFragment"
+        android:label="@string/profile">
+        <argument
+            android:name="userId"
+            app:argType="long" />
+    </fragment>
+
+</navigation>

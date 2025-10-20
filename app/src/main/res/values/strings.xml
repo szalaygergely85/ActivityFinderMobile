@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">Activity Finder</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_explore">Explore</string>
+    <string name="nav_my_activities">My Activities</string>
+    <string name="nav_joined">Joined</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Common -->
+    <string name="loading">Loading…</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+
+    <!-- Activities -->
+    <string name="activities_title">Activities</string>
+    <string name="no_activities">No activities found</string>
+    <string name="create_activity">Create Activity</string>
+    <string name="activity_details">Activity Details</string>
+    <string name="express_interest">Express Interest</string>
+    <string name="spots_available">%1$d/%2$d spots available</string>
+    <string name="interested_count">%d interested</string>
+
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="logout">Logout</string>
+    <string name="rating">Rating: %.1f</string>
+    <string name="completed_activities">%d Activities Completed</string>
+
+    <!-- Login/Register -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="full_name">Full Name</string>
+
+    <!-- Activity Fields -->
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="location">Location</string>
+    <string name="category">Category</string>
+    <string name="total_spots">Total Spots</string>
+</resources>

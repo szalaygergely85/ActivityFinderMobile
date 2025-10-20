@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/margin_small"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
+    app:strokeWidth="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_medium">
+
+        <!-- Activity Title -->
+        <TextView
+            android:id="@+id/tv_activity_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size_title"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:paddingEnd="8dp"
+            tools:text="Weekend Hiking Adventure"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Trending Badge -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/badge_trending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔥 Trending"
+            android:textSize="@dimen/text_size_small"
+            android:visibility="gone"
+            app:chipBackgroundColor="@color/accent"
+            app:chipStrokeWidth="0dp"
+            app:chipMinHeight="24dp"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible" />
+
+        <!-- Category Chip -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_small"
+            android:textSize="@dimen/text_size_small"
+            app:chipBackgroundColor="@color/primary_light"
+            app:chipStrokeWidth="0dp"
+            app:chipMinHeight="28dp"
+            tools:text="Sports"
+            app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/tv_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_small"
+            android:textSize="@dimen/text_size_medium"
+            android:textColor="@color/text_secondary"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="Join us for an amazing hiking experience in the mountains!"
+            app:layout_constraintTop_toBottomOf="@id/chip_category"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Date/Time Row -->
+        <LinearLayout
+            android:id="@+id/layout_datetime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_medium"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tv_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tv_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="4dp"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary"
+                android:drawableStart="@drawable/ic_calendar"
+                android:drawableTint="@color/primary"
+                tools:text="Nov 15, 2025" />
+
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="4dp"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary"
+                android:drawableStart="@drawable/ic_time"
+                android:drawableTint="@color/primary"
+                tools:text="08:00 AM" />
+
+        </LinearLayout>
+
+        <!-- Location -->
+        <TextView
+            android:id="@+id/tv_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_small"
+            android:drawablePadding="4dp"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/text_secondary"
+            android:drawableStart="@drawable/ic_location"
+            android:drawableTint="@color/primary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Mountain View Park"
+            app:layout_constraintTop_toBottomOf="@id/layout_datetime"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/margin_medium"
+            android:background="@color/gray_light"
+            app:layout_constraintTop_toBottomOf="@id/tv_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Bottom Row: Creator Info & Spots -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_creator_avatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="@dimen/margin_medium"
+            android:src="@drawable/ic_person"
+            app:civ_border_width="1dp"
+            app:civ_border_color="@color/gray_light"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_creator_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_small"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="John Doe"
+            app:layout_constraintTop_toTopOf="@id/iv_creator_avatar"
+            app:layout_constraintStart_toEndOf="@id/iv_creator_avatar"
+            app:layout_constraintEnd_toStartOf="@id/tv_spots_available" />
+
+        <TextView
+            android:id="@+id/tv_creator_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_small"
+            android:textSize="10sp"
+            android:textColor="@color/text_hint"
+            android:drawableStart="@drawable/ic_star"
+            android:drawablePadding="2dp"
+            android:drawableTint="@color/warning"
+            tools:text="4.8"
+            app:layout_constraintTop_toBottomOf="@id/tv_creator_name"
+            app:layout_constraintStart_toEndOf="@id/iv_creator_avatar"
+            app:layout_constraintBottom_toBottomOf="@id/iv_creator_avatar" />
+
+        <!-- Spots Available -->
+        <TextView
+            android:id="@+id/tv_spots_available"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="4dp"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/success"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_people"
+            android:drawableTint="@color/success"
+            tools:text="5/10 spots"
+            app:layout_constraintTop_toTopOf="@id/iv_creator_avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/iv_creator_avatar" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
