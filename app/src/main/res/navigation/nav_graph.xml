@@ -142,6 +142,13 @@
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_activityDetailFragment_to_activityChatFragment"
+            app:destination="@id/activityChatFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
     <!-- Manage Activity Fragment -->
@@ -168,6 +175,30 @@
         <argument
             android:name="userId"
             app:argType="long" />
+    </fragment>
+
+    <!-- Activity Chat Fragment -->
+    <fragment
+        android:id="@+id/activityChatFragment"
+        android:name="com.gege.activityfindermobile.ui.chat.ActivityChatFragment"
+        android:label="Activity Chat">
+        <argument
+            android:name="activity_id"
+            app:argType="long" />
+    </fragment>
+
+    <!-- Notifications Fragment -->
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.gege.activityfindermobile.ui.notifications.NotificationsFragment"
+        android:label="Notifications">
+        <action
+            android:id="@+id/action_notifications_to_activityDetail"
+            app:destination="@id/activityDetailFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
 </navigation>

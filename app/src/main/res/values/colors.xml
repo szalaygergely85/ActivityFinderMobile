@@ -1,51 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Brand Colors - Fresh Green to Yellow Gradient Theme -->
-    <color name="primary">#10B981</color> <!-- Emerald Green -->
-    <color name="primary_dark">#059669</color> <!-- Deep Green -->
-    <color name="primary_light">#A7F3D0</color> <!-- Light Green -->
-    <color name="accent">#FBBF24</color> <!-- Vibrant Yellow -->
-    <color name="accent_light">#FEF3C7</color> <!-- Light Yellow -->
+    <!-- Primary Brand Colors - Professional Modern Theme -->
+    <color name="primary">#2563EB</color> <!-- Deep Blue -->
+    <color name="primary_dark">#1E40AF</color> <!-- Darker Blue -->
+    <color name="primary_light">#DBEAFE</color> <!-- Very Light Blue -->
+    <color name="accent">#64748B</color> <!-- Slate Gray -->
+    <color name="accent_light">#F1F5F9</color> <!-- Very Light Slate -->
 
     <!-- Background Colors -->
-    <color name="background">#F0FDF4</color> <!-- Subtle Green Tint -->
+    <color name="background">#F8F9FB</color> <!-- Subtle Gray-Blue -->
+    <color name="background_secondary">#EFF1F5</color> <!-- Light Gray -->
     <color name="background_card">#FFFFFF</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 
-    <!-- Text Colors -->
-    <color name="text_primary">#1F1F1F</color>
-    <color name="text_secondary">#6B7280</color>
-    <color name="text_hint">#9CA3AF</color>
-    <color name="divider">#E5E7EB</color>
+    <!-- Text Colors - High Contrast -->
+    <color name="text_primary">#0F172A</color> <!-- Near Black -->
+    <color name="text_secondary">#475569</color> <!-- Medium Gray -->
+    <color name="text_hint">#94A3B8</color> <!-- Light Gray -->
+    <color name="divider">#E2E8F0</color> <!-- Subtle Divider -->
 
     <!-- Other Colors -->
-    <color name="gray">#9E9E9E</color>
-    <color name="gray_light">#E5E7EB</color>
-    <color name="success">#10B981</color> <!-- Emerald Green -->
-    <color name="warning">#F59E0B</color> <!-- Amber -->
-    <color name="error">#EF4444</color> <!-- Red -->
+    <color name="gray">#64748B</color>
+    <color name="gray_light">#E2E8F0</color>
+    <color name="success">#059669</color> <!-- Professional Green -->
+    <color name="warning">#D97706</color> <!-- Warm Amber -->
+    <color name="error">#DC2626</color> <!-- Clean Red -->
 
-    <!-- Gradient Colors -->
-    <color name="gradient_start">#10B981</color> <!-- Emerald Green -->
-    <color name="gradient_mid">#34D399</color> <!-- Light Green -->
-    <color name="gradient_end">#FBBF24</color> <!-- Yellow -->
+    <!-- Gradient Colors - Subtle Professional -->
+    <color name="gradient_start">#1E40AF</color> <!-- Deep Blue -->
+    <color name="gradient_mid">#2563EB</color> <!-- Blue -->
+    <color name="gradient_end">#3B82F6</color> <!-- Lighter Blue -->
 
-    <!-- Category Colors with Icons -->
-    <color name="category_sports">#3B82F6</color> <!-- Blue -->
-    <color name="category_social">#EC4899</color> <!-- Pink -->
-    <color name="category_outdoor">#10B981</color> <!-- Green -->
-    <color name="category_food">#F59E0B</color> <!-- Orange -->
-    <color name="category_travel">#8B5CF6</color> <!-- Purple -->
-    <color name="category_photography">#06B6D4</color> <!-- Cyan -->
-    <color name="category_music">#EF4444</color> <!-- Red -->
-    <color name="category_art">#F97316</color> <!-- Orange Red -->
-    <color name="category_gaming">#6366F1</color> <!-- Indigo -->
-    <color name="category_fitness">#14B8A6</color> <!-- Teal -->
+    <!-- Category Colors - Muted Professional Palette -->
+    <color name="category_sports">#2563EB</color> <!-- Deep Blue -->
+    <color name="category_social">#DB2777</color> <!-- Deep Pink -->
+    <color name="category_outdoor">#059669</color> <!-- Forest Green -->
+    <color name="category_food">#D97706</color> <!-- Warm Amber -->
+    <color name="category_travel">#7C3AED</color> <!-- Deep Purple -->
+    <color name="category_photography">#0891B2</color> <!-- Deep Cyan -->
+    <color name="category_music">#DC2626</color> <!-- Deep Red -->
+    <color name="category_art">#EA580C</color> <!-- Deep Orange -->
+    <color name="category_gaming">#4F46E5</color> <!-- Deep Indigo -->
+    <color name="category_fitness">#0D9488</color> <!-- Deep Teal -->
 
     <!-- Chip/Filter Colors -->
-    <color name="chip_selected">#10B981</color>
-    <color name="chip_unselected">#F3F4F6</color>
+    <color name="chip_selected">#2563EB</color>
+    <color name="chip_unselected">#F1F5F9</color>
     <color name="chip_text_selected">#FFFFFF</color>
-    <color name="chip_text_unselected">#6B7280</color>
+    <color name="chip_text_unselected">#475569</color>
 </resources>

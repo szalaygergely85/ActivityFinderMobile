@@ -41,15 +41,31 @@ public class UserRepository {
                                     Call<LoginResponse> call, Response<LoginResponse> response) {
                                 if (response.isSuccessful() && response.body() != null) {
                                     LoginResponse loginResponse = response.body();
-                                    if (loginResponse.getUser() != null) {
+
+                                    // Enhanced logging for debugging
+                                    Log.d(TAG, "Registration response received");
+                                    Log.d(TAG, "Access token present: " + (loginResponse.getAccessToken() != null));
+                                    Log.d(TAG, "User ID present: " + (loginResponse.getUserId() != null));
+
+                                    if (loginResponse.getUserId() != null) {
                                         Log.d(
                                                 TAG,
                                                 "User registered successfully: "
-                                                        + loginResponse.getUser().getEmail());
+                                                        + loginResponse.getEmail());
+                                    } else {
+                                        Log.w(TAG, "Registration response does not contain user data");
                                     }
+
                                     callback.onSuccess(loginResponse);
                                 } else {
                                     String errorMsg = "Registration failed: " + response.code();
+                                    if (response.errorBody() != null) {
+                                        try {
+                                            errorMsg += " - " + response.errorBody().string();
+                                        } catch (Exception e) {
+                                            Log.e(TAG, "Error reading error body", e);
+                                        }
+                                    }
                                     Log.e(TAG, errorMsg);
                                     callback.onError(errorMsg);
                                 }
@@ -75,11 +91,11 @@ public class UserRepository {
                                     Call<LoginResponse> call, Response<LoginResponse> response) {
                                 if (response.isSuccessful() && response.body() != null) {
                                     LoginResponse loginResponse = response.body();
-                                    if (loginResponse.getUser() != null) {
+                                    if (loginResponse.getUserId() != null) {
                                         Log.d(
                                                 TAG,
                                                 "User logged in successfully: "
-                                                        + loginResponse.getUser().getEmail());
+                                                        + loginResponse.getEmail());
                                     }
                                     callback.onSuccess(loginResponse);
                                 } else {

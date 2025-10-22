@@ -26,6 +26,7 @@ import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class ActivityDetailFragment extends Fragment {
     private Long creatorId;
     private MaterialButton btnExpressInterest;
     private MaterialButton btnManage;
+    private FloatingActionButton fabChat;
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvParticipants;
     private TextView tvNoParticipants;
@@ -77,6 +79,7 @@ public class ActivityDetailFragment extends Fragment {
 
         btnExpressInterest = view.findViewById(R.id.btn_express_interest);
         btnManage = view.findViewById(R.id.btn_manage);
+        fabChat = view.findViewById(R.id.fab_chat);
         progressLoading = view.findViewById(R.id.progress_loading);
         rvParticipants = view.findViewById(R.id.rv_participants);
         tvNoParticipants = view.findViewById(R.id.tv_no_participants);
@@ -110,6 +113,9 @@ public class ActivityDetailFragment extends Fragment {
         // Setup creator card click
         cardCreator.setOnClickListener(v -> navigateToUserProfile(creatorId));
 
+        // Setup chat FAB
+        fabChat.setOnClickListener(v -> navigateToChat());
+
         // Check if current user is the creator
         Long currentUserId = prefsManager.getUserId();
         if (currentUserId != null && currentUserId.equals(creatorId)) {
@@ -117,6 +123,8 @@ public class ActivityDetailFragment extends Fragment {
             btnManage.setVisibility(View.VISIBLE);
             // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
+            // Show chat button for participants/creator
+            fabChat.setVisibility(View.VISIBLE);
         } else {
             // Check if user has already joined this activity
             checkUserParticipationStatus();
@@ -352,6 +360,9 @@ public class ActivityDetailFragment extends Fragment {
 
         // Change click listener to leave instead of join
         btnExpressInterest.setOnClickListener(v -> leaveActivity());
+
+        // Show chat button for joined participants
+        fabChat.setVisibility(View.VISIBLE);
     }
 
     private void navigateToManageActivity() {
@@ -441,5 +452,18 @@ public class ActivityDetailFragment extends Fragment {
                                 .show();
                     }
                 });
+    }
+
+    private void navigateToChat() {
+        if (activityId == null || activityId == 0L) {
+            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putLong("activity_id", activityId);
+
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.action_activityDetailFragment_to_activityChatFragment, bundle);
     }
 }

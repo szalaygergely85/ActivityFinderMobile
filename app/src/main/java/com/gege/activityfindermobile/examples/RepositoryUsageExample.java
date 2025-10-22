@@ -51,10 +51,10 @@ public class RepositoryUsageExample {
                 new ApiCallback<LoginResponse>() {
                     @Override
                     public void onSuccess(LoginResponse loginResponse) {
-                        User user = loginResponse.getUser();
-                        Log.d(TAG, "Registration successful! User ID: " + user.getId());
+                        Long userId = loginResponse.getUserId();
+                        Log.d(TAG, "Registration successful! User ID: " + userId);
                         // Save user session
-                        prefsManager.saveUserSession(user.getId(), loginResponse.getToken());
+                        prefsManager.saveUserSession(userId, loginResponse.getAccessToken());
                         // Navigate to home screen or show success message
                     }
 
@@ -75,10 +75,10 @@ public class RepositoryUsageExample {
                 new ApiCallback<LoginResponse>() {
                     @Override
                     public void onSuccess(LoginResponse loginResponse) {
-                        User user = loginResponse.getUser();
-                        Log.d(TAG, "Login successful! User ID: " + user.getId());
+                        Long userId = loginResponse.getUserId();
+                        Log.d(TAG, "Login successful! User ID: " + userId);
                         // Save user session
-                        prefsManager.saveUserSession(user.getId(), loginResponse.getToken());
+                        prefsManager.saveUserSession(userId, loginResponse.getAccessToken());
                         // Navigate to home screen
                     }
 

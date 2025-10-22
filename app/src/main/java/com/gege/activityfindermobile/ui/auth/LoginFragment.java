@@ -17,7 +17,6 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
-import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.button.MaterialButton;
@@ -138,8 +137,7 @@ public class LoginFragment extends Fragment {
 
                         // Check if response data is valid
                         if (loginResponse == null
-                                || loginResponse.getUser() == null
-                                || loginResponse.getUser().getId() == null) {
+                                || loginResponse.getUserId() == null) {
                             Toast.makeText(
                                             requireContext(),
                                             "Login failed: Invalid response data",
@@ -149,8 +147,8 @@ public class LoginFragment extends Fragment {
                         }
 
                         // Check if token is present
-                        if (loginResponse.getToken() == null
-                                || loginResponse.getToken().isEmpty()) {
+                        if (loginResponse.getAccessToken() == null
+                                || loginResponse.getAccessToken().isEmpty()) {
                             Toast.makeText(
                                             requireContext(),
                                             "Login failed: No authentication token received",
@@ -159,15 +157,16 @@ public class LoginFragment extends Fragment {
                             return;
                         }
 
-                        User user = loginResponse.getUser();
-                        String token = loginResponse.getToken();
+                        Long userId = loginResponse.getUserId();
+                        String token = loginResponse.getAccessToken();
+                        String fullName = loginResponse.getFullName();
 
                         // Save user session with JWT token
-                        prefsManager.saveUserSession(user.getId(), token);
+                        prefsManager.saveUserSession(userId, token);
 
                         Toast.makeText(
                                         requireContext(),
-                                        "Welcome back, " + user.getFullName() + "!",
+                                        "Welcome back, " + fullName + "!",
                                         Toast.LENGTH_SHORT)
                                 .show();
 

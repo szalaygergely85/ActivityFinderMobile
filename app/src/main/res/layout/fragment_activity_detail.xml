@@ -459,6 +459,21 @@
         app:icon="@drawable/ic_check_circle"
         app:iconTint="@color/white" />
 
+    <!-- Chat FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_chat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:layout_marginBottom="88dp"
+        android:src="@drawable/ic_music"
+        android:contentDescription="Open Chat"
+        app:fabSize="normal"
+        app:backgroundTint="@color/accent"
+        app:tint="@android:color/white"
+        android:visibility="gone" />
+
     <!-- Loading Progress -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progress_loading"
