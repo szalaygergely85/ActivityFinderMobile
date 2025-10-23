@@ -34,6 +34,61 @@
             android:orientation="vertical"
             android:padding="@dimen/padding_medium">
 
+            <!-- Profile Picture Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_medium"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Profile Picture"
+                        android:textSize="@dimen/text_size_title"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="@dimen/margin_medium" />
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/iv_profile_picture"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:src="@drawable/ic_person"
+                        app:civ_border_width="2dp"
+                        app:civ_border_color="@color/primary"
+                        android:layout_marginBottom="@dimen/margin_medium" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_choose_photo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Choose Photo"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_marginBottom="@dimen/margin_small" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_remove_photo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remove Photo"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:textColor="@color/error"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Full Name Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

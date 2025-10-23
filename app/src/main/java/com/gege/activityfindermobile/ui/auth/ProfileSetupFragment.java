@@ -1,11 +1,17 @@
 package com.gege.activityfindermobile.ui.auth;
 
+import android.content.ContentResolver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -136,6 +142,51 @@ public class ProfileSetupFragment extends Fragment {
             return;
         }
 
+        // If user selected an image, upload it first
+        if (selectedImageUri != null) {
+            uploadImageAndUpdateProfile(userId, bio, interests);
+        } else {
+            // No image, just update profile with bio and interests
+            updateProfile(userId, bio, interests, null);
+        }
+    }
+
+    private void uploadImageAndUpdateProfile(Long userId, String bio, List<String> interests) {
+        // Convert URI to File
+        File imageFile = getFileFromUri(selectedImageUri);
+        if (imageFile == null) {
+            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT)
+                    .show();
+            // Continue anyway with just bio and interests
+            updateProfile(userId, bio, interests, null);
+            return;
+        }
+
+        // Upload image
+        userRepository.uploadProfileImage(
+                userId,
+                imageFile,
+                new ApiCallback<String>() {
+                    @Override
+                    public void onSuccess(String imageUrl) {
+                        // Image uploaded successfully, now update profile with the URL
+                        updateProfile(userId, bio, interests, imageUrl);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Image upload failed, but still update profile without it
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to upload image, but profile will be updated",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        updateProfile(userId, bio, interests, null);
+                    }
+                });
+    }
+
+    private void updateProfile(Long userId, String bio, List<String> interests, String imageUrl) {
         // Create update request
         UserProfileUpdateRequest request = new UserProfileUpdateRequest();
         if (!bio.isEmpty()) {
@@ -144,8 +195,9 @@ public class ProfileSetupFragment extends Fragment {
         if (!interests.isEmpty()) {
             request.setInterests(interests);
         }
-        // TODO: Upload profile image - for now we'll skip this
-        // In production, you'd upload the image to server and get URL
+        if (imageUrl != null) {
+            request.setProfileImageUrl(imageUrl);
+        }
 
         // Update profile
         userRepository.updateUserProfile(
@@ -176,6 +228,38 @@ public class ProfileSetupFragment extends Fragment {
                         navigateToFeed();
                     }
                 });
+    }
+
+    private File getFileFromUri(Uri uri) {
+        try {
+            ContentResolver contentResolver = requireContext().getContentResolver();
+            String mimeType = contentResolver.getType(uri);
+            String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+            if (extension == null) extension = "jpg";
+
+            // Create a temporary file
+            File tempFile =
+                    File.createTempFile(
+                            "profile_image_", "." + extension, requireContext().getCacheDir());
+
+            // Copy URI content to file
+            InputStream inputStream = contentResolver.openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            outputStream.close();
+            inputStream.close();
+
+            return tempFile;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private List<String> getSelectedInterests() {

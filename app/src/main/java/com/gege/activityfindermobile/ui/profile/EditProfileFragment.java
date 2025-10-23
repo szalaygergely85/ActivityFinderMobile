@@ -1,11 +1,20 @@
 package com.gege.activityfindermobile.ui.profile;
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,6 +38,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 @AndroidEntryPoint
 public class EditProfileFragment extends Fragment {
@@ -37,6 +47,8 @@ public class EditProfileFragment extends Fragment {
 
     @Inject SharedPreferencesManager prefsManager;
 
+    private CircleImageView ivProfilePicture;
+    private MaterialButton btnChoosePhoto, btnRemovePhoto;
     private TextInputEditText etFullName, etBio;
     private ChipGroup chipGroupInterests;
     private MaterialButton btnSave;
@@ -44,6 +56,9 @@ public class EditProfileFragment extends Fragment {
 
     private User currentUser;
     private List<String> selectedInterests = new ArrayList<>();
+    private Uri selectedImageUri;
+    private boolean imageChanged = false;
+    private ActivityResultLauncher<String> imagePickerLauncher;
 
     // Available interests (in a real app, this would come from API)
     private static final String[] AVAILABLE_INTERESTS = {
@@ -51,6 +66,24 @@ public class EditProfileFragment extends Fragment {
         "Cooking", "Travel", "Reading", "Photography", "Fitness",
         "Movies", "Dancing", "Hiking", "Yoga", "Food"
     };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Register image picker
+        imagePickerLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.GetContent(),
+                        uri -> {
+                            if (uri != null) {
+                                selectedImageUri = uri;
+                                ivProfilePicture.setImageURI(uri);
+                                imageChanged = true;
+                                btnRemovePhoto.setVisibility(View.VISIBLE);
+                            }
+                        });
+    }
 
     @Nullable
     @Override
@@ -71,13 +104,28 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        ivProfilePicture = view.findViewById(R.id.iv_profile_picture);
+        btnChoosePhoto = view.findViewById(R.id.btn_choose_photo);
+        btnRemovePhoto = view.findViewById(R.id.btn_remove_photo);
         etFullName = view.findViewById(R.id.et_full_name);
         etBio = view.findViewById(R.id.et_bio);
         chipGroupInterests = view.findViewById(R.id.chip_group_interests);
         btnSave = view.findViewById(R.id.btn_save);
         progressLoading = view.findViewById(R.id.progress_loading);
 
+        btnChoosePhoto.setOnClickListener(v -> openImagePicker());
+        btnRemovePhoto.setOnClickListener(
+                v -> {
+                    selectedImageUri = null;
+                    imageChanged = true;
+                    ivProfilePicture.setImageResource(R.drawable.ic_person);
+                    btnRemovePhoto.setVisibility(View.GONE);
+                });
         btnSave.setOnClickListener(v -> saveProfile());
+    }
+
+    private void openImagePicker() {
+        imagePickerLauncher.launch("image/*");
     }
 
     private void setupToolbar(View view) {
@@ -126,6 +174,13 @@ public class EditProfileFragment extends Fragment {
 
         if (user.getBio() != null) {
             etBio.setText(user.getBio());
+        }
+
+        // Load profile image if exists
+        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+            // TODO: Use image loading library like Glide or Picasso
+            // For now just show the remove button if there's an image URL
+            btnRemovePhoto.setVisibility(View.VISIBLE);
         }
 
         // Store current interests
@@ -179,17 +234,70 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
+        setLoading(true);
+
+        // If image was changed, handle upload
+        if (imageChanged) {
+            if (selectedImageUri != null) {
+                // New image selected, upload it
+                uploadImageAndUpdateProfile(userId, fullName, bio);
+            } else {
+                // Image removed, update profile with null image URL
+                updateProfileData(userId, fullName, bio, null);
+            }
+        } else {
+            // Image not changed, keep existing URL
+            String existingImageUrl =
+                    (currentUser != null && currentUser.getProfileImageUrl() != null)
+                            ? currentUser.getProfileImageUrl()
+                            : null;
+            updateProfileData(userId, fullName, bio, existingImageUrl);
+        }
+    }
+
+    private void uploadImageAndUpdateProfile(Long userId, String fullName, String bio) {
+        // Convert URI to File
+        File imageFile = getFileFromUri(selectedImageUri);
+        if (imageFile == null) {
+            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT)
+                    .show();
+            // Continue with existing image
+            String existingImageUrl =
+                    (currentUser != null) ? currentUser.getProfileImageUrl() : null;
+            updateProfileData(userId, fullName, bio, existingImageUrl);
+            return;
+        }
+
+        // Upload image
+        userRepository.uploadProfileImage(
+                userId,
+                imageFile,
+                new ApiCallback<String>() {
+                    @Override
+                    public void onSuccess(String imageUrl) {
+                        // Image uploaded successfully, now update profile with the URL
+                        updateProfileData(userId, fullName, bio, imageUrl);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to upload image: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+    }
+
+    private void updateProfileData(Long userId, String fullName, String bio, String imageUrl) {
         // Create update request
         UserProfileUpdateRequest request = new UserProfileUpdateRequest();
         request.setFullName(fullName);
         request.setBio(bio.isEmpty() ? null : bio);
         request.setInterests(selectedInterests.isEmpty() ? null : selectedInterests);
-        // Keep existing profile image URL
-        if (currentUser != null && currentUser.getProfileImageUrl() != null) {
-            request.setProfileImageUrl(currentUser.getProfileImageUrl());
-        }
-
-        setLoading(true);
+        request.setProfileImageUrl(imageUrl);
 
         userRepository.updateUserProfile(
                 userId,
@@ -221,16 +329,50 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
+    private File getFileFromUri(Uri uri) {
+        try {
+            ContentResolver contentResolver = requireContext().getContentResolver();
+            String mimeType = contentResolver.getType(uri);
+            String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+            if (extension == null) extension = "jpg";
+
+            // Create a temporary file
+            File tempFile =
+                    File.createTempFile(
+                            "profile_image_", "." + extension, requireContext().getCacheDir());
+
+            // Copy URI content to file
+            InputStream inputStream = contentResolver.openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            outputStream.close();
+            inputStream.close();
+
+            return tempFile;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private void setLoading(boolean loading) {
         if (loading) {
             progressLoading.setVisibility(View.VISIBLE);
             btnSave.setEnabled(false);
+            btnChoosePhoto.setEnabled(false);
             etFullName.setEnabled(false);
             etBio.setEnabled(false);
             chipGroupInterests.setEnabled(false);
         } else {
             progressLoading.setVisibility(View.GONE);
             btnSave.setEnabled(true);
+            btnChoosePhoto.setEnabled(true);
             etFullName.setEnabled(true);
             etBio.setEnabled(true);
             chipGroupInterests.setEnabled(true);

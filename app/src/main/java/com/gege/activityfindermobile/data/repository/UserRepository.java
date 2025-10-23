@@ -11,7 +11,13 @@ import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.model.User;
 
+import java.io.File;
 import java.util.List;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -347,6 +353,72 @@ public class UserRepository {
 
                             @Override
                             public void onFailure(Call<Void> call, Throwable t) {
+                                String errorMsg = "Network error: " + t.getMessage();
+                                Log.e(TAG, errorMsg, t);
+                                callback.onError(errorMsg);
+                            }
+                        });
+    }
+
+    /**
+     * Upload profile image for a user
+     *
+     * @param userId User ID to upload image for
+     * @param imageFile The image file to upload
+     * @param callback Callback with the image URL from server response
+     */
+    public void uploadProfileImage(Long userId, File imageFile, ApiCallback<String> callback) {
+        if (imageFile == null || !imageFile.exists()) {
+            callback.onError("Image file not found");
+            return;
+        }
+
+        // Create RequestBody from file
+        RequestBody requestFile =
+                RequestBody.create(MediaType.parse("image/*"), imageFile);
+
+        // Create MultipartBody.Part (backend expects part named "file")
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+
+        userApiService
+                .uploadProfileImage(userId, body)
+                .enqueue(
+                        new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(
+                                    Call<ResponseBody> call, Response<ResponseBody> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    try {
+                                        String imageUrl = response.body().string();
+
+                                        // Log response for debugging
+                                        Log.d(TAG, "Profile image upload response length: " + imageUrl.length());
+                                        if (imageUrl.length() > 255) {
+                                            Log.w(TAG, "WARNING: Image URL is too long (" + imageUrl.length() + " chars). " +
+                                                    "Backend may be returning image data instead of URL.");
+                                            // Truncate preview for logging
+                                            Log.w(TAG, "Response preview: " + imageUrl.substring(0, Math.min(100, imageUrl.length())) + "...");
+                                            callback.onError("Backend returned invalid image URL (too long: " + imageUrl.length() + " characters)");
+                                            return;
+                                        }
+
+                                        Log.d(TAG, "Profile image uploaded successfully: " + imageUrl);
+                                        callback.onSuccess(imageUrl);
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Error reading response", e);
+                                        callback.onError("Failed to parse response");
+                                    }
+                                } else {
+                                    String errorMsg =
+                                            "Failed to upload profile image: " + response.code();
+                                    Log.e(TAG, errorMsg);
+                                    callback.onError(errorMsg);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
                                 String errorMsg = "Network error: " + t.getMessage();
                                 Log.e(TAG, errorMsg, t);
                                 callback.onError(errorMsg);
