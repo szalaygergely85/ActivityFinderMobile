@@ -435,7 +435,79 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Bottom Spacing for FAB -->
+            <!-- Comments Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_comments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_medium">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Comments"
+                        android:textSize="@dimen/text_size_title"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold" />
+
+                    <!-- Comment Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_comment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/margin_medium"
+                        android:hint="Write a comment..."
+                        app:boxBackgroundMode="outline"
+                        app:boxCornerRadiusTopStart="8dp"
+                        app:boxCornerRadiusTopEnd="8dp"
+                        app:boxCornerRadiusBottomStart="8dp"
+                        app:boxCornerRadiusBottomEnd="8dp"
+                        app:endIconMode="custom"
+                        app:endIconDrawable="@drawable/ic_send"
+                        app:endIconContentDescription="Send comment">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_comment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:maxLines="3"
+                            android:inputType="textMultiLine|textCapSentences" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Comments List -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_comments"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/margin_medium"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                    <TextView
+                        android:id="@+id/tv_no_comments"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/margin_medium"
+                        android:text="No comments yet. Be the first to comment!"
+                        android:textSize="@dimen/text_size_medium"
+                        android:textColor="@color/text_hint"
+                        android:visibility="visible" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Bottom Spacing for Button -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="80dp" />
@@ -458,21 +530,6 @@
         app:backgroundTint="@color/primary"
         app:icon="@drawable/ic_check_circle"
         app:iconTint="@color/white" />
-
-    <!-- Chat FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_chat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="88dp"
-        android:src="@drawable/ic_music"
-        android:contentDescription="Open Chat"
-        app:fabSize="normal"
-        app:backgroundTint="@color/accent"
-        app:tint="@android:color/white"
-        android:visibility="gone" />
 
     <!-- Loading Progress -->
     <com.google.android.material.progressindicator.CircularProgressIndicator

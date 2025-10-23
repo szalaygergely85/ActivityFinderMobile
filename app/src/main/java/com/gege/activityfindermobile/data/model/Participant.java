@@ -45,6 +45,9 @@ public class Participant {
     @SerializedName("joinedAt")
     private String joinedAt;
 
+    @SerializedName("applicationAttempts")
+    private Integer applicationAttempts;
+
     // Constructor
     public Participant() {}
 
@@ -173,5 +176,13 @@ public class Participant {
 
     public void setJoinedAt(String joinedAt) {
         this.joinedAt = joinedAt;
+    }
+
+    public Integer getApplicationAttempts() {
+        return applicationAttempts;
+    }
+
+    public void setApplicationAttempts(Integer applicationAttempts) {
+        this.applicationAttempts = applicationAttempts;
     }
 }

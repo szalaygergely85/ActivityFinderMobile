@@ -65,12 +65,12 @@ public class ParticipationsFragment extends Fragment {
         progressLoading = view.findViewById(R.id.progress_loading);
         layoutEmpty = view.findViewById(R.id.layout_empty);
 
-        // Setup adapter
+        // Setup adapter with ParticipantRepository for accurate counts
         adapter =
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        });
+                        }, participantRepository);
         rvParticipations.setAdapter(adapter);
 
         // Swipe refresh
@@ -113,12 +113,14 @@ public class ParticipationsFragment extends Fragment {
                             return;
                         }
 
-                        // Extract activities from participants (already included in response!)
+                        // Extract activities from participants - only show ACCEPTED/JOINED
                         List<Activity> activities = new ArrayList<>();
                         for (Participant participant : participants) {
-                            Activity activity = participant.getActivity();
-                            if (activity != null) {
-                                activities.add(activity);
+                            String status = participant.getStatus();
+                            // Only show activities where user is actually accepted/joined
+                            if (("ACCEPTED".equals(status) || "JOINED".equals(status))
+                                    && participant.getActivity() != null) {
+                                activities.add(participant.getActivity());
                             }
                         }
 

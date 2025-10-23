@@ -12,16 +12,23 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
+import com.gege.activityfindermobile.data.api.ParticipantApiService;
+import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
+import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHolder> {
 
     private List<Activity> activities = new ArrayList<>();
     private OnActivityClickListener listener;
+    private ParticipantRepository participantRepository;
 
     public interface OnActivityClickListener {
         void onActivityClick(Activity activity);
@@ -29,6 +36,11 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
     public ActivityAdapter(OnActivityClickListener listener) {
         this.listener = listener;
+    }
+
+    public ActivityAdapter(OnActivityClickListener listener, ParticipantRepository participantRepository) {
+        this.listener = listener;
+        this.participantRepository = participantRepository;
     }
 
     public void setActivities(List<Activity> activities) {
@@ -117,10 +129,17 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                 tvCreatorRating.setText("N/A");
             }
 
-            // Get current participants count from API or calculate
-            int currentParticipants = activity.getParticipantsCount();
+            // Get current participants count - fetch actual accepted count
             int totalSpots = activity.getTotalSpots() != null ? activity.getTotalSpots() : 0;
-            tvSpotsAvailable.setText(currentParticipants + "/" + totalSpots + " spots");
+
+            if (participantRepository != null && activity.getId() != null) {
+                // Fetch actual participants and count only accepted ones
+                loadAcceptedParticipantsCount(activity.getId(), totalSpots, tvSpotsAvailable);
+            } else {
+                // Fallback to server count
+                int currentParticipants = activity.getParticipantsCount();
+                tvSpotsAvailable.setText(currentParticipants + "/" + totalSpots + " spots");
+            }
 
             // Set category with dynamic color and icon
             String category = activity.getCategory();
@@ -131,6 +150,33 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     activity.getTrending() != null && activity.getTrending()
                             ? View.VISIBLE
                             : View.GONE);
+        }
+
+        private void loadAcceptedParticipantsCount(Long activityId, int totalSpots, TextView tvSpotsAvailable) {
+            participantRepository.getActivityParticipants(
+                    activityId,
+                    new ApiCallback<List<Participant>>() {
+                        @Override
+                        public void onSuccess(List<Participant> participants) {
+                            // Count only ACCEPTED and JOINED participants
+                            int acceptedCount = 0;
+                            if (participants != null) {
+                                for (Participant p : participants) {
+                                    String status = p.getStatus();
+                                    if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                                        acceptedCount++;
+                                    }
+                                }
+                            }
+                            tvSpotsAvailable.setText(acceptedCount + "/" + totalSpots + " spots");
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Silently fail - show 0 on error
+                            tvSpotsAvailable.setText("0/" + totalSpots + " spots");
+                        }
+                    });
         }
 
         private void setCategoryStyleAndIcon(Chip chip, String category, Context context) {

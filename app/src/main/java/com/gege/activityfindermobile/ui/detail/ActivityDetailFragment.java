@@ -26,8 +26,9 @@ import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,12 +48,15 @@ public class ActivityDetailFragment extends Fragment {
     private Long creatorId;
     private MaterialButton btnExpressInterest;
     private MaterialButton btnManage;
-    private FloatingActionButton fabChat;
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvParticipants;
     private TextView tvNoParticipants;
     private ParticipantAdapter participantAdapter;
     private View cardCreator;
+    private TextInputLayout tilComment;
+    private TextInputEditText etComment;
+    private RecyclerView rvComments;
+    private TextView tvNoComments;
 
     @Nullable
     @Override
@@ -66,8 +70,17 @@ public class ActivityDetailFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Reload participants when returning to this screen
+        Log.d("ActivityDetailFragment", "onResume() called - reloading participants and checking status");
+        // Reload participants and check button state when returning to this screen
         loadParticipants();
+
+        // Only check participation status if user is not the creator
+        Long currentUserId = prefsManager.getUserId();
+        if (currentUserId != null && !currentUserId.equals(creatorId)) {
+            checkUserParticipationStatus();
+        } else {
+            Log.d("ActivityDetailFragment", "Skipping checkUserParticipationStatus in onResume - user is creator");
+        }
     }
 
     @Override
@@ -79,11 +92,14 @@ public class ActivityDetailFragment extends Fragment {
 
         btnExpressInterest = view.findViewById(R.id.btn_express_interest);
         btnManage = view.findViewById(R.id.btn_manage);
-        fabChat = view.findViewById(R.id.fab_chat);
         progressLoading = view.findViewById(R.id.progress_loading);
         rvParticipants = view.findViewById(R.id.rv_participants);
         tvNoParticipants = view.findViewById(R.id.tv_no_participants);
         cardCreator = view.findViewById(R.id.card_creator);
+        tilComment = view.findViewById(R.id.til_comment);
+        etComment = view.findViewById(R.id.et_comment);
+        rvComments = view.findViewById(R.id.rv_comments);
+        tvNoComments = view.findViewById(R.id.tv_no_comments);
 
         // Setup participant adapter with click listener
         participantAdapter =
@@ -92,6 +108,9 @@ public class ActivityDetailFragment extends Fragment {
                             navigateToUserProfile(participant.getUserId());
                         });
         rvParticipants.setAdapter(participantAdapter);
+
+        // Setup send comment button
+        tilComment.setEndIconOnClickListener(v -> sendComment());
 
         // Get arguments
         Bundle args = getArguments();
@@ -113,19 +132,17 @@ public class ActivityDetailFragment extends Fragment {
         // Setup creator card click
         cardCreator.setOnClickListener(v -> navigateToUserProfile(creatorId));
 
-        // Setup chat FAB
-        fabChat.setOnClickListener(v -> navigateToChat());
-
         // Check if current user is the creator
         Long currentUserId = prefsManager.getUserId();
+        Log.d("ActivityDetailFragment", "Creator check - currentUserId: " + currentUserId + ", creatorId: " + creatorId);
         if (currentUserId != null && currentUserId.equals(creatorId)) {
+            Log.d("ActivityDetailFragment", "User IS the creator - hiding join button, showing manage button");
             // Show manage button for creator
             btnManage.setVisibility(View.VISIBLE);
             // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
-            // Show chat button for participants/creator
-            fabChat.setVisibility(View.VISIBLE);
         } else {
+            Log.d("ActivityDetailFragment", "User is NOT the creator - checking participation status");
             // Check if user has already joined this activity
             checkUserParticipationStatus();
         }
@@ -269,39 +286,78 @@ public class ActivityDetailFragment extends Fragment {
                     @Override
                     public void onSuccess(Participant participant) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Successfully joined the activity!",
-                                        Toast.LENGTH_SHORT)
-                                .show();
 
-                        // Update button to show joined state
-                        btnExpressInterest.setText("Joined");
-                        btnExpressInterest.setEnabled(false);
-                        btnExpressInterest.setIcon(
-                                requireContext().getDrawable(R.drawable.ic_check_circle));
+                        // Check the status returned from server
+                        String status = participant.getStatus();
+                        if ("ACCEPTED".equals(status)) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "You've been accepted! You can now join the activity.",
+                                            Toast.LENGTH_SHORT)
+                                    .show();
+                            updateButtonToAcceptedState();
+                            // Don't add to participant list yet - only after JOINED
+                        } else if ("JOINED".equals(status)) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Successfully joined the activity!",
+                                            Toast.LENGTH_SHORT)
+                                    .show();
+                            updateButtonToJoinedState();
+                            // Reload participants to show yourself in the list
+                            loadParticipants();
+                        } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Join request sent! Waiting for approval.",
+                                            Toast.LENGTH_SHORT)
+                                    .show();
+                            updateButtonToPendingState();
+                        } else {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Request submitted! Status: " + status,
+                                            Toast.LENGTH_SHORT)
+                                    .show();
+                            updateButtonToPendingState();
+                        }
+
+                        // Force re-check participation status to ensure button is in correct state
+                        checkUserParticipationStatus();
                     }
 
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
 
+                        Log.d("ActivityDetailFragment", "Express interest error: " + errorMessage);
+
                         // Show user-friendly message based on error type
                         if (errorMessage.contains("already joined")
-                                || errorMessage.contains("already expressed interest")) {
+                                || errorMessage.contains("already expressed interest")
+                                || errorMessage.contains("already a participant")
+                                || errorMessage.contains("duplicate")
+                                || errorMessage.contains("already exists")) {
                             Toast.makeText(
                                             requireContext(),
-                                            "You've already joined this activity!",
+                                            "You've already requested to join this activity!",
                                             Toast.LENGTH_LONG)
                                     .show();
-
-                            // Update button to show joined state
-                            btnExpressInterest.setText("Already Joined");
-                            btnExpressInterest.setEnabled(false);
-                            btnExpressInterest.setIcon(
-                                    requireContext().getDrawable(R.drawable.ic_check_circle));
+                            // Re-check status to update button correctly
+                            checkUserParticipationStatus();
+                        } else if (errorMessage.contains("maximum")
+                                || errorMessage.contains("attempt")
+                                || errorMessage.contains("limit")
+                                || errorMessage.contains("exceeded")) {
+                            Toast.makeText(
+                                            requireContext(),
+                                            "You've reached the maximum application attempts (3) for this activity.",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                            // Show max attempts state
+                            showMaxAttemptsReachedState();
                         } else {
-                            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG)
+                            Toast.makeText(requireContext(), "Failed to join: " + errorMessage, Toast.LENGTH_LONG)
                                     .show();
                         }
                     }
@@ -321,8 +377,11 @@ public class ActivityDetailFragment extends Fragment {
     private void checkUserParticipationStatus() {
         Long userId = prefsManager.getUserId();
         if (userId == null || activityId == null || activityId == 0L) {
+            Log.d("ActivityDetailFragment", "checkUserParticipationStatus: userId or activityId is null");
             return;
         }
+
+        Log.d("ActivityDetailFragment", "Checking participation status for activity: " + activityId);
 
         // Get user's participations to check if they've already joined
         participantRepository.getMyParticipations(
@@ -330,25 +389,62 @@ public class ActivityDetailFragment extends Fragment {
                 new ApiCallback<List<Participant>>() {
                     @Override
                     public void onSuccess(List<Participant> participants) {
+                        Log.d("ActivityDetailFragment", "Got " + (participants != null ? participants.size() : 0) + " participations");
+
+                        boolean found = false;
                         // Check if any participation matches this activity
-                        for (Participant participant : participants) {
-                            if (participant.getActivityId() != null
-                                    && participant.getActivityId().equals(activityId)) {
-                                // User has already joined this activity
-                                updateButtonToJoinedState();
-                                break;
+                        if (participants != null) {
+                            for (Participant participant : participants) {
+                                if (participant.getActivityId() != null
+                                        && participant.getActivityId().equals(activityId)) {
+                                    found = true;
+                                    String status = participant.getStatus();
+                                    Log.d("ActivityDetailFragment", "Found participation with status: " + status);
+
+                                    // Update button based on participation status
+                                    if ("ACCEPTED".equals(status)) {
+                                        // Accepted but not yet joined - show leave option
+                                        updateButtonToAcceptedState();
+                                    } else if ("JOINED".equals(status)) {
+                                        // Fully joined - show leave option
+                                        updateButtonToJoinedState();
+                                    } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                                        // Waiting for approval - show cancel option
+                                        updateButtonToPendingState();
+                                    } else if ("WITHDRAWN".equals(status) || "LEFT".equals(status) || "DECLINED".equals(status)) {
+                                        // User previously left/withdrawn/declined - can reapply
+                                        // Backend will enforce the 3-attempt limit when they try to apply
+                                        Integer attempts = participant.getApplicationAttempts();
+                                        Log.d("ActivityDetailFragment", "User previously " + status + " - attempts: " + attempts + " - can reapply");
+                                        resetButtonToJoinState();
+                                    }
+                                    break;
+                                }
                             }
+                        }
+
+                        if (!found) {
+                            Log.d("ActivityDetailFragment", "No participation found for this activity");
                         }
                     }
 
                     @Override
                     public void onError(String errorMessage) {
                         // Silently fail - user can still try to join
-                        Log.d(
-                                "ActivityDetailFragment",
-                                "Failed to check participation status: " + errorMessage);
+                        Log.e("ActivityDetailFragment", "Failed to check participation status: " + errorMessage);
                     }
                 });
+    }
+
+    private void updateButtonToAcceptedState() {
+        btnExpressInterest.setText("Leave Activity");
+        btnExpressInterest.setEnabled(true);
+        btnExpressInterest.setBackgroundTintList(
+                getResources().getColorStateList(R.color.error, null));
+        btnExpressInterest.setIcon(requireContext().getDrawable(R.drawable.ic_close));
+
+        // Change click listener to leave
+        btnExpressInterest.setOnClickListener(v -> leaveActivity());
     }
 
     private void updateButtonToJoinedState() {
@@ -360,9 +456,48 @@ public class ActivityDetailFragment extends Fragment {
 
         // Change click listener to leave instead of join
         btnExpressInterest.setOnClickListener(v -> leaveActivity());
+    }
 
-        // Show chat button for joined participants
-        fabChat.setVisibility(View.VISIBLE);
+    private void updateButtonToPendingState() {
+        btnExpressInterest.setText("Cancel Request");
+        btnExpressInterest.setEnabled(true);
+        btnExpressInterest.setBackgroundTintList(
+                getResources().getColorStateList(R.color.warning, null));
+        btnExpressInterest.setIcon(requireContext().getDrawable(R.drawable.ic_close));
+
+        // Change click listener to cancel request
+        btnExpressInterest.setOnClickListener(v -> cancelRequest());
+    }
+
+    private void resetButtonToJoinState() {
+        Log.d("ActivityDetailFragment", "Resetting button to join state");
+        btnExpressInterest.setText(R.string.express_interest);
+        btnExpressInterest.setEnabled(true);
+        btnExpressInterest.setVisibility(View.VISIBLE); // Ensure button is visible
+        btnExpressInterest.setBackgroundTintList(
+                getResources().getColorStateList(R.color.primary, null));
+
+        // Clear icon or set to null - avoid icon issues
+        btnExpressInterest.setIcon(null);
+
+        // Reset click listener
+        btnExpressInterest.setOnClickListener(v -> expressInterest());
+
+        Log.d("ActivityDetailFragment", "Button reset complete - enabled: " + btnExpressInterest.isEnabled()
+                + ", visibility: " + (btnExpressInterest.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE/INVISIBLE")
+                + ", text: " + btnExpressInterest.getText());
+    }
+
+    private void showMaxAttemptsReachedState() {
+        Log.d("ActivityDetailFragment", "Setting button to max attempts reached state");
+        btnExpressInterest.setText("Max Attempts Reached (3/3)");
+        btnExpressInterest.setEnabled(false);
+        btnExpressInterest.setVisibility(View.VISIBLE);
+        btnExpressInterest.setBackgroundTintList(
+                getResources().getColorStateList(R.color.text_secondary, null));
+        btnExpressInterest.setIcon(null);
+
+        Log.d("ActivityDetailFragment", "Button set to max attempts - enabled: " + btnExpressInterest.isEnabled());
     }
 
     private void navigateToManageActivity() {
@@ -386,6 +521,31 @@ public class ActivityDetailFragment extends Fragment {
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_activityDetailFragment_to_userProfileFragment, bundle);
+    }
+
+    private void cancelRequest() {
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (activityId == null || activityId == 0L) {
+            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show confirmation dialog for canceling request
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Cancel Request")
+                .setMessage("Are you sure you want to cancel your join request?")
+                .setPositiveButton(
+                        "Yes, Cancel",
+                        (dialog, which) -> {
+                            performLeaveActivity(userId);
+                        })
+                .setNegativeButton("No", null)
+                .show();
     }
 
     private void leaveActivity() {
@@ -425,21 +585,15 @@ public class ActivityDetailFragment extends Fragment {
                         setLoading(false);
                         Toast.makeText(
                                         requireContext(),
-                                        "You have left this activity",
+                                        "You have withdrawn from this activity.",
                                         Toast.LENGTH_SHORT)
                                 .show();
 
-                        // Reset button to join state
-                        btnExpressInterest.setText(R.string.express_interest);
-                        btnExpressInterest.setEnabled(true);
-                        btnExpressInterest.setBackgroundTintList(
-                                getResources().getColorStateList(R.color.primary, null));
-                        btnExpressInterest.setIcon(
-                                requireContext().getDrawable(R.drawable.ic_check_circle));
-                        btnExpressInterest.setOnClickListener(v -> expressInterest());
-
                         // Reload participants to update the list
                         loadParticipants();
+
+                        // Re-check status to update button based on application attempts
+                        checkUserParticipationStatus();
                     }
 
                     @Override
@@ -454,16 +608,17 @@ public class ActivityDetailFragment extends Fragment {
                 });
     }
 
-    private void navigateToChat() {
-        if (activityId == null || activityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+    private void sendComment() {
+        String commentText = etComment.getText() != null ? etComment.getText().toString().trim() : "";
+
+        if (commentText.isEmpty()) {
+            Toast.makeText(requireContext(), "Please write a comment", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Bundle bundle = new Bundle();
-        bundle.putLong("activity_id", activityId);
-
-        NavController navController = Navigation.findNavController(requireView());
-        navController.navigate(R.id.action_activityDetailFragment_to_activityChatFragment, bundle);
+        // TODO: Implement comment posting using MessageRepository
+        // For now, just show a placeholder message
+        Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show();
+        etComment.setText("");
     }
 }

@@ -18,6 +18,7 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
+import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.button.MaterialButton;
@@ -34,6 +35,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class MyActivitiesFragment extends Fragment {
 
     @Inject ActivityRepository activityRepository;
+
+    @Inject ParticipantRepository participantRepository;
 
     @Inject SharedPreferencesManager prefsManager;
 
@@ -63,12 +66,12 @@ public class MyActivitiesFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         btnCreateFirst = view.findViewById(R.id.btn_create_first);
 
-        // Setup adapter
+        // Setup adapter with ParticipantRepository for accurate counts
         adapter =
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        });
+                        }, participantRepository);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh

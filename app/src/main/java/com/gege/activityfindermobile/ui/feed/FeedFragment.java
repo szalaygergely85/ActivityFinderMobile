@@ -18,6 +18,7 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
+import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -33,6 +34,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class FeedFragment extends Fragment {
 
     @Inject ActivityRepository activityRepository;
+
+    @Inject ParticipantRepository participantRepository;
 
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
@@ -59,12 +62,12 @@ public class FeedFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
 
-        // Setup adapter
+        // Setup adapter with ParticipantRepository for accurate counts
         adapter =
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        });
+                        }, participantRepository);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh
