@@ -17,7 +17,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
+import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Notification;
+import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.NotificationRepository;
 import com.gege.activityfindermobile.ui.adapters.NotificationAdapter;
 import com.gege.activityfindermobile.ui.main.MainActivity;
@@ -34,6 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class NotificationsFragment extends Fragment {
 
     @Inject NotificationRepository notificationRepository;
+    @Inject ActivityRepository activityRepository;
 
     private RecyclerView notificationsRecyclerView;
     private View emptyStateLayout;
@@ -174,10 +177,37 @@ public class NotificationsFragment extends Fragment {
 
     private void navigateToRelatedContent(Notification notification) {
         if (notification.getActivityId() != null) {
-            Bundle bundle = new Bundle();
-            bundle.putLong("activityId", notification.getActivityId());
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_notifications_to_activityDetail, bundle);
+            // Fetch activity details before navigating
+            activityRepository.getActivityById(notification.getActivityId(), new ApiCallback<Activity>() {
+                @Override
+                public void onSuccess(Activity activity) {
+                    // Create bundle with all activity details
+                    Bundle bundle = new Bundle();
+                    bundle.putLong("activityId", activity.getId());
+                    bundle.putLong("creatorId", activity.getCreatorId() != null ? activity.getCreatorId() : 0L);
+                    bundle.putString("title", activity.getTitle());
+                    bundle.putString("description", activity.getDescription());
+                    bundle.putString("date", activity.getDate());
+                    bundle.putString("time", activity.getTime());
+                    bundle.putString("location", activity.getLocation());
+                    bundle.putInt("totalSpots", activity.getTotalSpots() != null ? activity.getTotalSpots() : 0);
+                    bundle.putInt("availableSpots", activity.getAvailableSpots() != null ? activity.getAvailableSpots() : 0);
+                    bundle.putString("category", activity.getCategory());
+                    bundle.putString("creatorName", activity.getCreatorName());
+                    bundle.putString("creatorAvatar", activity.getCreatorAvatar());
+                    bundle.putDouble("creatorRating", activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+                    bundle.putBoolean("trending", activity.getTrending() != null ? activity.getTrending() : false);
+
+                    Navigation.findNavController(requireView())
+                            .navigate(R.id.action_notifications_to_activityDetail, bundle);
+                }
+
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(requireContext(), "Failed to load activity details: " + error,
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         // Add more navigation logic for participants, reviews, etc.
     }

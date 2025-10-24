@@ -37,6 +37,9 @@ public interface UserApiService {
     @POST("api/auth/login")
     Call<LoginResponse> loginUserAuth(@Body LoginRequest request);
 
+    @POST("api/users/refresh-token")
+    Call<LoginResponse> refreshToken(@Header("Authorization") String refreshToken);
+
     @GET("api/users/{id}")
     Call<User> getUserById(@Path("id") Long id);
 

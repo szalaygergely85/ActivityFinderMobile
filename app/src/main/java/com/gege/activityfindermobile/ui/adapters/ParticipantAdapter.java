@@ -92,11 +92,36 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                 tvUserRating.setText("N/A");
             }
 
-            // Set status
-            if (participant.getStatus() != null) {
-                chipStatus.setText(participant.getStatus());
+            // Set status with visual styling
+            String status = participant.getStatus();
+            if (status != null) {
+                chipStatus.setVisibility(View.VISIBLE);
+
+                switch (status) {
+                    case "PENDING":
+                    case "INTERESTED":
+                        chipStatus.setText("Pending");
+                        chipStatus.setChipBackgroundColorResource(R.color.warning);
+                        chipStatus.setTextColor(itemView.getContext().getResources().getColor(R.color.white, null));
+                        break;
+                    case "ACCEPTED":
+                        chipStatus.setText("Accepted");
+                        chipStatus.setChipBackgroundColorResource(R.color.success);
+                        chipStatus.setTextColor(itemView.getContext().getResources().getColor(R.color.white, null));
+                        break;
+                    case "JOINED":
+                        chipStatus.setText("Joined");
+                        chipStatus.setChipBackgroundColorResource(R.color.primary);
+                        chipStatus.setTextColor(itemView.getContext().getResources().getColor(R.color.white, null));
+                        break;
+                    default:
+                        chipStatus.setText(status);
+                        chipStatus.setChipBackgroundColorResource(R.color.text_secondary);
+                        chipStatus.setTextColor(itemView.getContext().getResources().getColor(R.color.white, null));
+                        break;
+                }
             } else {
-                chipStatus.setText("UNKNOWN");
+                chipStatus.setVisibility(View.GONE);
             }
 
             // Set click listener

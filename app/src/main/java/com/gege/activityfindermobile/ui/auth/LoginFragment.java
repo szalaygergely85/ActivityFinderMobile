@@ -159,10 +159,11 @@ public class LoginFragment extends Fragment {
 
                         Long userId = loginResponse.getUserId();
                         String token = loginResponse.getAccessToken();
+                        String refreshToken = loginResponse.getRefreshToken();
                         String fullName = loginResponse.getFullName();
 
-                        // Save user session with JWT token
-                        prefsManager.saveUserSession(userId, token);
+                        // Save user session with JWT tokens (access + refresh)
+                        prefsManager.saveUserSession(userId, token, refreshToken);
 
                         Toast.makeText(
                                         requireContext(),

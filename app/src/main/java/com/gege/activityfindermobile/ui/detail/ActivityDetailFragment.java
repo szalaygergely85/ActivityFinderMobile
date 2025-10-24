@@ -157,17 +157,18 @@ public class ActivityDetailFragment extends Fragment {
             btnManage.setVisibility(View.VISIBLE);
             // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
+            // Creator can see and send messages
+            showCommentSection();
         } else {
             Log.d("ActivityDetailFragment", "User is NOT the creator - checking participation status");
+            // Hide comment section by default, will show if user is joined
+            hideCommentSection();
             // Check if user has already joined this activity
             checkUserParticipationStatus();
         }
 
         // Load participants from API
         loadParticipants();
-
-        // Load comments
-        loadComments();
     }
 
     private void displayActivityData(View view, Bundle args) {
@@ -244,19 +245,26 @@ public class ActivityDetailFragment extends Fragment {
                 new ApiCallback<List<Participant>>() {
                     @Override
                     public void onSuccess(List<Participant> participants) {
-                        // Filter to show only ACCEPTED and JOINED participants
-                        List<Participant> confirmedParticipants = new ArrayList<>();
+                        Long currentUserId = prefsManager.getUserId();
+                        boolean isCreator = currentUserId != null && currentUserId.equals(creatorId);
+
+                        List<Participant> displayParticipants = new ArrayList<>();
                         if (participants != null) {
                             for (Participant p : participants) {
                                 String status = p.getStatus();
+                                // Show ACCEPTED and JOINED to everyone
                                 if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
-                                    confirmedParticipants.add(p);
+                                    displayParticipants.add(p);
+                                }
+                                // Also show PENDING and INTERESTED to creator
+                                else if (isCreator && ("PENDING".equals(status) || "INTERESTED".equals(status))) {
+                                    displayParticipants.add(p);
                                 }
                             }
                         }
 
-                        if (!confirmedParticipants.isEmpty()) {
-                            participantAdapter.setParticipants(confirmedParticipants);
+                        if (!displayParticipants.isEmpty()) {
+                            participantAdapter.setParticipants(displayParticipants);
                             rvParticipants.setVisibility(View.VISIBLE);
                             tvNoParticipants.setVisibility(View.GONE);
                         } else {
@@ -264,13 +272,31 @@ public class ActivityDetailFragment extends Fragment {
                             tvNoParticipants.setVisibility(View.VISIBLE);
                         }
 
-                        // Update participant count display
+                        // Update participant count display (only count confirmed participants)
                         TextView tvSpots =
                                 getView() != null ? getView().findViewById(R.id.tv_spots) : null;
                         if (tvSpots != null && getArguments() != null) {
                             int totalSpots = getArguments().getInt("totalSpots", 0);
-                            int currentParticipants = confirmedParticipants.size();
-                            tvSpots.setText(currentParticipants + " / " + totalSpots + " joined");
+                            // Count only ACCEPTED and JOINED
+                            int confirmedCount = 0;
+                            int pendingCount = 0;
+                            if (participants != null) {
+                                for (Participant p : participants) {
+                                    String status = p.getStatus();
+                                    if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                                        confirmedCount++;
+                                    } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                                        pendingCount++;
+                                    }
+                                }
+                            }
+
+                            // Show pending count for creator
+                            if (isCreator && pendingCount > 0) {
+                                tvSpots.setText(confirmedCount + " / " + totalSpots + " joined (" + pendingCount + " pending)");
+                            } else {
+                                tvSpots.setText(confirmedCount + " / " + totalSpots + " joined");
+                            }
                         }
                     }
 
@@ -470,6 +496,9 @@ public class ActivityDetailFragment extends Fragment {
 
         // Change click listener to leave
         btnExpressInterest.setOnClickListener(v -> leaveActivity());
+
+        // Show comment section for accepted users
+        showCommentSection();
     }
 
     private void updateButtonToJoinedState() {
@@ -481,6 +510,9 @@ public class ActivityDetailFragment extends Fragment {
 
         // Change click listener to leave instead of join
         btnExpressInterest.setOnClickListener(v -> leaveActivity());
+
+        // Show comment section for joined users
+        showCommentSection();
     }
 
     private void updateButtonToPendingState() {
@@ -492,6 +524,9 @@ public class ActivityDetailFragment extends Fragment {
 
         // Change click listener to cancel request
         btnExpressInterest.setOnClickListener(v -> cancelRequest());
+
+        // Hide comment section for pending users
+        hideCommentSection();
     }
 
     private void resetButtonToJoinState() {
@@ -511,6 +546,9 @@ public class ActivityDetailFragment extends Fragment {
         Log.d("ActivityDetailFragment", "Button reset complete - enabled: " + btnExpressInterest.isEnabled()
                 + ", visibility: " + (btnExpressInterest.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE/INVISIBLE")
                 + ", text: " + btnExpressInterest.getText());
+
+        // Hide comment section for non-joined users
+        hideCommentSection();
     }
 
     private void showMaxAttemptsReachedState() {
@@ -523,6 +561,9 @@ public class ActivityDetailFragment extends Fragment {
         btnExpressInterest.setIcon(null);
 
         Log.d("ActivityDetailFragment", "Button set to max attempts - enabled: " + btnExpressInterest.isEnabled());
+
+        // Hide comment section for users who reached max attempts
+        hideCommentSection();
     }
 
     private void navigateToManageActivity() {
@@ -614,6 +655,9 @@ public class ActivityDetailFragment extends Fragment {
                                         Toast.LENGTH_SHORT)
                                 .show();
 
+                        // Hide comment section when leaving
+                        hideCommentSection();
+
                         // Reload participants to update the list
                         loadParticipants();
 
@@ -631,6 +675,19 @@ public class ActivityDetailFragment extends Fragment {
                                 .show();
                     }
                 });
+    }
+
+    private void showCommentSection() {
+        tilComment.setVisibility(View.VISIBLE);
+        rvComments.setVisibility(View.VISIBLE);
+        // Load comments when showing the section
+        loadComments();
+    }
+
+    private void hideCommentSection() {
+        tilComment.setVisibility(View.GONE);
+        rvComments.setVisibility(View.GONE);
+        tvNoComments.setVisibility(View.GONE);
     }
 
     private void sendComment() {

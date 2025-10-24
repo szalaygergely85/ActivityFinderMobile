@@ -45,8 +45,10 @@ public class NetworkModule {
     @Provides
     @Singleton
     public AuthInterceptor provideAuthInterceptor(
-            com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager) {
-        return new AuthInterceptor(prefsManager);
+            com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager,
+            @dagger.hilt.android.qualifiers.ApplicationContext android.content.Context context,
+            dagger.Lazy<UserApiService> userApiServiceLazy) {
+        return new AuthInterceptor(prefsManager, context, userApiServiceLazy);
     }
 
     @Provides
