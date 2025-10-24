@@ -22,6 +22,7 @@ import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ParticipantAdapter;
+import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
@@ -152,6 +153,8 @@ public class ActivityDetailFragment extends Fragment {
     }
 
     private void displayActivityData(View view, Bundle args) {
+        de.hdodenhof.circleimageview.CircleImageView ivCreatorAvatar =
+                view.findViewById(R.id.iv_creator_avatar);
         TextView tvTitle = view.findViewById(R.id.tv_title);
         TextView tvDescription = view.findViewById(R.id.tv_description);
         TextView tvDate = view.findViewById(R.id.tv_date);
@@ -162,6 +165,10 @@ public class ActivityDetailFragment extends Fragment {
         TextView tvCreatorRating = view.findViewById(R.id.tv_creator_rating);
         Chip chipCategory = view.findViewById(R.id.chip_category);
         Chip badgeTrending = view.findViewById(R.id.badge_trending);
+
+        // Load creator avatar
+        String creatorAvatar = args.getString("creatorAvatar");
+        ImageLoader.loadCircularProfileImage(requireContext(), creatorAvatar, ivCreatorAvatar);
 
         tvTitle.setText(args.getString("title", ""));
         tvDescription.setText(args.getString("description", ""));

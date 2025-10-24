@@ -164,6 +164,7 @@ public class FeedFragment extends Fragment {
         bundle.putString(
                 "creatorName",
                 activity.getCreatorName() != null ? activity.getCreatorName() : "Unknown");
+        bundle.putString("creatorAvatar", activity.getCreatorAvatar());
         bundle.putDouble(
                 "creatorRating",
                 activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);

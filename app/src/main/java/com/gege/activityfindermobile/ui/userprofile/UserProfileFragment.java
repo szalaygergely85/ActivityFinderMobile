@@ -16,6 +16,7 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -111,6 +112,10 @@ public class UserProfileFragment extends Fragment {
                 "UserProfile",
                 "Interests: "
                         + (user.getInterests() != null ? user.getInterests().size() : "null"));
+
+        // Load profile image
+        ImageLoader.loadCircularProfileImage(
+                requireContext(), user.getProfileImageUrl(), ivProfileImage);
 
         // Set name
         if (user.getFullName() != null) {

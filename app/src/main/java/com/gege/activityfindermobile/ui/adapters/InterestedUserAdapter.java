@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 
@@ -89,6 +90,10 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
         }
 
         void bind(Participant participant, OnActionListener listener) {
+            // Load user avatar
+            ImageLoader.loadCircularProfileImage(
+                    itemView.getContext(), participant.getUserAvatar(), ivUserAvatar);
+
             tvUserName.setText(participant.getUserName());
 
             // Handle rating

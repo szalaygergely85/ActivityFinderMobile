@@ -24,6 +24,7 @@ import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
@@ -178,8 +179,8 @@ public class EditProfileFragment extends Fragment {
 
         // Load profile image if exists
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-            // TODO: Use image loading library like Glide or Picasso
-            // For now just show the remove button if there's an image URL
+            ImageLoader.loadCircularProfileImage(
+                    requireContext(), user.getProfileImageUrl(), ivProfilePicture);
             btnRemovePhoto.setVisibility(View.VISIBLE);
         }
 

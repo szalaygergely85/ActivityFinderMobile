@@ -17,6 +17,7 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -186,8 +187,9 @@ public class ProfileFragment extends Fragment {
             chipGroupInterests.addView(chip);
         }
 
-        // TODO: Load profile image with Glide if profileImageUrl exists
-        // For now, keep default avatar
+        // Load profile image
+        ImageLoader.loadCircularProfileImage(
+                requireContext(), user.getProfileImageUrl(), ivProfileAvatar);
     }
 
     private void displayPlaceholderData() {

@@ -17,6 +17,7 @@ import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
+import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
@@ -69,12 +70,14 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
+        de.hdodenhof.circleimageview.CircleImageView ivCreatorAvatar;
         TextView tvTitle, tvDescription, tvDate, tvTime, tvLocation;
         TextView tvCreatorName, tvCreatorRating, tvSpotsAvailable;
         Chip chipCategory, badgeTrending;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivCreatorAvatar = itemView.findViewById(R.id.iv_creator_avatar);
             tvTitle = itemView.findViewById(R.id.tv_activity_title);
             tvDescription = itemView.findViewById(R.id.tv_description);
             tvDate = itemView.findViewById(R.id.tv_date);
@@ -96,6 +99,11 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
         void bind(Activity activity) {
             Context context = itemView.getContext();
+
+            // Load creator avatar
+            ImageLoader.loadCircularProfileImage(
+                    context, activity.getCreatorAvatar(), ivCreatorAvatar);
+
             tvTitle.setText(activity.getTitle());
             tvDescription.setText(activity.getDescription());
 
