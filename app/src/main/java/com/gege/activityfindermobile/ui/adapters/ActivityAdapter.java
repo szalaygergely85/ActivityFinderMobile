@@ -30,6 +30,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     private List<Activity> activities = new ArrayList<>();
     private OnActivityClickListener listener;
     private ParticipantRepository participantRepository;
+    private Long currentUserId;
 
     public interface OnActivityClickListener {
         void onActivityClick(Activity activity);
@@ -42,6 +43,16 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     public ActivityAdapter(OnActivityClickListener listener, ParticipantRepository participantRepository) {
         this.listener = listener;
         this.participantRepository = participantRepository;
+    }
+
+    public ActivityAdapter(OnActivityClickListener listener, ParticipantRepository participantRepository, Long currentUserId) {
+        this.listener = listener;
+        this.participantRepository = participantRepository;
+        this.currentUserId = currentUserId;
+    }
+
+    public void setCurrentUserId(Long currentUserId) {
+        this.currentUserId = currentUserId;
     }
 
     public void setActivities(List<Activity> activities) {
@@ -73,7 +84,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         de.hdodenhof.circleimageview.CircleImageView ivCreatorAvatar;
         TextView tvTitle, tvDescription, tvDate, tvTime, tvLocation;
         TextView tvCreatorName, tvCreatorRating, tvSpotsAvailable;
-        Chip chipCategory, badgeTrending;
+        Chip chipCategory, badgeTrending, chipStatus;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -88,6 +99,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             tvSpotsAvailable = itemView.findViewById(R.id.tv_spots_available);
             chipCategory = itemView.findViewById(R.id.chip_category);
             badgeTrending = itemView.findViewById(R.id.badge_trending);
+            chipStatus = itemView.findViewById(R.id.chip_status);
 
             itemView.setOnClickListener(
                     v -> {
@@ -158,6 +170,66 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     activity.getTrending() != null && activity.getTrending()
                             ? View.VISIBLE
                             : View.GONE);
+
+            // Set status chip based on user's relationship with activity
+            updateStatusChip(activity, chipStatus, context);
+        }
+
+        private void updateStatusChip(Activity activity, Chip chipStatus, Context context) {
+            // Hide by default
+            chipStatus.setVisibility(View.GONE);
+
+            if (currentUserId == null) {
+                return;
+            }
+
+            // Check if user is the creator
+            if (activity.getCreatorId() != null && activity.getCreatorId().equals(currentUserId)) {
+                chipStatus.setText("My Activity");
+                chipStatus.setChipBackgroundColorResource(R.color.primary);
+                chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                chipStatus.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            // Check participant status if repository is available
+            if (participantRepository != null && activity.getId() != null) {
+                loadParticipantStatus(activity.getId(), chipStatus, context);
+            }
+        }
+
+        private void loadParticipantStatus(Long activityId, Chip chipStatus, Context context) {
+            participantRepository.getActivityParticipants(
+                    activityId,
+                    new ApiCallback<List<Participant>>() {
+                        @Override
+                        public void onSuccess(List<Participant> participants) {
+                            if (participants != null && currentUserId != null) {
+                                for (Participant p : participants) {
+                                    if (p.getUserId() != null && p.getUserId().equals(currentUserId)) {
+                                        String status = p.getStatus();
+                                        if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                                            chipStatus.setText("Joined");
+                                            chipStatus.setChipBackgroundColorResource(R.color.success);
+                                            chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                                            chipStatus.setVisibility(View.VISIBLE);
+                                        } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                                            chipStatus.setText("Interested");
+                                            chipStatus.setChipBackgroundColorResource(R.color.warning);
+                                            chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                                            chipStatus.setVisibility(View.VISIBLE);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Silently fail - don't show status chip
+                        }
+                    });
         }
 
         private void loadAcceptedParticipantsCount(Long activityId, int totalSpots, TextView tvSpotsAvailable) {

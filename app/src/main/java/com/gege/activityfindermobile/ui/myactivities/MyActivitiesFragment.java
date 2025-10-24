@@ -66,12 +66,13 @@ public class MyActivitiesFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         btnCreateFirst = view.findViewById(R.id.btn_create_first);
 
-        // Setup adapter with ParticipantRepository for accurate counts
+        // Setup adapter with ParticipantRepository for accurate counts and current user ID
+        Long currentUserId = prefsManager.getUserId();
         adapter =
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        }, participantRepository);
+                        }, participantRepository, currentUserId);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh

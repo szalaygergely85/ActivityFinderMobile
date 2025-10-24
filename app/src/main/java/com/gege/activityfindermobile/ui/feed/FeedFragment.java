@@ -37,6 +37,8 @@ public class FeedFragment extends Fragment {
 
     @Inject ParticipantRepository participantRepository;
 
+    @Inject com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager;
+
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
     private SwipeRefreshLayout swipeRefresh;
@@ -62,12 +64,13 @@ public class FeedFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
 
-        // Setup adapter with ParticipantRepository for accurate counts
+        // Setup adapter with ParticipantRepository for accurate counts and current user ID
+        Long currentUserId = prefsManager.getUserId();
         adapter =
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        }, participantRepository);
+                        }, participantRepository, currentUserId);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh

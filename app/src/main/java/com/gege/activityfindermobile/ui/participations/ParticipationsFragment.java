@@ -24,6 +24,7 @@ import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,11 @@ public class ParticipationsFragment extends Fragment {
     private SwipeRefreshLayout swipeRefresh;
     private CircularProgressIndicator progressLoading;
     private View layoutEmpty;
+    private TabLayout tabLayout;
+
+    private List<Participant> allParticipations = new ArrayList<>();
+    private static final int TAB_JOINED = 0;
+    private static final int TAB_INTERESTED = 1;
 
     @Nullable
     @Override
@@ -64,14 +70,36 @@ public class ParticipationsFragment extends Fragment {
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         progressLoading = view.findViewById(R.id.progress_loading);
         layoutEmpty = view.findViewById(R.id.layout_empty);
+        tabLayout = view.findViewById(R.id.tab_layout);
 
-        // Setup adapter with ParticipantRepository for accurate counts
+        // Setup tabs
+        tabLayout.addTab(tabLayout.newTab().setText("Joined"));
+        tabLayout.addTab(tabLayout.newTab().setText("Interested"));
+
+        // Setup adapter with ParticipantRepository for accurate counts and current user ID
+        Long currentUserId = prefsManager.getUserId();
         adapter =
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        }, participantRepository);
+                        }, participantRepository, currentUserId);
         rvParticipations.setAdapter(adapter);
+
+        // Tab selection listener
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                filterActivitiesByTab(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
 
         // Swipe refresh
         swipeRefresh.setOnRefreshListener(
@@ -105,34 +133,22 @@ public class ParticipationsFragment extends Fragment {
                                         + (participants != null ? participants.size() : 0)
                                         + " participations");
 
+                        setLoading(false);
+                        swipeRefresh.setRefreshing(false);
+
                         if (participants == null || participants.isEmpty()) {
-                            setLoading(false);
-                            swipeRefresh.setRefreshing(false);
+                            allParticipations = new ArrayList<>();
                             adapter.setActivities(new ArrayList<>());
                             showEmptyView();
                             return;
                         }
 
-                        // Extract activities from participants - only show ACCEPTED/JOINED
-                        List<Activity> activities = new ArrayList<>();
-                        for (Participant participant : participants) {
-                            String status = participant.getStatus();
-                            // Only show activities where user is actually accepted/joined
-                            if (("ACCEPTED".equals(status) || "JOINED".equals(status))
-                                    && participant.getActivity() != null) {
-                                activities.add(participant.getActivity());
-                            }
-                        }
+                        // Store all participations
+                        allParticipations = participants;
 
-                        setLoading(false);
-                        swipeRefresh.setRefreshing(false);
-
-                        if (!activities.isEmpty()) {
-                            adapter.setActivities(activities);
-                            showContent();
-                        } else {
-                            showEmptyView();
-                        }
+                        // Filter based on selected tab
+                        int selectedTab = tabLayout != null ? tabLayout.getSelectedTabPosition() : TAB_JOINED;
+                        filterActivitiesByTab(selectedTab);
                     }
 
                     @Override
@@ -150,6 +166,38 @@ public class ParticipationsFragment extends Fragment {
                         showEmptyView();
                     }
                 });
+    }
+
+    private void filterActivitiesByTab(int tabPosition) {
+        List<Activity> filteredActivities = new ArrayList<>();
+
+        for (Participant participant : allParticipations) {
+            if (participant.getActivity() == null) {
+                continue;
+            }
+
+            String status = participant.getStatus();
+
+            if (tabPosition == TAB_JOINED) {
+                // Show ACCEPTED and JOINED activities
+                if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                    filteredActivities.add(participant.getActivity());
+                }
+            } else if (tabPosition == TAB_INTERESTED) {
+                // Show PENDING and INTERESTED activities
+                if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                    filteredActivities.add(participant.getActivity());
+                }
+            }
+        }
+
+        if (!filteredActivities.isEmpty()) {
+            adapter.setActivities(filteredActivities);
+            showContent();
+        } else {
+            adapter.setActivities(new ArrayList<>());
+            showEmptyView();
+        }
     }
 
     private void setLoading(boolean loading) {
