@@ -19,8 +19,14 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
+import com.gege.activityfindermobile.data.dto.ReviewCreateRequest;
+import com.gege.activityfindermobile.data.model.ActivityMessage;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.data.model.Review;
+import com.gege.activityfindermobile.data.repository.MessageRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
+import com.gege.activityfindermobile.data.repository.ReviewRepository;
+import com.gege.activityfindermobile.ui.adapters.CommentAdapter;
 import com.gege.activityfindermobile.ui.adapters.ParticipantAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
@@ -43,6 +49,10 @@ public class ActivityDetailFragment extends Fragment {
 
     @Inject ParticipantRepository participantRepository;
 
+    @Inject ReviewRepository reviewRepository;
+
+    @Inject MessageRepository messageRepository;
+
     @Inject SharedPreferencesManager prefsManager;
 
     private Long activityId;
@@ -58,6 +68,7 @@ public class ActivityDetailFragment extends Fragment {
     private TextInputEditText etComment;
     private RecyclerView rvComments;
     private TextView tvNoComments;
+    private CommentAdapter commentAdapter;
 
     @Nullable
     @Override
@@ -110,6 +121,10 @@ public class ActivityDetailFragment extends Fragment {
                         });
         rvParticipants.setAdapter(participantAdapter);
 
+        // Setup comment adapter
+        commentAdapter = new CommentAdapter(requireContext());
+        rvComments.setAdapter(commentAdapter);
+
         // Setup send comment button
         tilComment.setEndIconOnClickListener(v -> sendComment());
 
@@ -150,6 +165,9 @@ public class ActivityDetailFragment extends Fragment {
 
         // Load participants from API
         loadParticipants();
+
+        // Load comments
+        loadComments();
     }
 
     private void displayActivityData(View view, Bundle args) {
@@ -619,13 +637,88 @@ public class ActivityDetailFragment extends Fragment {
         String commentText = etComment.getText() != null ? etComment.getText().toString().trim() : "";
 
         if (commentText.isEmpty()) {
-            Toast.makeText(requireContext(), "Please write a comment", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Please write a message", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // TODO: Implement comment posting using MessageRepository
-        // For now, just show a placeholder message
-        Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show();
-        etComment.setText("");
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(requireContext(), "Please login to send messages", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (activityId == null || activityId == 0L) {
+            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Disable input while sending
+        etComment.setEnabled(false);
+        tilComment.setEnabled(false);
+
+        // Send message to activity chat
+        messageRepository.sendMessage(
+                activityId,
+                commentText,
+                new ApiCallback<ActivityMessage>() {
+                    @Override
+                    public void onSuccess(ActivityMessage message) {
+                        // Re-enable input
+                        etComment.setEnabled(true);
+                        tilComment.setEnabled(true);
+
+                        // Clear input field
+                        etComment.setText("");
+
+                        // Show success message
+                        Toast.makeText(requireContext(), "Message sent!", Toast.LENGTH_SHORT)
+                                .show();
+
+                        // Reload comments
+                        loadComments();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Re-enable input
+                        etComment.setEnabled(true);
+                        tilComment.setEnabled(true);
+
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to send message: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+    }
+
+    private void loadComments() {
+        if (activityId == null || activityId == 0L) {
+            return;
+        }
+
+        messageRepository.getMessages(
+                activityId,
+                new ApiCallback<List<ActivityMessage>>() {
+                    @Override
+                    public void onSuccess(List<ActivityMessage> messages) {
+                        if (messages != null && !messages.isEmpty()) {
+                            commentAdapter.setComments(messages);
+                            rvComments.setVisibility(View.VISIBLE);
+                            tvNoComments.setVisibility(View.GONE);
+                        } else {
+                            rvComments.setVisibility(View.GONE);
+                            tvNoComments.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Silently fail, show empty state
+                        rvComments.setVisibility(View.GONE);
+                        tvNoComments.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 }
