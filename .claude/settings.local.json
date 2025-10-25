@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//home/me/**)"
+      "Read(//home/me/**)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

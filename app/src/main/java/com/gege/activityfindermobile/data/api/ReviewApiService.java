@@ -1,6 +1,6 @@
 package com.gege.activityfindermobile.data.api;
 
-import com.gege.activityfindermobile.data.dto.ReviewCreateRequest;
+import com.gege.activityfindermobile.data.dto.ReviewRequest;
 import com.gege.activityfindermobile.data.model.Review;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import retrofit2.http.Path;
 public interface ReviewApiService {
 
     @POST("api/reviews")
-    Call<Review> createReview(@Header("User-Id") Long userId, @Body ReviewCreateRequest request);
+    Call<Review> createReview(@Header("User-Id") Long userId, @Body ReviewRequest request);
 
     @GET("api/reviews/user/{userId}")
     Call<List<Review>> getReviewsForUser(@Path("userId") Long userId);

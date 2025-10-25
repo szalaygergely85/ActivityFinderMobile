@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,7 @@ import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.data.repository.ReviewRepository;
 import com.gege.activityfindermobile.ui.adapters.CommentAdapter;
 import com.gege.activityfindermobile.ui.adapters.ParticipantAdapter;
+import com.gege.activityfindermobile.ui.review.ReviewDialog;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -113,12 +115,21 @@ public class ActivityDetailFragment extends Fragment {
         rvComments = view.findViewById(R.id.rv_comments);
         tvNoComments = view.findViewById(R.id.tv_no_comments);
 
+        // Setup creator card review button
+        MaterialButton btnReviewCreator = view.findViewById(R.id.btn_review_creator);
+
         // Setup participant adapter with click listener
         participantAdapter =
                 new ParticipantAdapter(
                         participant -> {
                             navigateToUserProfile(participant.getUserId());
                         });
+        participantAdapter.setReviewListener((participant, activityIdParam) -> {
+            showReviewDialog(participant, activityIdParam);
+        });
+        participantAdapter.setActivityId(activityId);
+        participantAdapter.setCurrentUserId(prefsManager.getUserId());
+        participantAdapter.setCreatorId(creatorId);
         rvParticipants.setAdapter(participantAdapter);
 
         // Setup comment adapter
@@ -130,14 +141,22 @@ public class ActivityDetailFragment extends Fragment {
 
         // Get arguments
         Bundle args = getArguments();
+        String activityDateStr = "";
         if (args != null) {
             activityId = args.getLong("activityId", 0L);
             creatorId = args.getLong("creatorId", 0L);
+            activityDateStr = args.getString("date", "");
             displayActivityData(view, args);
         } else {
             // Fallback to test data if no arguments
             displayTestData(view);
         }
+
+        // Set activity date on participant adapter for review button visibility
+        participantAdapter.setActivityDate(activityDateStr);
+
+        // Check if activity is expired and hide join button if it is
+        boolean isExpired = isActivityExpired(activityDateStr);
 
         // Setup join button
         btnExpressInterest.setOnClickListener(v -> expressInterest());
@@ -163,6 +182,10 @@ public class ActivityDetailFragment extends Fragment {
             Log.d("ActivityDetailFragment", "User is NOT the creator - checking participation status");
             // Hide comment section by default, will show if user is joined
             hideCommentSection();
+            // Hide join button if activity is expired
+            if (isExpired) {
+                btnExpressInterest.setVisibility(View.GONE);
+            }
             // Check if user has already joined this activity
             checkUserParticipationStatus();
         }
@@ -184,6 +207,9 @@ public class ActivityDetailFragment extends Fragment {
         TextView tvCreatorRating = view.findViewById(R.id.tv_creator_rating);
         Chip chipCategory = view.findViewById(R.id.chip_category);
         Chip badgeTrending = view.findViewById(R.id.badge_trending);
+        Chip badgeExpired = view.findViewById(R.id.badge_expired);
+        MaterialButton btnReviewCreator = view.findViewById(R.id.btn_review_creator);
+        ImageView ivArrowCreator = view.findViewById(R.id.iv_arrow_creator);
 
         // Load creator avatar
         String creatorAvatar = args.getString("creatorAvatar");
@@ -206,6 +232,31 @@ public class ActivityDetailFragment extends Fragment {
 
         chipCategory.setText(args.getString("category", ""));
         badgeTrending.setVisibility(args.getBoolean("trending", false) ? View.VISIBLE : View.GONE);
+
+        // Check if activity is expired
+        String dateStr = args.getString("date", "");
+        boolean isExpired = isActivityExpired(dateStr);
+        badgeExpired.setVisibility(isExpired ? View.VISIBLE : View.GONE);
+
+        // Setup review button for creator
+        String creatorName = args.getString("creatorName", "");
+        Long currentUserId = prefsManager.getUserId();
+        boolean isCurrentUserCreator = currentUserId != null && currentUserId.equals(creatorId);
+
+        if (isExpired && !isCurrentUserCreator) {
+            btnReviewCreator.setVisibility(View.VISIBLE);
+            ivArrowCreator.setVisibility(View.GONE);
+            btnReviewCreator.setOnClickListener(v -> {
+                // Create a fake participant object for the creator
+                Participant creatorParticipant = new Participant();
+                creatorParticipant.setUserId(creatorId);
+                creatorParticipant.setUserName(creatorName);
+                showReviewDialog(creatorParticipant, activityId);
+            });
+        } else {
+            btnReviewCreator.setVisibility(View.GONE);
+            ivArrowCreator.setVisibility(View.VISIBLE);
+        }
     }
 
     private void displayTestData(View view) {
@@ -264,6 +315,12 @@ public class ActivityDetailFragment extends Fragment {
                         }
 
                         if (!displayParticipants.isEmpty()) {
+                            participantAdapter.setActivityId(activityId);
+                            participantAdapter.setActivityDate(
+                                    getArguments() != null ? getArguments().getString("date", "") : ""
+                            );
+                            participantAdapter.setCurrentUserId(currentUserId);
+                            participantAdapter.setCreatorId(creatorId);
                             participantAdapter.setParticipants(displayParticipants);
                             rvParticipants.setVisibility(View.VISIBLE);
                             tvNoParticipants.setVisibility(View.GONE);
@@ -777,5 +834,37 @@ public class ActivityDetailFragment extends Fragment {
                         tvNoComments.setVisibility(View.VISIBLE);
                     }
                 });
+    }
+
+    private boolean isActivityExpired(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return false;
+        }
+
+        try {
+            // Parse the date string (assuming format like "Nov 15, 2025")
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
+            java.util.Date activityDate = sdf.parse(dateStr);
+            java.util.Date today = new java.util.Date();
+
+            // If activity date is before today, it's expired
+            return activityDate != null && activityDate.before(today);
+        } catch (java.text.ParseException e) {
+            // If date parsing fails, assume not expired
+            return false;
+        }
+    }
+
+    private void showReviewDialog(Participant participant, Long activityIdParam) {
+        ReviewDialog reviewDialog = ReviewDialog.newInstance(
+                participant.getUserId(),
+                participant.getUserName(),
+                activityIdParam
+        );
+        reviewDialog.setOnReviewSubmittedListener(() -> {
+            // Refresh participants list after review is submitted
+            loadParticipants();
+        });
+        reviewDialog.show(getChildFragmentManager(), "ReviewDialog");
     }
 }
