@@ -8,7 +8,7 @@ import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
 import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
-import com.gege.activityfindermobile.data.dto.ReviewCreateRequest;
+import com.gege.activityfindermobile.data.dto.ReviewRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
@@ -205,8 +205,8 @@ public class RepositoryUsageExample {
             return;
         }
 
-        ReviewCreateRequest request =
-                new ReviewCreateRequest(
+        ReviewRequest request =
+                new ReviewRequest(
                         reviewedUserId, activityId, 5, "Great person to hang out with!");
 
         reviewRepository.createReview(

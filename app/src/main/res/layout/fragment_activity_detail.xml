@@ -76,6 +76,18 @@
                             android:textColor="@color/white"
                             tools:visibility="visible" />
 
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/badge_expired"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Expired"
+                            android:visibility="gone"
+                            android:layout_marginStart="@dimen/margin_small"
+                            app:chipBackgroundColor="@color/error"
+                            app:chipStrokeWidth="0dp"
+                            android:textColor="@color/white"
+                            tools:visibility="visible" />
+
                     </LinearLayout>
 
                     <!-- Category -->
@@ -358,7 +370,20 @@
 
                     </LinearLayout>
 
+                    <!-- Review button for organizer -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_review_creator"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Review"
+                        android:textSize="11sp"
+                        app:icon="@drawable/ic_star"
+                        app:iconTint="@color/warning"
+                        android:visibility="gone" />
+
                     <ImageView
+                        android:id="@+id/iv_arrow_creator"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_arrow_right"

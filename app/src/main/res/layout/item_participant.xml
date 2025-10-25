@@ -66,7 +66,20 @@
             app:chipBackgroundColor="@color/success"
             app:chipStrokeWidth="0dp"
             android:textColor="@color/white"
+            android:layout_marginEnd="@dimen/margin_small"
             tools:text="Joined" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_review"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Review"
+            android:textSize="11sp"
+            app:icon="@drawable/ic_star"
+            app:iconTint="@color/warning"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
     </LinearLayout>
 

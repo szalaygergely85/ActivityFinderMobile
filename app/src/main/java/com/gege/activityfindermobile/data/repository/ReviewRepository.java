@@ -5,7 +5,7 @@ import android.util.Log;
 import com.gege.activityfindermobile.data.api.ReviewApiService;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
-import com.gege.activityfindermobile.data.dto.ReviewCreateRequest;
+import com.gege.activityfindermobile.data.dto.ReviewRequest;
 import com.gege.activityfindermobile.data.model.Review;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class ReviewRepository {
 
     /** Create a review */
     public void createReview(
-            Long userId, ReviewCreateRequest request, ApiCallback<Review> callback) {
+            Long userId, ReviewRequest request, ApiCallback<Review> callback) {
         reviewApiService
                 .createReview(userId, request)
                 .enqueue(

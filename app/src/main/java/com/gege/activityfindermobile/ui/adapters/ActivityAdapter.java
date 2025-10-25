@@ -84,7 +84,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         de.hdodenhof.circleimageview.CircleImageView ivCreatorAvatar;
         TextView tvTitle, tvDescription, tvDate, tvTime, tvLocation;
         TextView tvCreatorName, tvCreatorRating, tvSpotsAvailable;
-        Chip chipCategory, badgeTrending, chipStatus;
+        Chip chipCategory, badgeTrending, chipStatus, chipExpired;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -100,6 +100,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             chipCategory = itemView.findViewById(R.id.chip_category);
             badgeTrending = itemView.findViewById(R.id.badge_trending);
             chipStatus = itemView.findViewById(R.id.chip_status);
+            chipExpired = itemView.findViewById(R.id.chip_expired);
 
             itemView.setOnClickListener(
                     v -> {
@@ -170,6 +171,10 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     activity.getTrending() != null && activity.getTrending()
                             ? View.VISIBLE
                             : View.GONE);
+
+            // Check if activity is expired
+            boolean isExpired = isActivityExpired(activity);
+            chipExpired.setVisibility(isExpired ? View.VISIBLE : View.GONE);
 
             // Set status chip based on user's relationship with activity
             updateStatusChip(activity, chipStatus, context);
@@ -315,6 +320,25 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             chip.setChipIcon(ContextCompat.getDrawable(context, iconRes));
             chip.setChipIconTint(
                     ColorStateList.valueOf(ContextCompat.getColor(context, R.color.white)));
+        }
+
+        private boolean isActivityExpired(Activity activity) {
+            if (activity.getDate() == null) {
+                return false;
+            }
+
+            try {
+                // Parse the date string (assuming format like "Nov 15, 2025")
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
+                java.util.Date activityDate = sdf.parse(activity.getDate());
+                java.util.Date today = new java.util.Date();
+
+                // If activity date is before today, it's expired
+                return activityDate != null && activityDate.before(today);
+            } catch (java.text.ParseException e) {
+                // If date parsing fails, assume not expired
+                return false;
+            }
         }
     }
 }
