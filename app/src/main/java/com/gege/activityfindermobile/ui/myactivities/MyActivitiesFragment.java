@@ -72,7 +72,9 @@ public class MyActivitiesFragment extends Fragment {
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        }, participantRepository, currentUserId);
+                        },
+                        participantRepository,
+                        currentUserId);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh

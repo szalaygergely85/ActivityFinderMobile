@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
-import com.gege.activityfindermobile.data.api.ParticipantApiService;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
@@ -22,8 +21,6 @@ import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Inject;
 
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHolder> {
 
@@ -40,12 +37,16 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         this.listener = listener;
     }
 
-    public ActivityAdapter(OnActivityClickListener listener, ParticipantRepository participantRepository) {
+    public ActivityAdapter(
+            OnActivityClickListener listener, ParticipantRepository participantRepository) {
         this.listener = listener;
         this.participantRepository = participantRepository;
     }
 
-    public ActivityAdapter(OnActivityClickListener listener, ParticipantRepository participantRepository, Long currentUserId) {
+    public ActivityAdapter(
+            OnActivityClickListener listener,
+            ParticipantRepository participantRepository,
+            Long currentUserId) {
         this.listener = listener;
         this.participantRepository = participantRepository;
         this.currentUserId = currentUserId;
@@ -143,12 +144,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             tvLocation.setText(activity.getLocation());
             tvCreatorName.setText(activity.getCreatorName());
 
-            // Handle rating with null check
-            if (activity.getCreatorRating() != null) {
-                tvCreatorRating.setText(String.format("%.1f", activity.getCreatorRating()));
-            } else {
-                tvCreatorRating.setText("N/A");
-            }
+            // Display creator rating if available
+            displayCreatorRating(activity.getCreatorRating(), tvCreatorRating);
 
             // Get current participants count - fetch actual accepted count
             int totalSpots = activity.getTotalSpots() != null ? activity.getTotalSpots() : 0;
@@ -211,17 +208,25 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                         public void onSuccess(List<Participant> participants) {
                             if (participants != null && currentUserId != null) {
                                 for (Participant p : participants) {
-                                    if (p.getUserId() != null && p.getUserId().equals(currentUserId)) {
+                                    if (p.getUserId() != null
+                                            && p.getUserId().equals(currentUserId)) {
                                         String status = p.getStatus();
                                         if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
                                             chipStatus.setText("Joined");
-                                            chipStatus.setChipBackgroundColorResource(R.color.success);
-                                            chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                                            chipStatus.setChipBackgroundColorResource(
+                                                    R.color.success);
+                                            chipStatus.setTextColor(
+                                                    context.getResources()
+                                                            .getColor(R.color.white, null));
                                             chipStatus.setVisibility(View.VISIBLE);
-                                        } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                                        } else if ("PENDING".equals(status)
+                                                || "INTERESTED".equals(status)) {
                                             chipStatus.setText("Interested");
-                                            chipStatus.setChipBackgroundColorResource(R.color.warning);
-                                            chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                                            chipStatus.setChipBackgroundColorResource(
+                                                    R.color.warning);
+                                            chipStatus.setTextColor(
+                                                    context.getResources()
+                                                            .getColor(R.color.white, null));
                                             chipStatus.setVisibility(View.VISIBLE);
                                         }
                                         break;
@@ -237,7 +242,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     });
         }
 
-        private void loadAcceptedParticipantsCount(Long activityId, int totalSpots, TextView tvSpotsAvailable) {
+        private void loadAcceptedParticipantsCount(
+                Long activityId, int totalSpots, TextView tvSpotsAvailable) {
             participantRepository.getActivityParticipants(
                     activityId,
                     new ApiCallback<List<Participant>>() {
@@ -329,15 +335,39 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
             try {
                 // Parse the date string (assuming format like "Nov 15, 2025")
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
+                java.text.SimpleDateFormat sdf =
+                        new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
                 java.util.Date activityDate = sdf.parse(activity.getDate());
                 java.util.Date today = new java.util.Date();
 
-                // If activity date is before today, it's expired
-                return activityDate != null && activityDate.before(today);
+                // Reset time to start of day for both dates to compare just the date portion
+                java.util.Calendar calActivity = java.util.Calendar.getInstance();
+                calActivity.setTime(activityDate);
+                calActivity.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                calActivity.set(java.util.Calendar.MINUTE, 0);
+                calActivity.set(java.util.Calendar.SECOND, 0);
+                calActivity.set(java.util.Calendar.MILLISECOND, 0);
+
+                java.util.Calendar calToday = java.util.Calendar.getInstance();
+                calToday.setTime(today);
+                calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                calToday.set(java.util.Calendar.MINUTE, 0);
+                calToday.set(java.util.Calendar.SECOND, 0);
+                calToday.set(java.util.Calendar.MILLISECOND, 0);
+
+                // Activity is expired if the date is before today (not including today)
+                return calActivity.before(calToday);
             } catch (java.text.ParseException e) {
                 // If date parsing fails, assume not expired
                 return false;
+            }
+        }
+
+        private void displayCreatorRating(Double rating, TextView tvCreatorRating) {
+            if (rating == null || rating == 0.0) {
+                tvCreatorRating.setText("N/A");
+            } else {
+                tvCreatorRating.setText(String.format("%.1f", rating));
             }
         }
     }

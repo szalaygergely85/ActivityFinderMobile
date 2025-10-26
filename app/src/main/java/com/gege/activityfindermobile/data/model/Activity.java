@@ -42,6 +42,10 @@ public class Activity {
     @SerializedName("trending")
     private Boolean trending;
 
+    @SerializedName("creator")
+    private User creator;
+
+    // Keep these for backwards compatibility during transition
     @SerializedName("creatorId")
     private Long creatorId;
 
@@ -52,9 +56,6 @@ public class Activity {
             value = "creatorImageUrl",
             alternate = {"creatorAvatar"})
     private String creatorAvatar;
-
-    @SerializedName("creatorRating")
-    private Double creatorRating;
 
     @SerializedName("creatorBadge")
     private String creatorBadge;
@@ -229,7 +230,19 @@ public class Activity {
         this.trending = trending;
     }
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    // Backwards compatibility methods - delegate to creator object if available
     public Long getCreatorId() {
+        if (creator != null && creator.getId() != null) {
+            return creator.getId();
+        }
         return creatorId;
     }
 
@@ -238,6 +251,9 @@ public class Activity {
     }
 
     public String getCreatorName() {
+        if (creator != null && creator.getFullName() != null) {
+            return creator.getFullName();
+        }
         return creatorName;
     }
 
@@ -246,6 +262,9 @@ public class Activity {
     }
 
     public String getCreatorAvatar() {
+        if (creator != null && creator.getProfileImageUrl() != null) {
+            return creator.getProfileImageUrl();
+        }
         return creatorAvatar;
     }
 
@@ -253,20 +272,22 @@ public class Activity {
         this.creatorAvatar = creatorAvatar;
     }
 
-    public Double getCreatorRating() {
-        return creatorRating;
-    }
-
-    public void setCreatorRating(Double creatorRating) {
-        this.creatorRating = creatorRating;
-    }
-
     public String getCreatorBadge() {
+        if (creator != null && creator.getBadge() != null) {
+            return creator.getBadge();
+        }
         return creatorBadge;
     }
 
     public void setCreatorBadge(String creatorBadge) {
         this.creatorBadge = creatorBadge;
+    }
+
+    public Double getCreatorRating() {
+        if (creator != null && creator.getRating() != null) {
+            return creator.getRating();
+        }
+        return null;
     }
 
     public Integer getInterestedUsersCount() {

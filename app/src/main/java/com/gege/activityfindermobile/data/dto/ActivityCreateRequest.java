@@ -18,9 +18,6 @@ public class ActivityCreateRequest {
     @SerializedName("totalSpots")
     private Integer totalSpots;
 
-    @SerializedName("reservedForFriendsSpots")
-    private Integer reservedForFriendsSpots;
-
     @SerializedName("category")
     private String category;
 
@@ -33,14 +30,12 @@ public class ActivityCreateRequest {
             String activityDate,
             String location,
             Integer totalSpots,
-            Integer reservedForFriendsSpots,
             String category) {
         this.title = title;
         this.description = description;
         this.activityDate = activityDate;
         this.location = location;
         this.totalSpots = totalSpots;
-        this.reservedForFriendsSpots = reservedForFriendsSpots;
         this.category = category;
     }
 
@@ -83,14 +78,6 @@ public class ActivityCreateRequest {
 
     public void setTotalSpots(Integer totalSpots) {
         this.totalSpots = totalSpots;
-    }
-
-    public Integer getReservedForFriendsSpots() {
-        return reservedForFriendsSpots;
-    }
-
-    public void setReservedForFriendsSpots(Integer reservedForFriendsSpots) {
-        this.reservedForFriendsSpots = reservedForFriendsSpots;
     }
 
     public String getCategory() {

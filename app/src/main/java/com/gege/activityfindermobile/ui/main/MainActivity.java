@@ -104,41 +104,44 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNotificationPolling() {
         notificationPollingHandler = new Handler(Looper.getMainLooper());
-        notificationPollingRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (prefsManager.isLoggedIn()) {
-                    updateNotificationBadge();
-                }
-                // Poll every 30 seconds
-                notificationPollingHandler.postDelayed(this, 30000);
-            }
-        };
+        notificationPollingRunnable =
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        if (prefsManager.isLoggedIn()) {
+                            updateNotificationBadge();
+                        }
+                        // Poll every 30 seconds
+                        notificationPollingHandler.postDelayed(this, 30000);
+                    }
+                };
         // Start polling immediately
         notificationPollingHandler.post(notificationPollingRunnable);
     }
 
     private void updateNotificationBadge() {
-        notificationRepository.getUnreadCount(new ApiCallback<Integer>() {
-            @Override
-            public void onSuccess(Integer count) {
-                BadgeDrawable badge = bottomNavigationView.getOrCreateBadge(R.id.notificationsFragment);
-                if (count != null && count > 0) {
-                    badge.setVisible(true);
-                    badge.setNumber(count);
-                    // Set badge appearance
-                    badge.setBackgroundColor(getResources().getColor(R.color.error, null));
-                    badge.setBadgeTextColor(getResources().getColor(R.color.white, null));
-                } else {
-                    badge.setVisible(false);
-                }
-            }
+        notificationRepository.getUnreadCount(
+                new ApiCallback<Integer>() {
+                    @Override
+                    public void onSuccess(Integer count) {
+                        BadgeDrawable badge =
+                                bottomNavigationView.getOrCreateBadge(R.id.notificationsFragment);
+                        if (count != null && count > 0) {
+                            badge.setVisible(true);
+                            badge.setNumber(count);
+                            // Set badge appearance
+                            badge.setBackgroundColor(getResources().getColor(R.color.error, null));
+                            badge.setBadgeTextColor(getResources().getColor(R.color.white, null));
+                        } else {
+                            badge.setVisible(false);
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                // Silently fail - don't show error to user for background polling
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Silently fail - don't show error to user for background polling
+                    }
+                });
     }
 
     public void refreshNotificationBadge() {

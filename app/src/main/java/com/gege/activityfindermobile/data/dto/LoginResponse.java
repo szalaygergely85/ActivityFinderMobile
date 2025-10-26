@@ -33,8 +33,15 @@ public class LoginResponse {
 
     public LoginResponse() {}
 
-    public LoginResponse(String accessToken, String refreshToken, Long userId, String email,
-                        String fullName, String profileImageUrl, Double rating, String badge) {
+    public LoginResponse(
+            String accessToken,
+            String refreshToken,
+            Long userId,
+            String email,
+            String fullName,
+            String profileImageUrl,
+            Double rating,
+            String badge) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.userId = userId;
@@ -45,8 +52,16 @@ public class LoginResponse {
         this.badge = badge;
     }
 
-    public LoginResponse(String accessToken, String refreshToken, String type, Long userId,
-                        String email, String fullName, String profileImageUrl, Double rating, String badge) {
+    public LoginResponse(
+            String accessToken,
+            String refreshToken,
+            String type,
+            Long userId,
+            String email,
+            String fullName,
+            String profileImageUrl,
+            Double rating,
+            String badge) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.type = type;

@@ -136,8 +136,7 @@ public class LoginFragment extends Fragment {
                         setLoading(false);
 
                         // Check if response data is valid
-                        if (loginResponse == null
-                                || loginResponse.getUserId() == null) {
+                        if (loginResponse == null || loginResponse.getUserId() == null) {
                             Toast.makeText(
                                             requireContext(),
                                             "Login failed: Invalid response data",

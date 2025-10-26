@@ -158,8 +158,7 @@ public class RegisterFragment extends Fragment {
                         setLoading(false);
 
                         // Check if response data is valid
-                        if (loginResponse == null
-                                || loginResponse.getUserId() == null) {
+                        if (loginResponse == null || loginResponse.getUserId() == null) {
                             Toast.makeText(
                                             requireContext(),
                                             "Registration failed: Invalid response data",

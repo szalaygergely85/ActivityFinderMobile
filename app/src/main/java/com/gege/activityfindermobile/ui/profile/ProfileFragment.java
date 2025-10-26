@@ -189,7 +189,6 @@ public class ProfileFragment extends Fragment {
                 requireContext(), user.getProfileImageUrl(), ivProfileAvatar);
     }
 
-
     private void showLogoutDialog() {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Logout")

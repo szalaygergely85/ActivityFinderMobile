@@ -20,10 +20,8 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
-import com.gege.activityfindermobile.data.dto.ReviewCreateRequest;
 import com.gege.activityfindermobile.data.model.ActivityMessage;
 import com.gege.activityfindermobile.data.model.Participant;
-import com.gege.activityfindermobile.data.model.Review;
 import com.gege.activityfindermobile.data.repository.MessageRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.data.repository.ReviewRepository;
@@ -84,7 +82,9 @@ public class ActivityDetailFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d("ActivityDetailFragment", "onResume() called - reloading participants and checking status");
+        Log.d(
+                "ActivityDetailFragment",
+                "onResume() called - reloading participants and checking status");
         // Reload participants and check button state when returning to this screen
         loadParticipants();
 
@@ -93,7 +93,9 @@ public class ActivityDetailFragment extends Fragment {
         if (currentUserId != null && !currentUserId.equals(creatorId)) {
             checkUserParticipationStatus();
         } else {
-            Log.d("ActivityDetailFragment", "Skipping checkUserParticipationStatus in onResume - user is creator");
+            Log.d(
+                    "ActivityDetailFragment",
+                    "Skipping checkUserParticipationStatus in onResume - user is creator");
         }
     }
 
@@ -124,9 +126,10 @@ public class ActivityDetailFragment extends Fragment {
                         participant -> {
                             navigateToUserProfile(participant.getUserId());
                         });
-        participantAdapter.setReviewListener((participant, activityIdParam) -> {
-            showReviewDialog(participant, activityIdParam);
-        });
+        participantAdapter.setReviewListener(
+                (participant, activityIdParam) -> {
+                    showReviewDialog(participant, activityIdParam);
+                });
         participantAdapter.setActivityId(activityId);
         participantAdapter.setCurrentUserId(prefsManager.getUserId());
         participantAdapter.setCreatorId(creatorId);
@@ -166,9 +169,13 @@ public class ActivityDetailFragment extends Fragment {
 
         // Check if current user is the creator
         Long currentUserId = prefsManager.getUserId();
-        Log.d("ActivityDetailFragment", "Creator check - currentUserId: " + currentUserId + ", creatorId: " + creatorId);
+        Log.d(
+                "ActivityDetailFragment",
+                "Creator check - currentUserId: " + currentUserId + ", creatorId: " + creatorId);
         if (currentUserId != null && currentUserId.equals(creatorId)) {
-            Log.d("ActivityDetailFragment", "User IS the creator - hiding join button, showing manage button");
+            Log.d(
+                    "ActivityDetailFragment",
+                    "User IS the creator - hiding join button, showing manage button");
             // Show manage button for creator
             btnManage.setVisibility(View.VISIBLE);
             // Hide join button for creator
@@ -176,7 +183,9 @@ public class ActivityDetailFragment extends Fragment {
             // Creator can see and send messages
             showCommentSection();
         } else {
-            Log.d("ActivityDetailFragment", "User is NOT the creator - checking participation status");
+            Log.d(
+                    "ActivityDetailFragment",
+                    "User is NOT the creator - checking participation status");
             // Hide comment section by default, will show if user is joined
             hideCommentSection();
             // Hide join button if activity is expired
@@ -225,7 +234,11 @@ public class ActivityDetailFragment extends Fragment {
 
         tvCreatorName.setText(args.getString("creatorName", ""));
         double rating = args.getDouble("creatorRating", 0.0);
-        tvCreatorRating.setText(String.format("%.1f", rating) + " (15 reviews)");
+        if (rating > 0) {
+            tvCreatorRating.setText(String.format("%.1f", rating));
+        } else {
+            tvCreatorRating.setText("N/A");
+        }
 
         chipCategory.setText(args.getString("category", ""));
         badgeTrending.setVisibility(args.getBoolean("trending", false) ? View.VISIBLE : View.GONE);
@@ -243,19 +256,19 @@ public class ActivityDetailFragment extends Fragment {
         if (isExpired && !isCurrentUserCreator) {
             btnReviewCreator.setVisibility(View.VISIBLE);
             ivArrowCreator.setVisibility(View.GONE);
-            btnReviewCreator.setOnClickListener(v -> {
-                // Create a fake participant object for the creator
-                Participant creatorParticipant = new Participant();
-                creatorParticipant.setUserId(creatorId);
-                creatorParticipant.setUserName(creatorName);
-                showReviewDialog(creatorParticipant, activityId);
-            });
+            btnReviewCreator.setOnClickListener(
+                    v -> {
+                        // Create a fake participant object for the creator
+                        Participant creatorParticipant = new Participant();
+                        creatorParticipant.setUserId(creatorId);
+                        creatorParticipant.setUserName(creatorName);
+                        showReviewDialog(creatorParticipant, activityId);
+                    });
         } else {
             btnReviewCreator.setVisibility(View.GONE);
             ivArrowCreator.setVisibility(View.VISIBLE);
         }
     }
-
 
     private void loadParticipants() {
         if (activityId == null || activityId == 0L) {
@@ -268,7 +281,8 @@ public class ActivityDetailFragment extends Fragment {
                     @Override
                     public void onSuccess(List<Participant> participants) {
                         Long currentUserId = prefsManager.getUserId();
-                        boolean isCreator = currentUserId != null && currentUserId.equals(creatorId);
+                        boolean isCreator =
+                                currentUserId != null && currentUserId.equals(creatorId);
 
                         List<Participant> displayParticipants = new ArrayList<>();
                         if (participants != null) {
@@ -279,7 +293,9 @@ public class ActivityDetailFragment extends Fragment {
                                     displayParticipants.add(p);
                                 }
                                 // Also show PENDING and INTERESTED to creator
-                                else if (isCreator && ("PENDING".equals(status) || "INTERESTED".equals(status))) {
+                                else if (isCreator
+                                        && ("PENDING".equals(status)
+                                                || "INTERESTED".equals(status))) {
                                     displayParticipants.add(p);
                                 }
                             }
@@ -288,8 +304,9 @@ public class ActivityDetailFragment extends Fragment {
                         if (!displayParticipants.isEmpty()) {
                             participantAdapter.setActivityId(activityId);
                             participantAdapter.setActivityDate(
-                                    getArguments() != null ? getArguments().getString("date", "") : ""
-                            );
+                                    getArguments() != null
+                                            ? getArguments().getString("date", "")
+                                            : "");
                             participantAdapter.setCurrentUserId(currentUserId);
                             participantAdapter.setCreatorId(creatorId);
                             participantAdapter.setParticipants(displayParticipants);
@@ -313,7 +330,8 @@ public class ActivityDetailFragment extends Fragment {
                                     String status = p.getStatus();
                                     if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
                                         confirmedCount++;
-                                    } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                                    } else if ("PENDING".equals(status)
+                                            || "INTERESTED".equals(status)) {
                                         pendingCount++;
                                     }
                                 }
@@ -321,7 +339,13 @@ public class ActivityDetailFragment extends Fragment {
 
                             // Show pending count for creator
                             if (isCreator && pendingCount > 0) {
-                                tvSpots.setText(confirmedCount + " / " + totalSpots + " joined (" + pendingCount + " pending)");
+                                tvSpots.setText(
+                                        confirmedCount
+                                                + " / "
+                                                + totalSpots
+                                                + " joined ("
+                                                + pendingCount
+                                                + " pending)");
                             } else {
                                 tvSpots.setText(confirmedCount + " / " + totalSpots + " joined");
                             }
@@ -430,13 +454,17 @@ public class ActivityDetailFragment extends Fragment {
                                 || errorMessage.contains("exceeded")) {
                             Toast.makeText(
                                             requireContext(),
-                                            "You've reached the maximum application attempts (3) for this activity.",
+                                            "You've reached the maximum application attempts (3)"
+                                                    + " for this activity.",
                                             Toast.LENGTH_LONG)
                                     .show();
                             // Show max attempts state
                             showMaxAttemptsReachedState();
                         } else {
-                            Toast.makeText(requireContext(), "Failed to join: " + errorMessage, Toast.LENGTH_LONG)
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Failed to join: " + errorMessage,
+                                            Toast.LENGTH_LONG)
                                     .show();
                         }
                     }
@@ -456,11 +484,15 @@ public class ActivityDetailFragment extends Fragment {
     private void checkUserParticipationStatus() {
         Long userId = prefsManager.getUserId();
         if (userId == null || activityId == null || activityId == 0L) {
-            Log.d("ActivityDetailFragment", "checkUserParticipationStatus: userId or activityId is null");
+            Log.d(
+                    "ActivityDetailFragment",
+                    "checkUserParticipationStatus: userId or activityId is null");
             return;
         }
 
-        Log.d("ActivityDetailFragment", "Checking participation status for activity: " + activityId);
+        Log.d(
+                "ActivityDetailFragment",
+                "Checking participation status for activity: " + activityId);
 
         // Get user's participations to check if they've already joined
         participantRepository.getMyParticipations(
@@ -468,7 +500,11 @@ public class ActivityDetailFragment extends Fragment {
                 new ApiCallback<List<Participant>>() {
                     @Override
                     public void onSuccess(List<Participant> participants) {
-                        Log.d("ActivityDetailFragment", "Got " + (participants != null ? participants.size() : 0) + " participations");
+                        Log.d(
+                                "ActivityDetailFragment",
+                                "Got "
+                                        + (participants != null ? participants.size() : 0)
+                                        + " participations");
 
                         boolean found = false;
                         // Check if any participation matches this activity
@@ -478,7 +514,9 @@ public class ActivityDetailFragment extends Fragment {
                                         && participant.getActivityId().equals(activityId)) {
                                     found = true;
                                     String status = participant.getStatus();
-                                    Log.d("ActivityDetailFragment", "Found participation with status: " + status);
+                                    Log.d(
+                                            "ActivityDetailFragment",
+                                            "Found participation with status: " + status);
 
                                     // Update button based on participation status
                                     if ("ACCEPTED".equals(status)) {
@@ -487,14 +525,24 @@ public class ActivityDetailFragment extends Fragment {
                                     } else if ("JOINED".equals(status)) {
                                         // Fully joined - show leave option
                                         updateButtonToJoinedState();
-                                    } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                                    } else if ("PENDING".equals(status)
+                                            || "INTERESTED".equals(status)) {
                                         // Waiting for approval - show cancel option
                                         updateButtonToPendingState();
-                                    } else if ("WITHDRAWN".equals(status) || "LEFT".equals(status) || "DECLINED".equals(status)) {
+                                    } else if ("WITHDRAWN".equals(status)
+                                            || "LEFT".equals(status)
+                                            || "DECLINED".equals(status)) {
                                         // User previously left/withdrawn/declined - can reapply
-                                        // Backend will enforce the 3-attempt limit when they try to apply
+                                        // Backend will enforce the 3-attempt limit when they try to
+                                        // apply
                                         Integer attempts = participant.getApplicationAttempts();
-                                        Log.d("ActivityDetailFragment", "User previously " + status + " - attempts: " + attempts + " - can reapply");
+                                        Log.d(
+                                                "ActivityDetailFragment",
+                                                "User previously "
+                                                        + status
+                                                        + " - attempts: "
+                                                        + attempts
+                                                        + " - can reapply");
                                         resetButtonToJoinState();
                                     }
                                     break;
@@ -503,14 +551,18 @@ public class ActivityDetailFragment extends Fragment {
                         }
 
                         if (!found) {
-                            Log.d("ActivityDetailFragment", "No participation found for this activity");
+                            Log.d(
+                                    "ActivityDetailFragment",
+                                    "No participation found for this activity");
                         }
                     }
 
                     @Override
                     public void onError(String errorMessage) {
                         // Silently fail - user can still try to join
-                        Log.e("ActivityDetailFragment", "Failed to check participation status: " + errorMessage);
+                        Log.e(
+                                "ActivityDetailFragment",
+                                "Failed to check participation status: " + errorMessage);
                     }
                 });
     }
@@ -571,9 +623,16 @@ public class ActivityDetailFragment extends Fragment {
         // Reset click listener
         btnExpressInterest.setOnClickListener(v -> expressInterest());
 
-        Log.d("ActivityDetailFragment", "Button reset complete - enabled: " + btnExpressInterest.isEnabled()
-                + ", visibility: " + (btnExpressInterest.getVisibility() == View.VISIBLE ? "VISIBLE" : "GONE/INVISIBLE")
-                + ", text: " + btnExpressInterest.getText());
+        Log.d(
+                "ActivityDetailFragment",
+                "Button reset complete - enabled: "
+                        + btnExpressInterest.isEnabled()
+                        + ", visibility: "
+                        + (btnExpressInterest.getVisibility() == View.VISIBLE
+                                ? "VISIBLE"
+                                : "GONE/INVISIBLE")
+                        + ", text: "
+                        + btnExpressInterest.getText());
 
         // Hide comment section for non-joined users
         hideCommentSection();
@@ -588,7 +647,9 @@ public class ActivityDetailFragment extends Fragment {
                 getResources().getColorStateList(R.color.text_secondary, null));
         btnExpressInterest.setIcon(null);
 
-        Log.d("ActivityDetailFragment", "Button set to max attempts - enabled: " + btnExpressInterest.isEnabled());
+        Log.d(
+                "ActivityDetailFragment",
+                "Button set to max attempts - enabled: " + btnExpressInterest.isEnabled());
 
         // Hide comment section for users who reached max attempts
         hideCommentSection();
@@ -719,7 +780,8 @@ public class ActivityDetailFragment extends Fragment {
     }
 
     private void sendComment() {
-        String commentText = etComment.getText() != null ? etComment.getText().toString().trim() : "";
+        String commentText =
+                etComment.getText() != null ? etComment.getText().toString().trim() : "";
 
         if (commentText.isEmpty()) {
             Toast.makeText(requireContext(), "Please write a message", Toast.LENGTH_SHORT).show();
@@ -728,7 +790,8 @@ public class ActivityDetailFragment extends Fragment {
 
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "Please login to send messages", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Please login to send messages", Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
 
@@ -814,7 +877,8 @@ public class ActivityDetailFragment extends Fragment {
 
         try {
             // Parse the date string (assuming format like "Nov 15, 2025")
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
+            java.text.SimpleDateFormat sdf =
+                    new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
             java.util.Date activityDate = sdf.parse(dateStr);
             java.util.Date today = new java.util.Date();
 
@@ -842,15 +906,14 @@ public class ActivityDetailFragment extends Fragment {
     }
 
     private void showReviewDialog(Participant participant, Long activityIdParam) {
-        ReviewDialog reviewDialog = ReviewDialog.newInstance(
-                participant.getUserId(),
-                participant.getUserName(),
-                activityIdParam
-        );
-        reviewDialog.setOnReviewSubmittedListener(() -> {
-            // Refresh participants list after review is submitted
-            loadParticipants();
-        });
+        ReviewDialog reviewDialog =
+                ReviewDialog.newInstance(
+                        participant.getUserId(), participant.getUserName(), activityIdParam);
+        reviewDialog.setOnReviewSubmittedListener(
+                () -> {
+                    // Refresh participants list after review is submitted
+                    loadParticipants();
+                });
         reviewDialog.show(getChildFragmentManager(), "ReviewDialog");
     }
 }

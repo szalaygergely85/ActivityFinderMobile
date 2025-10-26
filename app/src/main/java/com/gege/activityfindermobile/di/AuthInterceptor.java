@@ -26,7 +26,10 @@ public class AuthInterceptor implements Interceptor {
     private final dagger.Lazy<UserApiService> userApiServiceLazy;
 
     @Inject
-    public AuthInterceptor(SharedPreferencesManager prefsManager, @ApplicationContext Context context, dagger.Lazy<UserApiService> userApiServiceLazy) {
+    public AuthInterceptor(
+            SharedPreferencesManager prefsManager,
+            @ApplicationContext Context context,
+            dagger.Lazy<UserApiService> userApiServiceLazy) {
         this.prefsManager = prefsManager;
         this.context = context;
         this.userApiServiceLazy = userApiServiceLazy;
@@ -77,7 +80,7 @@ public class AuthInterceptor implements Interceptor {
 
                         // Call refresh token endpoint
                         retrofit2.Response<LoginResponse> refreshResponse =
-                            userApiService.refreshToken("Bearer " + refreshToken).execute();
+                                userApiService.refreshToken("Bearer " + refreshToken).execute();
 
                         if (refreshResponse.isSuccessful() && refreshResponse.body() != null) {
                             LoginResponse loginResponse = refreshResponse.body();
@@ -90,9 +93,13 @@ public class AuthInterceptor implements Interceptor {
                             }
 
                             // Retry the original request with new token
-                            Request newRequest = originalRequest.newBuilder()
-                                    .header("Authorization", "Bearer " + loginResponse.getAccessToken())
-                                    .build();
+                            Request newRequest =
+                                    originalRequest
+                                            .newBuilder()
+                                            .header(
+                                                    "Authorization",
+                                                    "Bearer " + loginResponse.getAccessToken())
+                                            .build();
                             return chain.proceed(newRequest);
                         } else {
                             Log.e(TAG, "Token refresh failed: " + refreshResponse.code());
@@ -106,7 +113,8 @@ public class AuthInterceptor implements Interceptor {
                 Log.w(TAG, "Token refresh failed, logging out user");
                 prefsManager.clearUserData();
 
-                // Restart MainActivity which will redirect to LoginFragment since user is logged out
+                // Restart MainActivity which will redirect to LoginFragment since user is logged
+                // out
                 Intent intent = new Intent(context, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 context.startActivity(intent);

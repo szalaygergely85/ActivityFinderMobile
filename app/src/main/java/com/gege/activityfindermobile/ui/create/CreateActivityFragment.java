@@ -49,15 +49,8 @@ public class CreateActivityFragment extends Fragment {
             tilDate,
             tilTime,
             tilLocation,
-            tilTotalSpots,
-            tilFriendSpots;
-    private TextInputEditText etTitle,
-            etDescription,
-            etDate,
-            etTime,
-            etLocation,
-            etTotalSpots,
-            etFriendSpots;
+            tilTotalSpots;
+    private TextInputEditText etTitle, etDescription, etDate, etTime, etLocation, etTotalSpots;
     private AutoCompleteTextView etCategory;
     private MaterialButton btnCreate;
     private CircularProgressIndicator progressLoading;
@@ -98,7 +91,6 @@ public class CreateActivityFragment extends Fragment {
         tilTime = view.findViewById(R.id.til_time);
         tilLocation = view.findViewById(R.id.til_location);
         tilTotalSpots = view.findViewById(R.id.til_total_spots);
-        tilFriendSpots = view.findViewById(R.id.til_friend_spots);
 
         etTitle = view.findViewById(R.id.et_title);
         etDescription = view.findViewById(R.id.et_description);
@@ -107,7 +99,6 @@ public class CreateActivityFragment extends Fragment {
         etTime = view.findViewById(R.id.et_time);
         etLocation = view.findViewById(R.id.et_location);
         etTotalSpots = view.findViewById(R.id.et_total_spots);
-        etFriendSpots = view.findViewById(R.id.et_friend_spots);
 
         btnCreate = view.findViewById(R.id.btn_create);
         progressLoading = view.findViewById(R.id.progress_loading);
@@ -190,7 +181,6 @@ public class CreateActivityFragment extends Fragment {
         tilTime.setError(null);
         tilLocation.setError(null);
         tilTotalSpots.setError(null);
-        tilFriendSpots.setError(null);
 
         String title = etTitle.getText().toString().trim();
         String description = etDescription.getText().toString().trim();
@@ -199,7 +189,6 @@ public class CreateActivityFragment extends Fragment {
         String time = etTime.getText().toString().trim();
         String location = etLocation.getText().toString().trim();
         String totalSpotsStr = etTotalSpots.getText().toString().trim();
-        String friendSpotsStr = etFriendSpots.getText().toString().trim();
 
         // Validation
         boolean isValid = true;
@@ -240,7 +229,6 @@ public class CreateActivityFragment extends Fragment {
         }
 
         int totalSpots = 0;
-        int friendSpots = 0;
 
         try {
             if (!totalSpotsStr.isEmpty()) {
@@ -255,28 +243,12 @@ public class CreateActivityFragment extends Fragment {
             isValid = false;
         }
 
-        try {
-            if (!friendSpotsStr.isEmpty()) {
-                friendSpots = Integer.parseInt(friendSpotsStr);
-                if (friendSpots < 0) {
-                    tilFriendSpots.setError("Cannot be negative");
-                    isValid = false;
-                } else if (friendSpots > totalSpots) {
-                    tilFriendSpots.setError("Cannot exceed total spots");
-                    isValid = false;
-                }
-            }
-        } catch (NumberFormatException e) {
-            tilFriendSpots.setError("Invalid number");
-            isValid = false;
-        }
-
         if (!isValid) {
             return;
         }
 
         // Create activity
-        createActivity(title, description, category, date, time, location, totalSpots, friendSpots);
+        createActivity(title, description, category, date, time, location, totalSpots);
     }
 
     private void createActivity(
@@ -286,8 +258,7 @@ public class CreateActivityFragment extends Fragment {
             String date,
             String time,
             String location,
-            int totalSpots,
-            int friendSpots) {
+            int totalSpots) {
         // Get user ID
         Long userId = prefsManager.getUserId();
         if (userId == null) {
@@ -308,13 +279,7 @@ public class CreateActivityFragment extends Fragment {
         // Create request
         ActivityCreateRequest request =
                 new ActivityCreateRequest(
-                        title,
-                        description,
-                        activityDateTime,
-                        location,
-                        totalSpots,
-                        friendSpots,
-                        category);
+                        title, description, activityDateTime, location, totalSpots, category);
 
         // Call API
         activityRepository.createActivity(

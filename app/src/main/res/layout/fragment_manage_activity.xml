@@ -19,7 +19,8 @@
             android:layout_height="?attr/actionBarSize"
             app:title="Manage Activity"
             app:navigationIcon="@drawable/ic_back"
-            app:titleTextColor="@color/text_primary" />
+            app:titleTextColor="@color/text_primary"
+            app:menu="@menu/menu_manage_activity" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
