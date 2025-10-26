@@ -4,12 +4,12 @@ import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
+import com.gege.activityfindermobile.data.model.ImageUploadResponse;
 import com.gege.activityfindermobile.data.model.User;
 
 import java.util.List;
 
 import okhttp3.MultipartBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -69,5 +69,6 @@ public interface UserApiService {
 
     @Multipart
     @POST("api/users/{id}/profile-image")
-    Call<ResponseBody> uploadProfileImage(@Path("id") Long userId, @Part MultipartBody.Part image);
+    Call<ImageUploadResponse> uploadProfileImage(
+            @Path("id") Long userId, @Part MultipartBody.Part image);
 }

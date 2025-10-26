@@ -37,6 +37,9 @@ public class User {
     @SerializedName("createdAt")
     private String createdAt;
 
+    @SerializedName("photos")
+    private List<UserPhoto> photos;
+
     // Constructor
     public User() {}
 
@@ -119,5 +122,13 @@ public class User {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<UserPhoto> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<UserPhoto> photos) {
+        this.photos = photos;
     }
 }

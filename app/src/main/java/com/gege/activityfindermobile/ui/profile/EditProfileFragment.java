@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -14,12 +15,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
+import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
+import com.gege.activityfindermobile.data.model.ImageUploadResponse;
 import com.gege.activityfindermobile.data.model.User;
+import com.gege.activityfindermobile.data.model.UserPhoto;
+import com.gege.activityfindermobile.data.repository.UserPhotoRepository;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -45,20 +53,24 @@ public class EditProfileFragment extends Fragment {
 
     @Inject UserRepository userRepository;
 
+    @Inject UserPhotoRepository userPhotoRepository;
+
     @Inject SharedPreferencesManager prefsManager;
 
     private CircleImageView ivProfilePicture;
-    private MaterialButton btnChoosePhoto, btnRemovePhoto;
     private TextInputEditText etFullName, etBio;
     private ChipGroup chipGroupInterests;
-    private MaterialButton btnSave;
+    private MaterialButton btnSave, btnUploadPhoto;
     private CircularProgressIndicator progressLoading;
+    private RecyclerView rvMyPhotos;
+    private TextView tvPhotoCount;
+    private View layoutPhotosEmpty;
 
     private User currentUser;
     private List<String> selectedInterests = new ArrayList<>();
-    private Uri selectedImageUri;
-    private boolean imageChanged = false;
-    private ActivityResultLauncher<String> imagePickerLauncher;
+    private ActivityResultLauncher<String> photoPickerLauncher;
+    private PhotoGalleryAdapter photoGalleryAdapter;
+    private List<UserPhoto> userPhotos = new ArrayList<>();
 
     // Available interests (in a real app, this would come from API)
     private static final String[] AVAILABLE_INTERESTS = {
@@ -71,16 +83,13 @@ public class EditProfileFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Register image picker
-        imagePickerLauncher =
+        // Register photo picker for gallery
+        photoPickerLauncher =
                 registerForActivityResult(
                         new ActivityResultContracts.GetContent(),
                         uri -> {
                             if (uri != null) {
-                                selectedImageUri = uri;
-                                ivProfilePicture.setImageURI(uri);
-                                imageChanged = true;
-                                btnRemovePhoto.setVisibility(View.VISIBLE);
+                                uploadPhotoToGallery(uri);
                             }
                         });
     }
@@ -105,27 +114,18 @@ public class EditProfileFragment extends Fragment {
 
     private void initViews(View view) {
         ivProfilePicture = view.findViewById(R.id.iv_profile_picture);
-        btnChoosePhoto = view.findViewById(R.id.btn_choose_photo);
-        btnRemovePhoto = view.findViewById(R.id.btn_remove_photo);
         etFullName = view.findViewById(R.id.et_full_name);
         etBio = view.findViewById(R.id.et_bio);
         chipGroupInterests = view.findViewById(R.id.chip_group_interests);
         btnSave = view.findViewById(R.id.btn_save);
         progressLoading = view.findViewById(R.id.progress_loading);
+        btnUploadPhoto = view.findViewById(R.id.btn_upload_photo);
+        rvMyPhotos = view.findViewById(R.id.rv_my_photos);
+        tvPhotoCount = view.findViewById(R.id.tv_photo_count);
+        layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
 
-        btnChoosePhoto.setOnClickListener(v -> openImagePicker());
-        btnRemovePhoto.setOnClickListener(
-                v -> {
-                    selectedImageUri = null;
-                    imageChanged = true;
-                    ivProfilePicture.setImageResource(R.drawable.ic_person);
-                    btnRemovePhoto.setVisibility(View.GONE);
-                });
         btnSave.setOnClickListener(v -> saveProfile());
-    }
-
-    private void openImagePicker() {
-        imagePickerLauncher.launch("image/*");
+        btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
     }
 
     private void setupToolbar(View view) {
@@ -176,11 +176,15 @@ public class EditProfileFragment extends Fragment {
             etBio.setText(user.getBio());
         }
 
-        // Load profile image if exists
-        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-            ImageLoader.loadCircularProfileImage(
-                    requireContext(), user.getProfileImageUrl(), ivProfilePicture);
-            btnRemovePhoto.setVisibility(View.VISIBLE);
+        // Load profile image from photos if exists
+        if (user.getPhotos() != null) {
+            for (UserPhoto photo : user.getPhotos()) {
+                if (photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
+                    ImageLoader.loadCircularProfileImage(
+                            requireContext(), photo.getPhotoUrl(), ivProfilePicture);
+                    break;
+                }
+            }
         }
 
         // Store current interests
@@ -190,6 +194,9 @@ public class EditProfileFragment extends Fragment {
 
         // Setup interest chips
         setupInterestChips();
+
+        // Load user photos
+        loadUserPhotos();
     }
 
     private void setupInterestChips() {
@@ -236,58 +243,8 @@ public class EditProfileFragment extends Fragment {
 
         setLoading(true);
 
-        // If image was changed, handle upload
-        if (imageChanged) {
-            if (selectedImageUri != null) {
-                // New image selected, upload it
-                uploadImageAndUpdateProfile(userId, fullName, bio);
-            } else {
-                // Image removed, update profile with null image URL
-                updateProfileData(userId, fullName, bio, null);
-            }
-        } else {
-            // Image not changed, keep existing URL
-            String existingImageUrl =
-                    (currentUser != null && currentUser.getProfileImageUrl() != null)
-                            ? currentUser.getProfileImageUrl()
-                            : null;
-            updateProfileData(userId, fullName, bio, existingImageUrl);
-        }
-    }
-
-    private void uploadImageAndUpdateProfile(Long userId, String fullName, String bio) {
-        // Convert URI to File
-        File imageFile = getFileFromUri(selectedImageUri);
-        if (imageFile == null) {
-            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
-            // Continue with existing image
-            String existingImageUrl =
-                    (currentUser != null) ? currentUser.getProfileImageUrl() : null;
-            updateProfileData(userId, fullName, bio, existingImageUrl);
-            return;
-        }
-
-        // Upload image
-        userRepository.uploadProfileImage(
-                userId,
-                imageFile,
-                new ApiCallback<String>() {
-                    @Override
-                    public void onSuccess(String imageUrl) {
-                        // Image uploaded successfully, now update profile with the URL
-                        updateProfileData(userId, fullName, bio, imageUrl);
-                    }
-
-                    @Override
-                    public void onError(String errorMessage) {
-                        setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to upload image: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
-                    }
-                });
+        // Profile image is now managed through the photos upload
+        updateProfileData(userId, fullName, bio, null);
     }
 
     private void updateProfileData(Long userId, String fullName, String bio, String imageUrl) {
@@ -364,17 +321,205 @@ public class EditProfileFragment extends Fragment {
         if (loading) {
             progressLoading.setVisibility(View.VISIBLE);
             btnSave.setEnabled(false);
-            btnChoosePhoto.setEnabled(false);
+            btnUploadPhoto.setEnabled(false);
             etFullName.setEnabled(false);
             etBio.setEnabled(false);
             chipGroupInterests.setEnabled(false);
         } else {
             progressLoading.setVisibility(View.GONE);
             btnSave.setEnabled(true);
-            btnChoosePhoto.setEnabled(true);
+            btnUploadPhoto.setEnabled(true);
             etFullName.setEnabled(true);
             etBio.setEnabled(true);
             chipGroupInterests.setEnabled(true);
         }
+    }
+
+    private void loadUserPhotos() {
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            setLoading(false);
+            return;
+        }
+
+        userPhotoRepository.getMyPhotos(
+                new ApiCallback<List<UserPhoto>>() {
+                    @Override
+                    public void onSuccess(List<UserPhoto> photos) {
+                        setLoading(false);
+                        userPhotos = photos;
+                        displayPhotos(photos);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        layoutPhotosEmpty.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
+    private void displayPhotos(List<UserPhoto> photos) {
+        if (photos != null && !photos.isEmpty()) {
+            tvPhotoCount.setText(photos.size() + "/6");
+            btnUploadPhoto.setEnabled(photos.size() < 6);
+            setupPhotoAdapter(photos);
+            layoutPhotosEmpty.setVisibility(View.GONE);
+        } else {
+            layoutPhotosEmpty.setVisibility(View.VISIBLE);
+            tvPhotoCount.setText("0/6");
+            btnUploadPhoto.setEnabled(true);
+        }
+    }
+
+    private void setupPhotoAdapter(List<UserPhoto> photos) {
+        photoGalleryAdapter =
+                new PhotoGalleryAdapter(
+                        photos,
+                        new PhotoGalleryAdapter.OnPhotoActionListener() {
+                            @Override
+                            public void onSetAsProfile(UserPhoto photo) {
+                                setPhotoAsProfile(photo);
+                            }
+
+                            @Override
+                            public void onDeletePhoto(UserPhoto photo) {
+                                deletePhoto(photo);
+                            }
+
+                            @Override
+                            public void onPhotoClick(UserPhoto photo) {
+                                openPhotoViewer(photos, photos.indexOf(photo));
+                            }
+                        });
+        photoGalleryAdapter.setEditMode(true);
+        rvMyPhotos.setAdapter(photoGalleryAdapter);
+    }
+
+    private void openPhotoGalleryPicker() {
+        photoPickerLauncher.launch("image/*");
+    }
+
+    private void uploadPhotoToGallery(Uri photoUri) {
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        File photoFile = getFileFromUri(photoUri);
+        if (photoFile == null) {
+            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setLoading(true);
+        userPhotoRepository.uploadPhoto(
+                photoFile,
+                new ApiCallback<ImageUploadResponse>() {
+                    @Override
+                    public void onSuccess(ImageUploadResponse uploadResponse) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Photo uploaded successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        // Reload photos from backend to get complete data
+                        // loadUserPhotos() will call setLoading(false) when done
+                        loadUserPhotos();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to upload photo: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+    }
+
+    private void setPhotoAsProfile(UserPhoto photo) {
+        setLoading(true);
+        userPhotoRepository.setPhotoAsProfile(
+                photo.getId(),
+                new ApiCallback<UserPhoto>() {
+                    @Override
+                    public void onSuccess(UserPhoto updatedPhoto) {
+                        setLoading(false);
+                        // Update local list - set all to false first
+                        for (UserPhoto p : userPhotos) {
+                            p.setIsProfilePicture(false);
+                        }
+                        // Find and update the specific photo in the list
+                        for (UserPhoto p : userPhotos) {
+                            if (p.getId().equals(updatedPhoto.getId())) {
+                                p.setIsProfilePicture(true);
+                                break;
+                            }
+                        }
+                        photoGalleryAdapter.notifyDataSetChanged();
+
+                        // Update profile picture display at top
+                        ImageLoader.loadCircularProfileImage(
+                                requireContext(), updatedPhoto.getPhotoUrl(), ivProfilePicture);
+
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Profile picture updated!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to update profile picture: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
+    }
+
+    private void deletePhoto(UserPhoto photo) {
+        setLoading(true);
+        userPhotoRepository.deletePhoto(
+                photo.getId(),
+                new ApiCallbackVoid() {
+                    @Override
+                    public void onSuccess() {
+                        setLoading(false);
+                        userPhotos.remove(photo);
+                        displayPhotos(userPhotos);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Photo deleted successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to delete photo: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
+    }
+
+    private void openPhotoViewer(List<UserPhoto> photos, int position) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("photos", new ArrayList<>(photos));
+        bundle.putInt("position", position);
+        bundle.putBoolean("editMode", true);
+        Navigation.findNavController(requireView())
+                .navigate(R.id.action_editProfileFragment_to_photoViewerFragment, bundle);
     }
 }

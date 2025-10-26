@@ -68,22 +68,92 @@
                         app:civ_border_color="@color/primary"
                         android:layout_marginBottom="@dimen/margin_medium" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_choose_photo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Choose Photo"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_marginBottom="@dimen/margin_small" />
+                </LinearLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_remove_photo"
-                        android:layout_width="wrap_content"
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Photos Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_medium">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Remove Photo"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:textColor="@color/error"
-                        android:visibility="gone" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="@dimen/margin_medium">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="My Photos"
+                            android:textSize="@dimen/text_size_title"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_photo_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0/6"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_hint" />
+                    </LinearLayout>
+
+                    <!-- Upload Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_upload_photo"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="@dimen/margin_medium"
+                        android:text="+ Upload Photo (Max 6)"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    <!-- Photos RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_my_photos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:paddingBottom="8dp"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        app:spanCount="3" />
+
+                    <!-- Empty Photos State -->
+                    <LinearLayout
+                        android:id="@+id/layout_photos_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📸"
+                            android:textSize="48sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="No photos yet"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_hint" />
+                    </LinearLayout>
 
                 </LinearLayout>
 

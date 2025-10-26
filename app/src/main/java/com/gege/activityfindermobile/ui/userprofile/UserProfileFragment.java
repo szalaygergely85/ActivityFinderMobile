@@ -11,17 +11,22 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.User;
+import com.gege.activityfindermobile.data.model.UserPhoto;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.ui.adapters.PhotoGridAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -39,7 +44,9 @@ public class UserProfileFragment extends Fragment {
     private CircleImageView ivProfileImage;
     private ChipGroup chipGroupInterests;
     private CircularProgressIndicator progressLoading;
-    private View cardBio, cardInterests;
+    private View cardBio, cardInterests, cardPhotos, layoutPhotosEmpty;
+    private RecyclerView rvUserPhotos;
+    private PhotoGridAdapter photoGridAdapter;
 
     @Nullable
     @Override
@@ -67,6 +74,9 @@ public class UserProfileFragment extends Fragment {
         progressLoading = view.findViewById(R.id.progress_loading);
         cardBio = view.findViewById(R.id.card_bio);
         cardInterests = view.findViewById(R.id.card_interests);
+        cardPhotos = view.findViewById(R.id.card_photos);
+        rvUserPhotos = view.findViewById(R.id.rv_user_photos);
+        layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
 
         // Get userId from arguments
         if (getArguments() != null) {
@@ -178,5 +188,31 @@ public class UserProfileFragment extends Fragment {
             chipGroupInterests.addView(chip);
             cardInterests.setVisibility(View.VISIBLE);
         }
+
+        // Set photos
+        List<UserPhoto> photos = user.getPhotos();
+        if (photos != null && !photos.isEmpty()) {
+            setupPhotosAdapter(photos);
+            cardPhotos.setVisibility(View.VISIBLE);
+        } else {
+            layoutPhotosEmpty.setVisibility(View.VISIBLE);
+            cardPhotos.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void setupPhotosAdapter(List<UserPhoto> photos) {
+        photoGridAdapter = new PhotoGridAdapter(photos, false);
+        photoGridAdapter.setOnPhotoClickListener(
+                (photo, position, photoList) -> {
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("photos", new ArrayList<>(photoList));
+                    bundle.putInt("position", position);
+                    bundle.putBoolean("editMode", false);
+                    Navigation.findNavController(requireView())
+                            .navigate(
+                                    R.id.action_userProfileFragment_to_photoViewerFragment, bundle);
+                });
+        rvUserPhotos.setAdapter(photoGridAdapter);
+        layoutPhotosEmpty.setVisibility(View.GONE);
     }
 }

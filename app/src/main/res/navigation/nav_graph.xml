@@ -118,7 +118,17 @@
     <fragment
         android:id="@+id/editProfileFragment"
         android:name="com.gege.activityfindermobile.ui.profile.EditProfileFragment"
-        android:label="Edit Profile" />
+        android:label="Edit Profile">
+        <action
+            android:id="@+id/action_editProfileFragment_to_photoViewerFragment"
+            app:destination="@id/photoViewerFragment" />
+    </fragment>
+
+    <!-- Photo Viewer Fragment -->
+    <fragment
+        android:id="@+id/photoViewerFragment"
+        android:name="com.gege.activityfindermobile.ui.viewer.PhotoViewerFragment"
+        android:label="Photos" />
 
     <!-- Activity Detail Fragment -->
     <fragment
@@ -168,6 +178,9 @@
         <argument
             android:name="userId"
             app:argType="long" />
+        <action
+            android:id="@+id/action_userProfileFragment_to_photoViewerFragment"
+            app:destination="@id/photoViewerFragment" />
     </fragment>
 
     <!-- Notifications Fragment -->
