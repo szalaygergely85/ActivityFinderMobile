@@ -36,14 +36,37 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
-    <!-- Set as Profile Badge (Edit mode) -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_set_as_profile_fullscreen"
-        android:layout_width="wrap_content"
+    <!-- Bottom Action Buttons Container (Edit mode) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp"
-        android:text="Set as Profile Picture"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="16dp"
+        android:background="@drawable/bg_buttons_bottom_gradient"
         android:visibility="gone"
-        app:cornerRadius="24dp" />
+        android:id="@+id/layout_edit_buttons">
+
+        <!-- Set as Profile Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_set_as_profile_fullscreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⭐ Set as Profile"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="12dp"
+            android:backgroundTint="#2196F3"
+            app:cornerRadius="24dp" />
+
+        <!-- Delete Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_delete_photo_fullscreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🗑️ Delete"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#E53935"
+            app:cornerRadius="24dp" />
+    </LinearLayout>
 </FrameLayout>

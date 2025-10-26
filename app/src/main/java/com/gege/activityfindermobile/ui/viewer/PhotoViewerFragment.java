@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
+import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.model.UserPhoto;
 import com.gege.activityfindermobile.data.repository.UserPhotoRepository;
 import com.gege.activityfindermobile.ui.adapters.FullScreenPhotoAdapter;
@@ -36,6 +38,8 @@ public class PhotoViewerFragment extends Fragment {
     private ImageButton btnClose;
     private TextView tvPhotoCounter;
     private MaterialButton btnSetAsProfile;
+    private MaterialButton btnDeletePhoto;
+    private LinearLayout layoutEditButtons;
     private FullScreenPhotoAdapter photoAdapter;
 
     private List<UserPhoto> photos = new ArrayList<>();
@@ -79,13 +83,16 @@ public class PhotoViewerFragment extends Fragment {
         btnClose = view.findViewById(R.id.btn_close);
         tvPhotoCounter = view.findViewById(R.id.tv_photo_counter);
         btnSetAsProfile = view.findViewById(R.id.btn_set_as_profile_fullscreen);
+        btnDeletePhoto = view.findViewById(R.id.btn_delete_photo_fullscreen);
+        layoutEditButtons = view.findViewById(R.id.layout_edit_buttons);
 
         btnClose.setOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Only show set as profile button in edit mode
+        // Only show edit buttons in edit mode
         if (isEditMode) {
-            btnSetAsProfile.setVisibility(View.VISIBLE);
+            layoutEditButtons.setVisibility(View.VISIBLE);
             btnSetAsProfile.setOnClickListener(v -> setCurrentPhotoAsProfile());
+            btnDeletePhoto.setOnClickListener(v -> deleteCurrentPhoto());
         }
     }
 
@@ -142,6 +149,49 @@ public class PhotoViewerFragment extends Fragment {
                         Toast.makeText(
                                         requireContext(),
                                         "Failed to update: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
+    }
+
+    private void deleteCurrentPhoto() {
+        if (currentPosition < 0 || currentPosition >= photos.size()) {
+            return;
+        }
+
+        UserPhoto currentPhoto = photos.get(currentPosition);
+        userPhotoRepository.deletePhoto(
+                currentPhoto.getId(),
+                new ApiCallbackVoid() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Photo deleted successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        photos.remove(currentPosition);
+
+                        if (photos.isEmpty()) {
+                            // No more photos, go back
+                            requireActivity().onBackPressed();
+                        } else {
+                            // Adjust current position if necessary
+                            if (currentPosition >= photos.size()) {
+                                currentPosition = photos.size() - 1;
+                            }
+                            photoAdapter.notifyDataSetChanged();
+                            updatePhotoCounter();
+                            viewPagerPhotos.setCurrentItem(currentPosition, false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to delete: " + errorMessage,
                                         Toast.LENGTH_SHORT)
                                 .show();
                     }
