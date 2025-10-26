@@ -62,8 +62,7 @@
                             android:layout_weight="1"
                             android:textSize="@dimen/text_size_heading"
                             android:textColor="@color/text_primary"
-                            android:textStyle="bold"
-                            tools:text="Weekend Hiking Adventure" />
+                            android:textStyle="bold" />
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/badge_trending"
@@ -97,8 +96,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/margin_small"
                         app:chipBackgroundColor="@color/primary_light"
-                        app:chipStrokeWidth="0dp"
-                        tools:text="Sports" />
+                        app:chipStrokeWidth="0dp" />
 
                     <!-- Description -->
                     <TextView
@@ -108,8 +106,7 @@
                         android:layout_marginTop="@dimen/margin_medium"
                         android:textSize="@dimen/text_size_medium"
                         android:textColor="@color/text_secondary"
-                        android:lineSpacingExtra="4dp"
-                        tools:text="Join us for an amazing hiking experience in the beautiful mountains. We'll explore scenic trails and enjoy nature together!" />
+                        android:lineSpacingExtra="4dp" />
 
                 </LinearLayout>
 
@@ -172,8 +169,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="@dimen/text_size_medium"
                                 android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                tools:text="November 15, 2025" />
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -213,8 +209,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="@dimen/text_size_medium"
                                 android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                tools:text="08:00 AM" />
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -254,8 +249,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="@dimen/text_size_medium"
                                 android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                tools:text="Mountain View Park" />
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -295,8 +289,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="@dimen/text_size_medium"
                                 android:textColor="@color/success"
-                                android:textStyle="bold"
-                                tools:text="5 / 10 joined" />
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
@@ -354,8 +347,7 @@
                             android:layout_height="wrap_content"
                             android:textSize="@dimen/text_size_large"
                             android:textColor="@color/text_primary"
-                            android:textStyle="bold"
-                            tools:text="John Doe" />
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tv_creator_rating"
@@ -365,8 +357,7 @@
                             android:textSize="@dimen/text_size_small"
                             android:textColor="@color/text_secondary"
                             android:drawableStart="@drawable/ic_star"
-                            android:drawableTint="@color/warning"
-                            tools:text="4.8 (25 reviews)" />
+                            android:drawableTint="@color/warning" />
 
                     </LinearLayout>
 

@@ -147,9 +147,6 @@ public class ActivityDetailFragment extends Fragment {
             creatorId = args.getLong("creatorId", 0L);
             activityDateStr = args.getString("date", "");
             displayActivityData(view, args);
-        } else {
-            // Fallback to test data if no arguments
-            displayTestData(view);
         }
 
         // Set activity date on participant adapter for review button visibility
@@ -259,32 +256,6 @@ public class ActivityDetailFragment extends Fragment {
         }
     }
 
-    private void displayTestData(View view) {
-        TextView tvTitle = view.findViewById(R.id.tv_title);
-        TextView tvDescription = view.findViewById(R.id.tv_description);
-        TextView tvDate = view.findViewById(R.id.tv_date);
-        TextView tvTime = view.findViewById(R.id.tv_time);
-        TextView tvLocation = view.findViewById(R.id.tv_location);
-        TextView tvSpots = view.findViewById(R.id.tv_spots);
-        TextView tvCreatorName = view.findViewById(R.id.tv_creator_name);
-        TextView tvCreatorRating = view.findViewById(R.id.tv_creator_rating);
-        Chip chipCategory = view.findViewById(R.id.chip_category);
-        Chip badgeTrending = view.findViewById(R.id.badge_trending);
-
-        tvTitle.setText("Weekend Hiking Adventure");
-        tvDescription.setText(
-                "Join us for an amazing hiking experience in the beautiful mountains. We'll explore"
-                    + " scenic trails, enjoy breathtaking views, and connect with nature. Perfect"
-                    + " for outdoor enthusiasts!");
-        tvDate.setText("November 15, 2025");
-        tvTime.setText("08:00 AM");
-        tvLocation.setText("Mountain View Park");
-        tvSpots.setText("5 of 10 available");
-        tvCreatorName.setText("Sarah Johnson");
-        tvCreatorRating.setText("4.8 (15 reviews)");
-        chipCategory.setText("Sports");
-        badgeTrending.setVisibility(View.VISIBLE);
-    }
 
     private void loadParticipants() {
         if (activityId == null || activityId == 0L) {
@@ -847,8 +818,23 @@ public class ActivityDetailFragment extends Fragment {
             java.util.Date activityDate = sdf.parse(dateStr);
             java.util.Date today = new java.util.Date();
 
-            // If activity date is before today, it's expired
-            return activityDate != null && activityDate.before(today);
+            // Reset time to start of day for both dates to compare just the date portion
+            java.util.Calendar calActivity = java.util.Calendar.getInstance();
+            calActivity.setTime(activityDate);
+            calActivity.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            calActivity.set(java.util.Calendar.MINUTE, 0);
+            calActivity.set(java.util.Calendar.SECOND, 0);
+            calActivity.set(java.util.Calendar.MILLISECOND, 0);
+
+            java.util.Calendar calToday = java.util.Calendar.getInstance();
+            calToday.setTime(today);
+            calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            calToday.set(java.util.Calendar.MINUTE, 0);
+            calToday.set(java.util.Calendar.SECOND, 0);
+            calToday.set(java.util.Calendar.MILLISECOND, 0);
+
+            // Activity is expired if the date is before today (not including today)
+            return calActivity.before(calToday);
         } catch (java.text.ParseException e) {
             // If date parsing fails, assume not expired
             return false;
