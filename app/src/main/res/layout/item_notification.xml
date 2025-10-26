@@ -38,8 +38,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_size_large"
                 android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                tools:text="Activity Confirmed" />
+                android:textStyle="bold" />
 
             <!-- Message -->
             <TextView
@@ -48,8 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/text_secondary"
-                tools:text="Your participation in Basketball game has been confirmed" />
+                android:textColor="@color/text_secondary" />
 
             <!-- Time -->
             <TextView
@@ -58,8 +56,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_hint"
-                tools:text="2 hours ago" />
+                android:textColor="@color/text_hint" />
 
         </LinearLayout>
 

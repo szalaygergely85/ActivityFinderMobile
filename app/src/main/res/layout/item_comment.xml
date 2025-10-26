@@ -46,7 +46,7 @@
                     android:textSize="@dimen/text_size_medium"
                     android:textColor="@color/text_primary"
                     android:textStyle="bold"
-                    tools:text="John Doe" />
+                    />
 
                 <TextView
                     android:id="@+id/tv_comment_time"
@@ -55,7 +55,7 @@
                     android:layout_marginStart="@dimen/margin_small"
                     android:textSize="@dimen/text_size_small"
                     android:textColor="@color/text_hint"
-                    tools:text="2h ago" />
+                    />
 
             </LinearLayout>
 
@@ -68,7 +68,7 @@
                 android:textSize="@dimen/text_size_medium"
                 android:textColor="@color/text_secondary"
                 android:lineSpacingMultiplier="1.2"
-                tools:text="This is a comment on the activity. It can be multiple lines of text." />
+                />
 
         </LinearLayout>
 

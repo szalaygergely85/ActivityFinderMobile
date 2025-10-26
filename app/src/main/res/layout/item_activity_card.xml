@@ -29,7 +29,6 @@
             android:maxLines="2"
             android:ellipsize="end"
             android:paddingEnd="8dp"
-            tools:text="Weekend Hiking Adventure"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -47,8 +46,7 @@
             app:chipMinHeight="24dp"
             android:textColor="@color/white"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:visibility="visible" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Category Chip -->
         <com.google.android.material.chip.Chip
@@ -63,7 +61,6 @@
             app:chipStrokeWidth="0dp"
             app:chipMinHeight="32dp"
             app:chipIconSize="18dp"
-            tools:text="Sports"
             app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -81,8 +78,6 @@
             app:chipBackgroundColor="@color/primary"
             app:chipStrokeWidth="0dp"
             app:chipMinHeight="32dp"
-            tools:text="Joined"
-            tools:visibility="visible"
             app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
             app:layout_constraintStart_toEndOf="@id/chip_category" />
 
@@ -101,7 +96,6 @@
             app:chipBackgroundColor="@color/error"
             app:chipStrokeWidth="0dp"
             app:chipMinHeight="32dp"
-            tools:visibility="visible"
             app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
             app:layout_constraintStart_toEndOf="@id/chip_status" />
 
@@ -115,7 +109,6 @@
             android:textColor="@color/text_secondary"
             android:maxLines="2"
             android:ellipsize="end"
-            tools:text="Join us for an amazing hiking experience in the mountains!"
             app:layout_constraintTop_toBottomOf="@id/chip_category"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -141,7 +134,7 @@
                 android:textColor="@color/text_secondary"
                 android:drawableStart="@drawable/ic_calendar"
                 android:drawableTint="@color/primary"
-                tools:text="Nov 15, 2025" />
+                />
 
             <TextView
                 android:id="@+id/tv_time"
@@ -153,7 +146,7 @@
                 android:textColor="@color/text_secondary"
                 android:drawableStart="@drawable/ic_time"
                 android:drawableTint="@color/primary"
-                tools:text="08:00 AM" />
+                />
 
         </LinearLayout>
 
@@ -170,7 +163,6 @@
             android:drawableTint="@color/primary"
             android:maxLines="1"
             android:ellipsize="end"
-            tools:text="Mountain View Park"
             app:layout_constraintTop_toBottomOf="@id/layout_datetime"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -209,7 +201,6 @@
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end"
-            tools:text="John Doe"
             app:layout_constraintTop_toTopOf="@id/iv_creator_avatar"
             app:layout_constraintStart_toEndOf="@id/iv_creator_avatar"
             app:layout_constraintEnd_toStartOf="@id/tv_spots_available" />
@@ -224,7 +215,6 @@
             android:drawableStart="@drawable/ic_star"
             android:drawablePadding="2dp"
             android:drawableTint="@color/warning"
-            tools:text="4.8"
             app:layout_constraintTop_toBottomOf="@id/tv_creator_name"
             app:layout_constraintStart_toEndOf="@id/iv_creator_avatar"
             app:layout_constraintBottom_toBottomOf="@id/iv_creator_avatar" />
@@ -240,7 +230,6 @@
             android:textStyle="bold"
             android:drawableStart="@drawable/ic_people"
             android:drawableTint="@color/success"
-            tools:text="5/10 spots"
             app:layout_constraintTop_toTopOf="@id/iv_creator_avatar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/iv_creator_avatar" />

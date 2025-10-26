@@ -41,8 +41,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_size_medium"
                 android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                tools:text="John Doe" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_user_rating"
@@ -52,8 +51,7 @@
                 android:textSize="@dimen/text_size_small"
                 android:textColor="@color/text_hint"
                 android:drawableStart="@drawable/ic_star"
-                android:drawableTint="@color/warning"
-                tools:text="4.8" />
+                android:drawableTint="@color/warning" />
 
         </LinearLayout>
 
@@ -66,8 +64,7 @@
             app:chipBackgroundColor="@color/success"
             app:chipStrokeWidth="0dp"
             android:textColor="@color/white"
-            android:layout_marginEnd="@dimen/margin_small"
-            tools:text="Joined" />
+            android:layout_marginEnd="@dimen/margin_small" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_review"

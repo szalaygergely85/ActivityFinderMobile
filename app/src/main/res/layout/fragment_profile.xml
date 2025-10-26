@@ -61,8 +61,7 @@
                         android:layout_marginTop="@dimen/margin_medium"
                         android:textSize="@dimen/text_size_heading"
                         android:textColor="@color/text_primary"
-                        android:textStyle="bold"
-                        tools:text="John Doe" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tv_email"
@@ -70,8 +69,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:textSize="@dimen/text_size_medium"
-                        android:textColor="@color/text_secondary"
-                        tools:text="john.doe@example.com" />
+                        android:textColor="@color/text_secondary" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_badge"
@@ -80,8 +78,7 @@
                         android:layout_marginTop="@dimen/margin_small"
                         app:chipBackgroundColor="@color/warning"
                         app:chipStrokeWidth="0dp"
-                        android:textColor="@color/white"
-                        tools:text="⭐ Super Host" />
+                        android:textColor="@color/white" />
 
                     <!-- Stats Row -->
                     <LinearLayout
@@ -104,8 +101,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="28sp"
                                 android:textColor="@color/primary"
-                                android:textStyle="bold"
-                                tools:text="4.8" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -132,8 +128,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="28sp"
                                 android:textColor="@color/success"
-                                android:textStyle="bold"
-                                tools:text="25" />
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -182,8 +177,7 @@
                         android:layout_marginTop="@dimen/margin_small"
                         android:textSize="@dimen/text_size_medium"
                         android:textColor="@color/text_secondary"
-                        android:lineSpacingExtra="4dp"
-                        tools:text="Adventure enthusiast who loves hiking and outdoor activities!" />
+                        android:lineSpacingExtra="4dp" />
 
                 </LinearLayout>
 

@@ -64,8 +64,7 @@
                         android:layout_marginTop="@dimen/margin_medium"
                         android:textSize="@dimen/text_size_heading"
                         android:textColor="@color/text_primary"
-                        android:textStyle="bold"
-                        tools:text="John Doe" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tv_badge"
@@ -73,9 +72,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:textSize="24sp"
-                        android:visibility="gone"
-                        tools:text="⭐"
-                        tools:visibility="visible" />
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -97,8 +94,7 @@
                             android:layout_marginStart="4dp"
                             android:textSize="@dimen/text_size_large"
                             android:textColor="@color/text_primary"
-                            android:textStyle="bold"
-                            tools:text="4.8" />
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -113,8 +109,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:textSize="@dimen/text_size_medium"
-                            android:textColor="@color/text_secondary"
-                            tools:text="25 activities" />
+                            android:textColor="@color/text_secondary" />
 
                     </LinearLayout>
 
@@ -131,8 +126,7 @@
                 android:visibility="gone"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="@dimen/card_elevation"
-                app:strokeWidth="0dp"
-                tools:visibility="visible">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -155,8 +149,7 @@
                         android:layout_marginTop="@dimen/margin_small"
                         android:textSize="@dimen/text_size_medium"
                         android:textColor="@color/text_secondary"
-                        android:lineSpacingExtra="4dp"
-                        tools:text="I love outdoor activities and meeting new people!" />
+                        android:lineSpacingExtra="4dp" />
 
                 </LinearLayout>
 
@@ -171,8 +164,7 @@
                 android:visibility="gone"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="@dimen/card_elevation"
-                app:strokeWidth="0dp"
-                tools:visibility="visible">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"

@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Read(//home/me/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(find:*)",
+      "Bash(./gradlew:*)",
+      "Bash(bash gradlew clean assembleDebug:*)",
+      "Bash(bash gradlew assembleDebug:*)"
     ],
     "deny": [],
     "ask": []

@@ -126,9 +126,6 @@ public class ProfileFragment extends Fragment {
                                         "Failed to load profile: " + errorMessage,
                                         Toast.LENGTH_LONG)
                                 .show();
-
-                        // Show placeholder data if API fails
-                        displayPlaceholderData();
                     }
                 });
     }
@@ -192,14 +189,6 @@ public class ProfileFragment extends Fragment {
                 requireContext(), user.getProfileImageUrl(), ivProfileAvatar);
     }
 
-    private void displayPlaceholderData() {
-        tvName.setText("User");
-        tvEmail.setText("user@example.com");
-        tvBio.setText("Welcome to Activity Finder!");
-        tvRatingValue.setText("0.0");
-        tvActivitiesCount.setText("0");
-        chipBadge.setVisibility(View.GONE);
-    }
 
     private void showLogoutDialog() {
         new MaterialAlertDialogBuilder(requireContext())

@@ -43,8 +43,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/text_size_large"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold"
-                    tools:text="Jane Smith" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_user_rating"
@@ -55,8 +54,7 @@
                     android:textSize="@dimen/text_size_small"
                     android:textColor="@color/text_secondary"
                     android:drawableStart="@drawable/ic_star"
-                    android:drawableTint="@color/warning"
-                    tools:text="4.8" />
+                    android:drawableTint="@color/warning" />
 
                 <TextView
                     android:id="@+id/tv_joined_at"
@@ -64,8 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textSize="@dimen/text_size_small"
-                    android:textColor="@color/text_hint"
-                    tools:text="Requested 2 hours ago" />
+                    android:textColor="@color/text_hint" />
 
             </LinearLayout>
 
@@ -78,8 +75,7 @@
                 android:visibility="gone"
                 app:chipBackgroundColor="@color/primary_light"
                 app:chipStrokeWidth="0dp"
-                app:chipMinHeight="28dp"
-                tools:visibility="visible" />
+                app:chipMinHeight="28dp" />
 
         </LinearLayout>
 
@@ -127,9 +123,7 @@
             android:layout_gravity="end"
             android:visibility="gone"
             app:chipStrokeWidth="0dp"
-            app:chipMinHeight="28dp"
-            tools:text="Accepted"
-            tools:visibility="visible" />
+            app:chipMinHeight="28dp" />
 
     </LinearLayout>
 
