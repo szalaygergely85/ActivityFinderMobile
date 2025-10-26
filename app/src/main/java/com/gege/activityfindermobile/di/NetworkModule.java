@@ -7,6 +7,7 @@ import com.gege.activityfindermobile.data.api.ParticipantApiService;
 import com.gege.activityfindermobile.data.api.ReportApiService;
 import com.gege.activityfindermobile.data.api.ReviewApiService;
 import com.gege.activityfindermobile.data.api.UserApiService;
+import com.gege.activityfindermobile.data.api.UserPhotoApiService;
 import com.gege.activityfindermobile.utils.Constants;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -114,5 +115,11 @@ public class NetworkModule {
     @Singleton
     public ReportApiService provideReportApiService(Retrofit retrofit) {
         return retrofit.create(ReportApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public UserPhotoApiService provideUserPhotoApiService(Retrofit retrofit) {
+        return retrofit.create(UserPhotoApiService.class);
     }
 }

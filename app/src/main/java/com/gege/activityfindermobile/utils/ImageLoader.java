@@ -122,6 +122,43 @@ public class ImageLoader {
     }
 
     /**
+     * Load gallery photo from URL into ImageView with authorization
+     *
+     * @param context Context
+     * @param imageUrl URL or path to the image
+     * @param imageView Target ImageView
+     */
+    public static void loadGalleryPhoto(Context context, String imageUrl, ImageView imageView) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return;
+        }
+
+        // Build full URL if it's a relative path
+        String fullUrl = imageUrl;
+        if (!imageUrl.startsWith("http")) {
+            String baseUrl = Constants.BASE_URL;
+            // Remove trailing slash from base URL if present
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            // Handle leading slash in image URL
+            if (!imageUrl.startsWith("/")) {
+                fullUrl = baseUrl + "/" + imageUrl;
+            } else {
+                fullUrl = baseUrl + imageUrl;
+            }
+        }
+
+        RequestOptions options =
+                new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL).centerCrop();
+
+        // Create GlideUrl with Authorization header
+        GlideUrl glideUrl = buildGlideUrlWithAuth(context, fullUrl);
+
+        Glide.with(context).load(glideUrl).apply(options).into(imageView);
+    }
+
+    /**
      * Clear Glide cache
      *
      * @param context Context

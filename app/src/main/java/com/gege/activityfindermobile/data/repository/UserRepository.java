@@ -9,6 +9,7 @@ import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
+import com.gege.activityfindermobile.data.model.ImageUploadResponse;
 import com.gege.activityfindermobile.data.model.User;
 
 import java.io.File;
@@ -20,7 +21,6 @@ import javax.inject.Singleton;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -390,50 +390,15 @@ public class UserRepository {
         userApiService
                 .uploadProfileImage(userId, body)
                 .enqueue(
-                        new Callback<ResponseBody>() {
+                        new Callback<ImageUploadResponse>() {
                             @Override
                             public void onResponse(
-                                    Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    Call<ImageUploadResponse> call,
+                                    Response<ImageUploadResponse> response) {
                                 if (response.isSuccessful() && response.body() != null) {
-                                    try {
-                                        String imageUrl = response.body().string();
-
-                                        // Log response for debugging
-                                        Log.d(
-                                                TAG,
-                                                "Profile image upload response length: "
-                                                        + imageUrl.length());
-                                        if (imageUrl.length() > 255) {
-                                            Log.w(
-                                                    TAG,
-                                                    "WARNING: Image URL is too long ("
-                                                            + imageUrl.length()
-                                                            + " chars). Backend may be returning"
-                                                            + " image data instead of URL.");
-                                            // Truncate preview for logging
-                                            Log.w(
-                                                    TAG,
-                                                    "Response preview: "
-                                                            + imageUrl.substring(
-                                                                    0,
-                                                                    Math.min(
-                                                                            100, imageUrl.length()))
-                                                            + "...");
-                                            callback.onError(
-                                                    "Backend returned invalid image URL (too long: "
-                                                            + imageUrl.length()
-                                                            + " characters)");
-                                            return;
-                                        }
-
-                                        Log.d(
-                                                TAG,
-                                                "Profile image uploaded successfully: " + imageUrl);
-                                        callback.onSuccess(imageUrl);
-                                    } catch (Exception e) {
-                                        Log.e(TAG, "Error reading response", e);
-                                        callback.onError("Failed to parse response");
-                                    }
+                                    String imageUrl = response.body().getUrl();
+                                    Log.d(TAG, "Profile image uploaded successfully: " + imageUrl);
+                                    callback.onSuccess(imageUrl);
                                 } else {
                                     String errorMsg =
                                             "Failed to upload profile image: " + response.code();
@@ -443,7 +408,7 @@ public class UserRepository {
                             }
 
                             @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            public void onFailure(Call<ImageUploadResponse> call, Throwable t) {
                                 String errorMsg = "Network error: " + t.getMessage();
                                 Log.e(TAG, errorMsg, t);
                                 callback.onError(errorMsg);
