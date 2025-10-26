@@ -14,14 +14,13 @@ import com.gege.activityfindermobile.data.model.User;
 import java.io.File;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,8 +49,14 @@ public class UserRepository {
 
                                     // Enhanced logging for debugging
                                     Log.d(TAG, "Registration response received");
-                                    Log.d(TAG, "Access token present: " + (loginResponse.getAccessToken() != null));
-                                    Log.d(TAG, "User ID present: " + (loginResponse.getUserId() != null));
+                                    Log.d(
+                                            TAG,
+                                            "Access token present: "
+                                                    + (loginResponse.getAccessToken() != null));
+                                    Log.d(
+                                            TAG,
+                                            "User ID present: "
+                                                    + (loginResponse.getUserId() != null));
 
                                     if (loginResponse.getUserId() != null) {
                                         Log.d(
@@ -59,7 +64,9 @@ public class UserRepository {
                                                 "User registered successfully: "
                                                         + loginResponse.getEmail());
                                     } else {
-                                        Log.w(TAG, "Registration response does not contain user data");
+                                        Log.w(
+                                                TAG,
+                                                "Registration response does not contain user data");
                                     }
 
                                     callback.onSuccess(loginResponse);
@@ -374,8 +381,7 @@ public class UserRepository {
         }
 
         // Create RequestBody from file
-        RequestBody requestFile =
-                RequestBody.create(MediaType.parse("image/*"), imageFile);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
 
         // Create MultipartBody.Part (backend expects part named "file")
         MultipartBody.Part body =
@@ -393,17 +399,36 @@ public class UserRepository {
                                         String imageUrl = response.body().string();
 
                                         // Log response for debugging
-                                        Log.d(TAG, "Profile image upload response length: " + imageUrl.length());
+                                        Log.d(
+                                                TAG,
+                                                "Profile image upload response length: "
+                                                        + imageUrl.length());
                                         if (imageUrl.length() > 255) {
-                                            Log.w(TAG, "WARNING: Image URL is too long (" + imageUrl.length() + " chars). " +
-                                                    "Backend may be returning image data instead of URL.");
+                                            Log.w(
+                                                    TAG,
+                                                    "WARNING: Image URL is too long ("
+                                                            + imageUrl.length()
+                                                            + " chars). Backend may be returning"
+                                                            + " image data instead of URL.");
                                             // Truncate preview for logging
-                                            Log.w(TAG, "Response preview: " + imageUrl.substring(0, Math.min(100, imageUrl.length())) + "...");
-                                            callback.onError("Backend returned invalid image URL (too long: " + imageUrl.length() + " characters)");
+                                            Log.w(
+                                                    TAG,
+                                                    "Response preview: "
+                                                            + imageUrl.substring(
+                                                                    0,
+                                                                    Math.min(
+                                                                            100, imageUrl.length()))
+                                                            + "...");
+                                            callback.onError(
+                                                    "Backend returned invalid image URL (too long: "
+                                                            + imageUrl.length()
+                                                            + " characters)");
                                             return;
                                         }
 
-                                        Log.d(TAG, "Profile image uploaded successfully: " + imageUrl);
+                                        Log.d(
+                                                TAG,
+                                                "Profile image uploaded successfully: " + imageUrl);
                                         callback.onSuccess(imageUrl);
                                     } catch (Exception e) {
                                         Log.e(TAG, "Error reading response", e);

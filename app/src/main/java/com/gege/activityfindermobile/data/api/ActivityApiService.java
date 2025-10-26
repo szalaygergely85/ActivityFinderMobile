@@ -45,6 +45,12 @@ public interface ActivityApiService {
     @GET("api/activities/creator/{creatorId}")
     Call<List<Activity>> getMyActivities(@Path("creatorId") Long creatorId);
 
+    @GET("api/activities/my-activities")
+    Call<List<Activity>> getMyActivitiesWithStatus(@Query("status") String status);
+
+    @GET("api/activities/my-activities")
+    Call<List<Activity>> getMyActivitiesAll();
+
     @GET("api/activities/available")
     Call<List<Activity>> getActivitiesWithSpots();
 

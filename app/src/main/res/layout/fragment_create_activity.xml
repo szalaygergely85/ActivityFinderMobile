@@ -280,25 +280,6 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Friend Spots -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/til_friend_spots"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="@dimen/margin_small"
-                    android:hint="Reserved for Friends">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_friend_spots"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="number"
-                        android:text="0" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
             </LinearLayout>
 
                 </LinearLayout>

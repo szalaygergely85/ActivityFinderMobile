@@ -82,24 +82,25 @@ public class ParticipationsFragment extends Fragment {
                 new ActivityAdapter(
                         activity -> {
                             navigateToDetail(activity);
-                        }, participantRepository, currentUserId);
+                        },
+                        participantRepository,
+                        currentUserId);
         rvParticipations.setAdapter(adapter);
 
         // Tab selection listener
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                filterActivitiesByTab(tab.getPosition());
-            }
+        tabLayout.addOnTabSelectedListener(
+                new TabLayout.OnTabSelectedListener() {
+                    @Override
+                    public void onTabSelected(TabLayout.Tab tab) {
+                        filterActivitiesByTab(tab.getPosition());
+                    }
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
+                    @Override
+                    public void onTabUnselected(TabLayout.Tab tab) {}
 
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });
+                    @Override
+                    public void onTabReselected(TabLayout.Tab tab) {}
+                });
 
         // Swipe refresh
         swipeRefresh.setOnRefreshListener(
@@ -147,7 +148,8 @@ public class ParticipationsFragment extends Fragment {
                         allParticipations = participants;
 
                         // Filter based on selected tab
-                        int selectedTab = tabLayout != null ? tabLayout.getSelectedTabPosition() : TAB_JOINED;
+                        int selectedTab =
+                                tabLayout != null ? tabLayout.getSelectedTabPosition() : TAB_JOINED;
                         filterActivitiesByTab(selectedTab);
                     }
 

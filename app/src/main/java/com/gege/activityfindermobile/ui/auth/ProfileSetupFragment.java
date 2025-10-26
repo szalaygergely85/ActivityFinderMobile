@@ -9,10 +9,6 @@ import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -33,6 +29,9 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -155,8 +154,7 @@ public class ProfileSetupFragment extends Fragment {
         // Convert URI to File
         File imageFile = getFileFromUri(selectedImageUri);
         if (imageFile == null) {
-            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT)
-                    .show();
+            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
             // Continue anyway with just bio and interests
             updateProfile(userId, bio, interests, null);
             return;

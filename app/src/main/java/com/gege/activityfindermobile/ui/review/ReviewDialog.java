@@ -107,28 +107,44 @@ public class ReviewDialog extends DialogFragment {
             return;
         }
 
-        android.util.Log.d("ReviewDialog", "Submitting review - currentUserId: " + currentUserId +
-                ", reviewedUserId: " + userId + ", activityId: " + activityId +
-                ", rating: " + rating + ", comment: " + comment);
+        android.util.Log.d(
+                "ReviewDialog",
+                "Submitting review - currentUserId: "
+                        + currentUserId
+                        + ", reviewedUserId: "
+                        + userId
+                        + ", activityId: "
+                        + activityId
+                        + ", rating: "
+                        + rating
+                        + ", comment: "
+                        + comment);
 
         ReviewRequest request = new ReviewRequest(userId, activityId, rating, comment);
 
-        reviewRepository.createReview(currentUserId, request, new ApiCallback<Review>() {
-            @Override
-            public void onSuccess(Review review) {
-                Toast.makeText(requireContext(), "Review submitted successfully", Toast.LENGTH_SHORT).show();
-                if (listener != null) {
-                    listener.onReviewSubmitted();
-                }
-                dismiss();
-            }
+        reviewRepository.createReview(
+                currentUserId,
+                request,
+                new ApiCallback<Review>() {
+                    @Override
+                    public void onSuccess(Review review) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Review submitted successfully",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        if (listener != null) {
+                            listener.onReviewSubmitted();
+                        }
+                        dismiss();
+                    }
 
-            @Override
-            public void onError(String error) {
-                android.util.Log.e("ReviewDialog", "Error submitting review: " + error);
-                Toast.makeText(requireContext(), "Failed to submit review: " + error, Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onError(String error) {
+                        android.util.Log.e("ReviewDialog", "Error submitting review: " + error);
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     public void setOnReviewSubmittedListener(OnReviewSubmittedListener listener) {

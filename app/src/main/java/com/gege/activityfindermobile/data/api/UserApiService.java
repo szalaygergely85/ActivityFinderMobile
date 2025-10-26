@@ -69,6 +69,5 @@ public interface UserApiService {
 
     @Multipart
     @POST("api/users/{id}/profile-image")
-    Call<ResponseBody> uploadProfileImage(
-            @Path("id") Long userId, @Part MultipartBody.Part image);
+    Call<ResponseBody> uploadProfileImage(@Path("id") Long userId, @Part MultipartBody.Part image);
 }

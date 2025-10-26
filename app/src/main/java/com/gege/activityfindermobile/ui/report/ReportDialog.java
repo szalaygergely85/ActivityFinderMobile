@@ -1,7 +1,6 @@
 package com.gege.activityfindermobile.ui.report;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -84,12 +83,18 @@ public class ReportDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             reportType = ReportType.valueOf(getArguments().getString(ARG_REPORT_TYPE));
-            activityId = getArguments().containsKey(ARG_ACTIVITY_ID) ?
-                    getArguments().getLong(ARG_ACTIVITY_ID) : null;
-            messageId = getArguments().containsKey(ARG_MESSAGE_ID) ?
-                    getArguments().getLong(ARG_MESSAGE_ID) : null;
-            userId = getArguments().containsKey(ARG_USER_ID) ?
-                    getArguments().getLong(ARG_USER_ID) : null;
+            activityId =
+                    getArguments().containsKey(ARG_ACTIVITY_ID)
+                            ? getArguments().getLong(ARG_ACTIVITY_ID)
+                            : null;
+            messageId =
+                    getArguments().containsKey(ARG_MESSAGE_ID)
+                            ? getArguments().getLong(ARG_MESSAGE_ID)
+                            : null;
+            userId =
+                    getArguments().containsKey(ARG_USER_ID)
+                            ? getArguments().getLong(ARG_USER_ID)
+                            : null;
         }
     }
 
@@ -152,23 +157,31 @@ public class ReportDialog extends DialogFragment {
                 return;
         }
 
-        reportRepository.submitReport(request, new ApiCallback<Report>() {
-            @Override
-            public void onSuccess(Report report) {
-                Toast.makeText(requireContext(), "Report submitted successfully",
-                        Toast.LENGTH_SHORT).show();
-                if (listener != null) {
-                    listener.onReportSubmitted();
-                }
-                dismiss();
-            }
+        reportRepository.submitReport(
+                request,
+                new ApiCallback<Report>() {
+                    @Override
+                    public void onSuccess(Report report) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Report submitted successfully",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        if (listener != null) {
+                            listener.onReportSubmitted();
+                        }
+                        dismiss();
+                    }
 
-            @Override
-            public void onError(String error) {
-                Toast.makeText(requireContext(), "Failed to submit report: " + error,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onError(String error) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to submit report: " + error,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
     }
 
     public void setOnReportSubmittedListener(OnReportSubmittedListener listener) {

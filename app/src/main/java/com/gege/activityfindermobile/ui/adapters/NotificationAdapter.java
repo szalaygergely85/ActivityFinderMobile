@@ -25,8 +25,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         void onNotificationClick(Notification notification);
     }
 
-    public NotificationAdapter() {
-    }
+    public NotificationAdapter() {}
 
     public void setOnNotificationClickListener(OnNotificationClickListener listener) {
         this.listener = listener;
@@ -40,8 +39,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_notification, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_notification, parent, false);
         return new ViewHolder(view);
     }
 
@@ -67,12 +67,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvTime = itemView.findViewById(R.id.tv_notification_time);
             indicatorUnread = itemView.findViewById(R.id.indicator_unread);
 
-            itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onNotificationClick(notifications.get(position));
-                }
-            });
+            itemView.setOnClickListener(
+                    v -> {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION && listener != null) {
+                            listener.onNotificationClick(notifications.get(position));
+                        }
+                    });
         }
 
         void bind(Notification notification) {
@@ -85,7 +86,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             // Show indicator for unread notifications
             if (notification.getIsRead() != null && !notification.getIsRead()) {
                 indicatorUnread.setVisibility(View.VISIBLE);
-                itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.notification_unread_bg));
+                itemView.setBackgroundColor(
+                        ContextCompat.getColor(context, R.color.notification_unread_bg));
             } else {
                 indicatorUnread.setVisibility(View.GONE);
                 itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.white));

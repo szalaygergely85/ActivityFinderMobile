@@ -28,8 +28,7 @@ public class ReviewRepository {
     }
 
     /** Create a review */
-    public void createReview(
-            Long userId, ReviewRequest request, ApiCallback<Review> callback) {
+    public void createReview(Long userId, ReviewRequest request, ApiCallback<Review> callback) {
         reviewApiService
                 .createReview(userId, request)
                 .enqueue(
@@ -40,7 +39,13 @@ public class ReviewRepository {
                                     Log.d(TAG, "Review created successfully");
                                     callback.onSuccess(response.body());
                                 } else {
-                                    String errorMsg = "Failed to create review: " + response.code();
+                                    // Handle specific error codes
+                                    String errorMsg;
+                                    if (response.code() == 409) {
+                                        errorMsg = "You have already sent a review for this user";
+                                    } else {
+                                        errorMsg = "Failed to create review: " + response.code();
+                                    }
                                     Log.e(TAG, errorMsg);
                                     callback.onError(errorMsg);
                                 }

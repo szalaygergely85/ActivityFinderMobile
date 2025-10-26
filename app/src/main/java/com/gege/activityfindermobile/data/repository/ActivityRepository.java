@@ -286,10 +286,10 @@ public class ActivityRepository {
                         });
     }
 
-    /** Get user's own activities */
+    /** Get user's own activities (all statuses including expired) */
     public void getMyActivities(Long userId, ApiCallback<List<Activity>> callback) {
         activityApiService
-                .getMyActivities(userId)
+                .getMyActivitiesAll()
                 .enqueue(
                         new Callback<List<Activity>>() {
                             @Override
