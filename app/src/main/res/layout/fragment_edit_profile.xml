@@ -77,8 +77,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/margin_medium"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:cardElevation="@dimen/card_elevation"
+                android:layout_marginTop="@dimen/margin_medium"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -127,9 +128,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:clipToPadding="false"
+                        android:paddingHorizontal="4dp"
                         android:paddingBottom="8dp"
                         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                        app:spanCount="3" />
+                        app:spanCount="2" />
 
                     <!-- Empty Photos State -->
                     <LinearLayout
