@@ -19,7 +19,7 @@ import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.model.UserPhoto;
 import com.gege.activityfindermobile.data.repository.UserRepository;
-import com.gege.activityfindermobile.ui.adapters.PhotoGridAdapter;
+import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
@@ -40,13 +40,13 @@ public class UserProfileFragment extends Fragment {
     @Inject UserRepository userRepository;
 
     private Long userId;
-    private TextView tvFullName, tvBadge, tvRating, tvCompletedActivities, tvBio;
+    private TextView tvFullName, tvBadge, tvRating, tvCompletedActivities, tvBio, tvPhotoCount;
     private CircleImageView ivProfileImage;
     private ChipGroup chipGroupInterests;
     private CircularProgressIndicator progressLoading;
     private View cardBio, cardInterests, cardPhotos, layoutPhotosEmpty;
     private RecyclerView rvUserPhotos;
-    private PhotoGridAdapter photoGridAdapter;
+    private PhotoGalleryAdapter photoGalleryAdapter;
 
     @Nullable
     @Override
@@ -77,6 +77,7 @@ public class UserProfileFragment extends Fragment {
         cardPhotos = view.findViewById(R.id.card_photos);
         rvUserPhotos = view.findViewById(R.id.rv_user_photos);
         layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
+        tvPhotoCount = view.findViewById(R.id.tv_photo_count);
 
         // Get userId from arguments
         if (getArguments() != null) {
@@ -201,18 +202,37 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void setupPhotosAdapter(List<UserPhoto> photos) {
-        photoGridAdapter = new PhotoGridAdapter(photos, false);
-        photoGridAdapter.setOnPhotoClickListener(
-                (photo, position, photoList) -> {
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("photos", new ArrayList<>(photoList));
-                    bundle.putInt("position", position);
-                    bundle.putBoolean("editMode", false);
-                    Navigation.findNavController(requireView())
-                            .navigate(
-                                    R.id.action_userProfileFragment_to_photoViewerFragment, bundle);
-                });
-        rvUserPhotos.setAdapter(photoGridAdapter);
+        photoGalleryAdapter =
+                new PhotoGalleryAdapter(
+                        photos,
+                        new PhotoGalleryAdapter.OnPhotoActionListener() {
+                            @Override
+                            public void onSetAsProfile(UserPhoto photo) {
+                                // No action in view mode
+                            }
+
+                            @Override
+                            public void onDeletePhoto(UserPhoto photo) {
+                                // No action in view mode
+                            }
+
+                            @Override
+                            public void onPhotoClick(UserPhoto photo) {
+                                // Open full-screen photo viewer
+                                Bundle bundle = new Bundle();
+                                bundle.putSerializable("photos", new ArrayList<>(photos));
+                                bundle.putInt("position", photos.indexOf(photo));
+                                bundle.putBoolean("editMode", false);
+                                Navigation.findNavController(requireView())
+                                        .navigate(
+                                                R.id
+                                                        .action_userProfileFragment_to_photoViewerFragment,
+                                                bundle);
+                            }
+                        });
+        photoGalleryAdapter.setEditMode(false);
+        rvUserPhotos.setAdapter(photoGalleryAdapter);
+        tvPhotoCount.setText(photos.size() + "/6");
         layoutPhotosEmpty.setVisibility(View.GONE);
     }
 }

@@ -86,40 +86,45 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
             // Load photo with authorization header
             ImageLoader.loadGalleryPhoto(context, photo.getPhotoUrl(), ivPhoto);
 
-            // Show/hide profile badge
-            if (photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
+            // Show/hide profile badge - only in edit mode
+            if (editMode && photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
                 tvProfileBadge.setVisibility(View.VISIBLE);
                 tvProfileBadge.setText("⭐ Profile");
             } else {
                 tvProfileBadge.setVisibility(View.GONE);
             }
 
-            // Always show buttons - all editing happens in edit profile
-            btnSetAsProfile.setVisibility(View.VISIBLE);
-            btnDeletePhoto.setVisibility(View.VISIBLE);
+            // Show/hide buttons based on edit mode
+            if (editMode) {
+                btnSetAsProfile.setVisibility(View.VISIBLE);
+                btnDeletePhoto.setVisibility(View.VISIBLE);
 
-            // Set as profile button - only show if not already profile picture
-            if (photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
-                btnSetAsProfile.setEnabled(false);
-                btnSetAsProfile.setAlpha(0.5f);
-            } else {
-                btnSetAsProfile.setEnabled(true);
-                btnSetAsProfile.setAlpha(1f);
-                btnSetAsProfile.setOnClickListener(
+                // Set as profile button - only show if not already profile picture
+                if (photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
+                    btnSetAsProfile.setEnabled(false);
+                    btnSetAsProfile.setAlpha(0.5f);
+                } else {
+                    btnSetAsProfile.setEnabled(true);
+                    btnSetAsProfile.setAlpha(1f);
+                    btnSetAsProfile.setOnClickListener(
+                            v -> {
+                                if (listener != null) {
+                                    listener.onSetAsProfile(photo);
+                                }
+                            });
+                }
+
+                // Delete button
+                btnDeletePhoto.setOnClickListener(
                         v -> {
                             if (listener != null) {
-                                listener.onSetAsProfile(photo);
+                                listener.onDeletePhoto(photo);
                             }
                         });
+            } else {
+                btnSetAsProfile.setVisibility(View.GONE);
+                btnDeletePhoto.setVisibility(View.GONE);
             }
-
-            // Delete button
-            btnDeletePhoto.setOnClickListener(
-                    v -> {
-                        if (listener != null) {
-                            listener.onDeletePhoto(photo);
-                        }
-                    });
 
             // Photo click listener for viewing
             ivPhoto.setOnClickListener(
