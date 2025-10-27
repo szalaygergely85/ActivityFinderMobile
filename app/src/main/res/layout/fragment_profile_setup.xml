@@ -125,6 +125,100 @@
                     android:layout_marginVertical="@dimen/margin_medium"
                     android:background="@color/divider" />
 
+                <!-- Photos Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Your Gallery"
+                    android:textSize="@dimen/text_size_title"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <!-- Profile Picture from Gallery -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/margin_medium"
+                    android:layout_marginBottom="@dimen/margin_medium">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Profile Picture"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_hint" />
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/iv_setup_profile_picture"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_person"
+                        android:layout_marginTop="8dp"
+                        app:civ_border_width="2dp"
+                        app:civ_border_color="@color/primary" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add up to 6 photos and set one as profile"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginTop="4dp" />
+
+                <!-- Upload Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_upload_photo_setup"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="@dimen/margin_medium"
+                    android:layout_marginBottom="@dimen/margin_medium"
+                    android:text="+ Add Photo"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    app:icon="@drawable/ic_add"
+                    app:iconTint="@color/primary"
+                    android:textColor="@color/primary"
+                    app:strokeColor="@color/primary" />
+
+                <!-- Photos RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_setup_photos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="4dp"
+                    android:paddingBottom="8dp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="2" />
+
+                <!-- Empty Photos State -->
+                <LinearLayout
+                    android:id="@+id/layout_setup_photos_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No photos yet"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_hint" />
+
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/margin_medium"
+                    android:background="@color/divider" />
+
                 <!-- Bio Section -->
                 <TextView
                     android:layout_width="wrap_content"
