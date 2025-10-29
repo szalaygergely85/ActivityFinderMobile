@@ -40,6 +40,9 @@ public class User {
     @SerializedName("photos")
     private List<UserPhoto> photos;
 
+    @SerializedName("city")
+    private String city;
+
     // Constructor
     public User() {}
 
@@ -130,5 +133,13 @@ public class User {
 
     public void setPhotos(List<UserPhoto> photos) {
         this.photos = photos;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 }

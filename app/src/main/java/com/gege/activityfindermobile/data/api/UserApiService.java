@@ -16,6 +16,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
@@ -71,4 +72,7 @@ public interface UserApiService {
     @POST("api/users/{id}/profile-image")
     Call<ImageUploadResponse> uploadProfileImage(
             @Path("id") Long userId, @Part MultipartBody.Part image);
+
+    @PATCH("api/users/{id}/location")
+    Call<User> updateUserLocation(@Path("id") Long userId, @Query("city") String city);
 }

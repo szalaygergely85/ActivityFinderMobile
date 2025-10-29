@@ -20,6 +20,7 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
+import com.gege.activityfindermobile.utils.LocationManager;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
@@ -45,6 +46,13 @@ public class FeedFragment extends Fragment {
     private CircularProgressIndicator progressLoading;
     private View layoutEmpty;
 
+    // Location variables
+    private LocationManager locationManager;
+    private boolean useNearbyFilter = false;
+    private double userLatitude = 0.0;
+    private double userLongitude = 0.0;
+    private float nearbyRadiusKm = 10f;
+
     @Nullable
     @Override
     public View onCreateView(
@@ -63,6 +71,9 @@ public class FeedFragment extends Fragment {
         progressLoading = view.findViewById(R.id.progress_loading);
         layoutEmpty = view.findViewById(R.id.layout_empty);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
+
+        // Initialize location manager
+        locationManager = new LocationManager(requireContext());
 
         // Setup adapter with ParticipantRepository for accurate counts and current user ID
         Long currentUserId = prefsManager.getUserId();
@@ -95,7 +106,50 @@ public class FeedFragment extends Fragment {
     private void loadActivitiesFromApi() {
         setLoading(true);
 
-        activityRepository.getUpcomingActivities(
+        // If nearby filter is enabled, use location-based search
+        if (useNearbyFilter && userLatitude != 0.0 && userLongitude != 0.0) {
+            loadNearbyActivities();
+        } else {
+            // Load all upcoming activities
+            activityRepository.getUpcomingActivities(
+                    new ApiCallback<List<Activity>>() {
+                        @Override
+                        public void onSuccess(List<Activity> activities) {
+                            setLoading(false);
+                            swipeRefresh.setRefreshing(false);
+
+                            if (activities != null && !activities.isEmpty()) {
+                                adapter.setActivities(activities);
+                                showContent();
+                            } else {
+                                adapter.setActivities(new ArrayList<>());
+                                showEmptyView();
+                            }
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            setLoading(false);
+                            swipeRefresh.setRefreshing(false);
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Failed to load activities: " + errorMessage,
+                                            Toast.LENGTH_SHORT)
+                                    .show();
+
+                            // Show empty view on error
+                            adapter.setActivities(new ArrayList<>());
+                            showEmptyView();
+                        }
+                    });
+        }
+    }
+
+    private void loadNearbyActivities() {
+        activityRepository.getNearbyActivities(
+                userLatitude,
+                userLongitude,
+                nearbyRadiusKm,
                 new ApiCallback<List<Activity>>() {
                     @Override
                     public void onSuccess(List<Activity> activities) {
@@ -105,9 +159,19 @@ public class FeedFragment extends Fragment {
                         if (activities != null && !activities.isEmpty()) {
                             adapter.setActivities(activities);
                             showContent();
+                            Toast.makeText(
+                                            requireContext(),
+                                            "Found " + activities.size() + " activities nearby",
+                                            Toast.LENGTH_SHORT)
+                                    .show();
                         } else {
                             adapter.setActivities(new ArrayList<>());
                             showEmptyView();
+                            Toast.makeText(
+                                            requireContext(),
+                                            "No activities nearby within " + nearbyRadiusKm + "km",
+                                            Toast.LENGTH_SHORT)
+                                    .show();
                         }
                     }
 
@@ -117,15 +181,63 @@ public class FeedFragment extends Fragment {
                         swipeRefresh.setRefreshing(false);
                         Toast.makeText(
                                         requireContext(),
-                                        "Failed to load activities: " + errorMessage,
+                                        "Failed to load nearby activities: " + errorMessage,
                                         Toast.LENGTH_SHORT)
                                 .show();
 
-                        // Show empty view on error
                         adapter.setActivities(new ArrayList<>());
                         showEmptyView();
                     }
                 });
+    }
+
+    /**
+     * Enable nearby activities filter and request user location. Gets current device location
+     * (requires location permission) to search for nearby activities. Note: User profile city is
+     * stored separately for display purposes only.
+     *
+     * @param radiusKm Radius in kilometers for nearby search
+     */
+    public void enableNearbyFilter(float radiusKm) {
+        nearbyRadiusKm = radiusKm;
+        useNearbyFilter = true;
+
+        // Request current location from device (location coordinates, not city)
+        locationManager.getCurrentLocation(
+                requireContext(),
+                new LocationManager.LocationCallback() {
+                    @Override
+                    public void onLocationReceived(double latitude, double longitude) {
+                        userLatitude = latitude;
+                        userLongitude = longitude;
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Location acquired. Searching nearby activities...",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        loadActivitiesFromApi();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        useNearbyFilter = false;
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Unable to get location: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                        // Fall back to all activities
+                        loadActivitiesFromApi();
+                    }
+                });
+    }
+
+    /** Disable nearby activities filter and load all activities */
+    public void disableNearbyFilter() {
+        useNearbyFilter = false;
+        userLatitude = 0.0;
+        userLongitude = 0.0;
+        loadActivitiesFromApi();
     }
 
     private void setLoading(boolean loading) {
