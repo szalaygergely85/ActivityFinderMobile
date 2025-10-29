@@ -405,4 +405,77 @@ public class ActivityRepository {
                             }
                         });
     }
+
+    /** Get nearby activities with custom radius */
+    public void getNearbyActivities(
+            double latitude,
+            double longitude,
+            float radiusKm,
+            ApiCallback<List<Activity>> callback) {
+        activityApiService
+                .getNearbyActivities(latitude, longitude, radiusKm)
+                .enqueue(
+                        new Callback<List<Activity>>() {
+                            @Override
+                            public void onResponse(
+                                    Call<List<Activity>> call, Response<List<Activity>> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    Log.d(
+                                            TAG,
+                                            "Fetched "
+                                                    + response.body().size()
+                                                    + " nearby activities within "
+                                                    + radiusKm
+                                                    + "km");
+                                    callback.onSuccess(response.body());
+                                } else {
+                                    String errorMsg =
+                                            "Failed to fetch nearby activities: " + response.code();
+                                    Log.e(TAG, errorMsg);
+                                    callback.onError(errorMsg);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<Activity>> call, Throwable t) {
+                                String errorMsg = "Network error: " + t.getMessage();
+                                Log.e(TAG, errorMsg, t);
+                                callback.onError(errorMsg);
+                            }
+                        });
+    }
+
+    /** Get nearby activities with default radius (10 km) */
+    public void getNearbyActivitiesDefaultRadius(
+            double latitude, double longitude, ApiCallback<List<Activity>> callback) {
+        activityApiService
+                .getNearbyActivitiesDefaultRadius(latitude, longitude)
+                .enqueue(
+                        new Callback<List<Activity>>() {
+                            @Override
+                            public void onResponse(
+                                    Call<List<Activity>> call, Response<List<Activity>> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    Log.d(
+                                            TAG,
+                                            "Fetched "
+                                                    + response.body().size()
+                                                    + " nearby activities");
+                                    callback.onSuccess(response.body());
+                                } else {
+                                    String errorMsg =
+                                            "Failed to fetch nearby activities: " + response.code();
+                                    Log.e(TAG, errorMsg);
+                                    callback.onError(errorMsg);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<Activity>> call, Throwable t) {
+                                String errorMsg = "Network error: " + t.getMessage();
+                                Log.e(TAG, errorMsg, t);
+                                callback.onError(errorMsg);
+                            }
+                        });
+    }
 }

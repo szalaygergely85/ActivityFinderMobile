@@ -21,6 +21,7 @@ import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
+import com.gege.activityfindermobile.utils.MapPickerActivity;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
@@ -57,6 +58,12 @@ public class CreateActivityFragment extends Fragment {
 
     private Calendar selectedDate = Calendar.getInstance();
     private Calendar selectedTime = Calendar.getInstance();
+
+    // Location variables
+    private double selectedLatitude = 0.0;
+    private double selectedLongitude = 0.0;
+    private String selectedLocationName = "";
+    private static final int MAP_PICKER_REQUEST_CODE = 100;
 
     @Nullable
     @Override
@@ -130,8 +137,44 @@ public class CreateActivityFragment extends Fragment {
         // Time picker
         etTime.setOnClickListener(v -> showTimePicker());
 
+        // Location picker - opens Google Maps for POI selection
+        etLocation.setOnClickListener(v -> openMapPicker());
+
         // Create button
         btnCreate.setOnClickListener(v -> validateAndCreateActivity());
+    }
+
+    private void openMapPicker() {
+        android.content.Intent intent =
+                new android.content.Intent(requireContext(), MapPickerActivity.class);
+        startActivityForResult(intent, MAP_PICKER_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == MAP_PICKER_REQUEST_CODE
+                && resultCode == androidx.appcompat.app.AppCompatActivity.RESULT_OK) {
+            if (data != null) {
+                selectedLocationName = data.getStringExtra(MapPickerActivity.EXTRA_PLACE_NAME);
+                selectedLatitude = data.getDoubleExtra(MapPickerActivity.EXTRA_LATITUDE, 0.0);
+                selectedLongitude = data.getDoubleExtra(MapPickerActivity.EXTRA_LONGITUDE, 0.0);
+
+                // Update UI with location name
+                etLocation.setText(selectedLocationName);
+
+                android.util.Log.d(
+                        "CreateActivity",
+                        "Location selected: "
+                                + selectedLocationName
+                                + " ("
+                                + selectedLatitude
+                                + ", "
+                                + selectedLongitude
+                                + ")");
+            }
+        }
     }
 
     private void showDatePicker() {
@@ -276,10 +319,16 @@ public class CreateActivityFragment extends Fragment {
         // Show loading
         setLoading(true);
 
-        // Create request
+        // Create request with coordinates if available
         ActivityCreateRequest request =
                 new ActivityCreateRequest(
                         title, description, activityDateTime, location, totalSpots, category);
+
+        // Set coordinates if location was selected via Places
+        if (selectedLatitude != 0.0 || selectedLongitude != 0.0) {
+            request.setLatitude(selectedLatitude);
+            request.setLongitude(selectedLongitude);
+        }
 
         // Call API
         activityRepository.createActivity(

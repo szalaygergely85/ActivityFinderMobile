@@ -415,4 +415,31 @@ public class UserRepository {
                             }
                         });
     }
+
+    /** Update user city */
+    public void updateUserLocation(Long userId, String city, ApiCallback<User> callback) {
+        userApiService
+                .updateUserLocation(userId, city)
+                .enqueue(
+                        new Callback<User>() {
+                            @Override
+                            public void onResponse(Call<User> call, Response<User> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    Log.d(TAG, "User city updated successfully");
+                                    callback.onSuccess(response.body());
+                                } else {
+                                    String errorMsg = "Failed to update city: " + response.code();
+                                    Log.e(TAG, errorMsg);
+                                    callback.onError(errorMsg);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<User> call, Throwable t) {
+                                String errorMsg = "Network error: " + t.getMessage();
+                                Log.e(TAG, errorMsg, t);
+                                callback.onError(errorMsg);
+                            }
+                        });
+    }
 }

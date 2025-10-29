@@ -39,6 +39,16 @@ public interface ActivityApiService {
     @GET("api/activities/location")
     Call<List<Activity>> getActivitiesByLocation(@Query("location") String location);
 
+    @GET("api/activities/nearby")
+    Call<List<Activity>> getNearbyActivities(
+            @Query("latitude") double latitude,
+            @Query("longitude") double longitude,
+            @Query("radiusKm") float radiusKm);
+
+    @GET("api/activities/nearby")
+    Call<List<Activity>> getNearbyActivitiesDefaultRadius(
+            @Query("latitude") double latitude, @Query("longitude") double longitude);
+
     @GET("api/activities/search")
     Call<List<Activity>> searchActivities(@Query("keyword") String keyword);
 

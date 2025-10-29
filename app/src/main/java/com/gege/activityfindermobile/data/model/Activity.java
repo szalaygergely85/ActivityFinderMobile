@@ -24,6 +24,12 @@ public class Activity {
     @SerializedName("location")
     private String location;
 
+    @SerializedName("latitude")
+    private Double latitude;
+
+    @SerializedName("longitude")
+    private Double longitude;
+
     @SerializedName("totalSpots")
     private Integer totalSpots;
 
@@ -180,6 +186,22 @@ public class Activity {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public Integer getTotalSpots() {
