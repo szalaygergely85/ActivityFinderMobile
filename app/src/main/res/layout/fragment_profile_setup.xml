@@ -10,48 +10,52 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/padding_large">
+        android:padding="@dimen/padding_medium">
 
         <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
+            android:gravity="center_horizontal"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Complete Your Profile"
-                android:textSize="24sp"
+                android:textSize="28sp"
                 android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Help others get to know you better"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_secondary"
-                android:layout_marginTop="4dp" />
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="(All fields are optional)"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textColor="@color/text_hint"
-                android:layout_marginTop="4dp"
+                android:gravity="center"
                 android:fontFamily="sans-serif-medium" />
 
         </LinearLayout>
 
-        <!-- Profile Setup Card -->
+        <!-- Profile Picture Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
             app:cardCornerRadius="@dimen/card_corner_radius"
             app:cardElevation="@dimen/card_elevation"
             app:strokeWidth="0dp">
@@ -60,164 +64,135 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="@dimen/padding_large">
+                android:padding="@dimen/padding_medium"
+                android:gravity="center">
 
-                <!-- Profile Picture Section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Profile Picture"
                     android:textSize="@dimen/text_size_title"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
 
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/iv_profile_picture"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:src="@drawable/ic_person"
+                    app:civ_border_width="2dp"
+                    app:civ_border_color="@color/primary" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Photos Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/card_elevation"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
+
+                <!-- Header with Photo Count -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginTop="@dimen/margin_medium"
-                    android:layout_marginBottom="@dimen/margin_medium">
-
-                    <de.hdodenhof.circleimageview.CircleImageView
-                        android:id="@+id/iv_profile_picture"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:src="@drawable/ic_person"
-                        app:civ_border_width="3dp"
-                        app:civ_border_color="@color/primary" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="@dimen/margin_medium">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_choose_photo"
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Choose Photo"
-                            android:textColor="@color/primary"
-                            app:strokeColor="@color/primary"
-                            app:icon="@drawable/ic_add"
-                            app:iconTint="@color/primary" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_remove_photo"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Remove"
-                            android:textColor="@color/text_secondary"
-                            android:layout_marginStart="8dp"
-                            android:visibility="gone" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/margin_medium"
-                    android:background="@color/divider" />
-
-                <!-- Photos Section -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Your Gallery"
-                    android:textSize="@dimen/text_size_title"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <!-- Profile Picture from Gallery -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginTop="@dimen/margin_medium"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:layout_marginBottom="@dimen/margin_medium">
 
                     <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="My Photos"
+                        android:textSize="@dimen/text_size_title"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_photo_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Profile Picture"
-                        android:textSize="12sp"
+                        android:text="0/6"
+                        android:textSize="14sp"
                         android:textColor="@color/text_hint" />
-
-                    <de.hdodenhof.circleimageview.CircleImageView
-                        android:id="@+id/iv_setup_profile_picture"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:src="@drawable/ic_person"
-                        android:layout_marginTop="8dp"
-                        app:civ_border_width="2dp"
-                        app:civ_border_color="@color/primary" />
 
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Add up to 6 photos and set one as profile"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_hint"
-                    android:layout_marginTop="4dp" />
-
                 <!-- Upload Button -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_upload_photo_setup"
+                    android:id="@+id/btn_upload_photo"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginTop="@dimen/margin_medium"
                     android:layout_marginBottom="@dimen/margin_medium"
-                    android:text="+ Add Photo"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:icon="@drawable/ic_add"
-                    app:iconTint="@color/primary"
-                    android:textColor="@color/primary"
-                    app:strokeColor="@color/primary" />
+                    android:text="+ Upload Photo (Max 6)" />
 
                 <!-- Photos RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_setup_photos"
+                    android:id="@+id/rv_my_photos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
                     android:paddingHorizontal="4dp"
                     android:paddingBottom="8dp"
-                    android:visibility="gone"
                     app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                     app:spanCount="2" />
 
                 <!-- Empty Photos State -->
                 <LinearLayout
-                    android:id="@+id/layout_setup_photos_empty"
+                    android:id="@+id/layout_photos_empty"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
+                    android:layout_height="120dp"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="📸"
+                        android:textSize="48sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="No photos yet"
                         android:textSize="14sp"
                         android:textColor="@color/text_hint" />
 
                 </LinearLayout>
 
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/margin_medium"
-                    android:background="@color/divider" />
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bio and Interests Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_medium"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/card_elevation"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
 
                 <!-- Bio Section -->
                 <TextView
@@ -226,14 +201,15 @@
                     android:text="About You"
                     android:textSize="@dimen/text_size_title"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/margin_medium" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_bio"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/margin_medium"
+                    android:layout_marginBottom="@dimen/margin_large"
                     android:hint="Tell others about yourself..."
                     app:counterEnabled="true"
                     app:counterMaxLength="200">
@@ -249,13 +225,6 @@
                         android:maxLength="200" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/margin_medium"
-                    android:background="@color/divider" />
 
                 <!-- Interests Section -->
                 <TextView
@@ -369,12 +338,13 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Buttons -->
+        <!-- Action Buttons -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_continue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_large"
+            android:layout_marginBottom="@dimen/margin_medium"
             android:text="Continue"
             android:textColor="@color/white"
             android:paddingVertical="16dp"
@@ -390,7 +360,6 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="Skip for now"
             android:textColor="@color/text_secondary"
             android:paddingVertical="12dp" />
