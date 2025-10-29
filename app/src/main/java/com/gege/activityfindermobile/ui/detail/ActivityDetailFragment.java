@@ -22,6 +22,7 @@ import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
 import com.gege.activityfindermobile.data.model.ActivityMessage;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.MessageRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.data.repository.ReviewRepository;
@@ -47,6 +48,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class ActivityDetailFragment extends Fragment {
 
+    @Inject ActivityRepository activityRepository;
+
     @Inject ParticipantRepository participantRepository;
 
     @Inject ReviewRepository reviewRepository;
@@ -59,6 +62,8 @@ public class ActivityDetailFragment extends Fragment {
     private Long creatorId;
     private MaterialButton btnExpressInterest;
     private MaterialButton btnManage;
+    private MaterialButton btnEditActivity;
+    private MaterialButton btnDeleteActivity;
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvParticipants;
     private TextView tvNoParticipants;
@@ -90,12 +95,23 @@ public class ActivityDetailFragment extends Fragment {
 
         // Only check participation status if user is not the creator
         Long currentUserId = prefsManager.getUserId();
-        if (currentUserId != null && !currentUserId.equals(creatorId)) {
-            checkUserParticipationStatus();
+        if (currentUserId != null && currentUserId.equals(creatorId)) {
+            // Creator - ensure edit/delete buttons are visible
+            Log.d(
+                    "ActivityDetailFragment",
+                    "User is creator in onResume - showing edit/delete buttons");
+            btnEditActivity.setVisibility(View.VISIBLE);
+            btnDeleteActivity.setVisibility(View.VISIBLE);
+            btnExpressInterest.setVisibility(View.GONE);
+            btnManage.setVisibility(View.GONE);
+            showCommentSection();
         } else {
             Log.d(
                     "ActivityDetailFragment",
-                    "Skipping checkUserParticipationStatus in onResume - user is creator");
+                    "User is not creator in onResume - checking participation status");
+            btnEditActivity.setVisibility(View.GONE);
+            btnDeleteActivity.setVisibility(View.GONE);
+            checkUserParticipationStatus();
         }
     }
 
@@ -108,6 +124,8 @@ public class ActivityDetailFragment extends Fragment {
 
         btnExpressInterest = view.findViewById(R.id.btn_express_interest);
         btnManage = view.findViewById(R.id.btn_manage);
+        btnEditActivity = view.findViewById(R.id.btn_edit_activity);
+        btnDeleteActivity = view.findViewById(R.id.btn_delete_activity);
         progressLoading = view.findViewById(R.id.progress_loading);
         rvParticipants = view.findViewById(R.id.rv_participants);
         tvNoParticipants = view.findViewById(R.id.tv_no_participants);
@@ -164,6 +182,12 @@ public class ActivityDetailFragment extends Fragment {
         // Setup manage button
         btnManage.setOnClickListener(v -> navigateToManageActivity());
 
+        // Setup edit button
+        btnEditActivity.setOnClickListener(v -> navigateToEditActivity());
+
+        // Setup delete button
+        btnDeleteActivity.setOnClickListener(v -> confirmDeleteActivity());
+
         // Setup creator card click
         cardCreator.setOnClickListener(v -> navigateToUserProfile(creatorId));
 
@@ -175,17 +199,32 @@ public class ActivityDetailFragment extends Fragment {
         if (currentUserId != null && currentUserId.equals(creatorId)) {
             Log.d(
                     "ActivityDetailFragment",
-                    "User IS the creator - hiding join button, showing manage button");
-            // Show manage button for creator
-            btnManage.setVisibility(View.VISIBLE);
+                    "User IS the creator - showing edit/delete buttons");
+            // Show edit and delete buttons for creator
+            btnEditActivity.setVisibility(View.VISIBLE);
+            btnEditActivity.setEnabled(true);
+            btnDeleteActivity.setVisibility(View.VISIBLE);
+            btnDeleteActivity.setEnabled(true);
             // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
+            btnExpressInterest.setEnabled(false);
+            // Hide manage button (we have edit/delete now)
+            btnManage.setVisibility(View.GONE);
+            btnManage.setEnabled(false);
             // Creator can see and send messages
             showCommentSection();
         } else {
             Log.d(
                     "ActivityDetailFragment",
                     "User is NOT the creator - checking participation status");
+            // Hide edit and delete buttons for non-creators
+            btnEditActivity.setVisibility(View.GONE);
+            btnEditActivity.setEnabled(false);
+            btnDeleteActivity.setVisibility(View.GONE);
+            btnDeleteActivity.setEnabled(false);
+            // Hide manage button for non-creators
+            btnManage.setVisibility(View.GONE);
+            btnManage.setEnabled(false);
             // Hide comment section by default, will show if user is joined
             hideCommentSection();
             // Hide join button if activity is expired
@@ -662,6 +701,73 @@ public class ActivityDetailFragment extends Fragment {
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(
                 R.id.action_activityDetailFragment_to_manageActivityFragment, bundle);
+    }
+
+    private void navigateToEditActivity() {
+        Bundle bundle = new Bundle();
+        bundle.putLong("activityId", activityId);
+
+        NavController navController = Navigation.findNavController(requireView());
+        // Navigate to edit activity screen - you may need to adjust the action ID based on your navigation graph
+        navController.navigate(
+                R.id.action_activityDetailFragment_to_createActivityFragment, bundle);
+    }
+
+    private void confirmDeleteActivity() {
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Delete Activity")
+                .setMessage("Are you sure you want to delete this activity? This action cannot be undone.")
+                .setPositiveButton(
+                        "Delete",
+                        (dialog, which) -> {
+                            deleteActivity();
+                        })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteActivity() {
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (activityId == null || activityId == 0L) {
+            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setLoading(true);
+
+        // Call cancel activity API (which deletes the activity)
+        activityRepository.cancelActivity(
+                activityId,
+                userId,
+                new ApiCallbackVoid() {
+                    @Override
+                    public void onSuccess() {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Activity deleted successfully",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+
+                        // Navigate back to previous screen
+                        requireActivity().onBackPressed();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to delete activity: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     private void navigateToUserProfile(Long userId) {

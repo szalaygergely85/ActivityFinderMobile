@@ -65,6 +65,10 @@ public class CreateActivityFragment extends Fragment {
     private String selectedLocationName = "";
     private static final int MAP_PICKER_REQUEST_CODE = 100;
 
+    // Edit mode variables
+    private Long editActivityId = null;
+    private boolean isEditMode = false;
+
     @Nullable
     @Override
     public View onCreateView(
@@ -81,6 +85,15 @@ public class CreateActivityFragment extends Fragment {
         initViews(view);
         setupCategoryDropdown();
         setupListeners();
+
+        // Check if we're in edit mode
+        if (getArguments() != null) {
+            editActivityId = getArguments().getLong("activityId", 0L);
+            if (editActivityId != 0L) {
+                isEditMode = true;
+                loadActivityForEditing(editActivityId);
+            }
+        }
     }
 
     private void initViews(View view) {
@@ -109,6 +122,11 @@ public class CreateActivityFragment extends Fragment {
 
         btnCreate = view.findViewById(R.id.btn_create);
         progressLoading = view.findViewById(R.id.progress_loading);
+
+        // Update button text for edit mode
+        if (isEditMode) {
+            btnCreate.setText("Update Activity");
+        }
     }
 
     private void setupCategoryDropdown() {
@@ -290,8 +308,12 @@ public class CreateActivityFragment extends Fragment {
             return;
         }
 
-        // Create activity
-        createActivity(title, description, category, date, time, location, totalSpots);
+        // Create or update activity based on mode
+        if (isEditMode) {
+            updateActivity(title, description, category, date, time, location, totalSpots);
+        } else {
+            createActivity(title, description, category, date, time, location, totalSpots);
+        }
     }
 
     private void createActivity(
@@ -410,5 +432,146 @@ public class CreateActivityFragment extends Fragment {
             btnCreate.setEnabled(true);
             progressLoading.setVisibility(View.GONE);
         }
+    }
+
+    private void loadActivityForEditing(Long activityId) {
+        setLoading(true);
+
+        activityRepository.getActivityById(
+                activityId,
+                new ApiCallback<com.gege.activityfindermobile.data.model.Activity>() {
+                    @Override
+                    public void onSuccess(
+                            com.gege.activityfindermobile.data.model.Activity activity) {
+                        setLoading(false);
+
+                        // Populate form fields with activity data
+                        etTitle.setText(activity.getTitle());
+                        etDescription.setText(activity.getDescription());
+                        etCategory.setText(activity.getCategory());
+                        etLocation.setText(activity.getLocation());
+                        etTotalSpots.setText(String.valueOf(activity.getTotalSpots()));
+
+                        // Set location coordinates if available
+                        if (activity.getLatitude() != null) {
+                            selectedLatitude = activity.getLatitude();
+                        }
+                        if (activity.getLongitude() != null) {
+                            selectedLongitude = activity.getLongitude();
+                        }
+
+                        // Parse and set date and time
+                        try {
+                            SimpleDateFormat isoFormat =
+                                    new SimpleDateFormat(
+                                            "yyyy-MM-dd'T'HH:mm:ss",
+                                            Locale.getDefault());
+                            java.util.Date dateTime = isoFormat.parse(activity.getDateTime());
+
+                            // Set date
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTime(dateTime);
+                            selectedDate.setTime(dateTime);
+
+                            SimpleDateFormat dateFormat =
+                                    new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                            etDate.setText(dateFormat.format(dateTime));
+
+                            // Set time
+                            selectedTime.setTime(dateTime);
+                            SimpleDateFormat timeFormat =
+                                    new SimpleDateFormat("hh:mm a", Locale.getDefault());
+                            etTime.setText(timeFormat.format(dateTime));
+                        } catch (Exception e) {
+                            android.util.Log.e("CreateActivity", "Error parsing activity date", e);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load activity: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.navigateUp();
+                    }
+                });
+    }
+
+    private void updateActivity(
+            String title,
+            String description,
+            String category,
+            String date,
+            String time,
+            String location,
+            int totalSpots) {
+        // Get user ID
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (editActivityId == null || editActivityId == 0L) {
+            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Combine date and time into ISO 8601 format for backend
+        String activityDateTime = combineDateAndTime();
+        if (activityDateTime == null) {
+            Toast.makeText(requireContext(), "Invalid date/time", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show loading
+        setLoading(true);
+
+        // Create request with coordinates if available
+        com.gege.activityfindermobile.data.dto.ActivityCreateRequest request =
+                new com.gege.activityfindermobile.data.dto.ActivityCreateRequest(
+                        title, description, activityDateTime, location, totalSpots, category);
+
+        // Set coordinates if location was selected via Places
+        if (selectedLatitude != 0.0 || selectedLongitude != 0.0) {
+            request.setLatitude(selectedLatitude);
+            request.setLongitude(selectedLongitude);
+        }
+
+        // Call API
+        activityRepository.updateActivity(
+                editActivityId,
+                userId,
+                request,
+                new ApiCallback<com.gege.activityfindermobile.data.model.Activity>() {
+                    @Override
+                    public void onSuccess(
+                            com.gege.activityfindermobile.data.model.Activity activity) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Activity updated successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+
+                        // Navigate back to activity detail or feed
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.navigateUp();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to update activity: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 }
