@@ -61,6 +61,7 @@ public class ActivityDetailFragment extends Fragment {
     private Long activityId;
     private Long creatorId;
     private MaterialButton btnExpressInterest;
+    private MaterialButton btnReportActivity;
     private MaterialButton btnManage;
     private MaterialButton btnEditActivity;
     private MaterialButton btnDeleteActivity;
@@ -103,6 +104,7 @@ public class ActivityDetailFragment extends Fragment {
             btnEditActivity.setVisibility(View.VISIBLE);
             btnDeleteActivity.setVisibility(View.VISIBLE);
             btnExpressInterest.setVisibility(View.GONE);
+            btnReportActivity.setVisibility(View.GONE);
             btnManage.setVisibility(View.GONE);
             showCommentSection();
         } else {
@@ -123,6 +125,7 @@ public class ActivityDetailFragment extends Fragment {
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         btnExpressInterest = view.findViewById(R.id.btn_express_interest);
+        btnReportActivity = view.findViewById(R.id.btn_report_activity);
         btnManage = view.findViewById(R.id.btn_manage);
         btnEditActivity = view.findViewById(R.id.btn_edit_activity);
         btnDeleteActivity = view.findViewById(R.id.btn_delete_activity);
@@ -179,6 +182,9 @@ public class ActivityDetailFragment extends Fragment {
         // Setup join button
         btnExpressInterest.setOnClickListener(v -> expressInterest());
 
+        // Setup report button
+        btnReportActivity.setOnClickListener(v -> showReportActivityDialog());
+
         // Setup manage button
         btnManage.setOnClickListener(v -> navigateToManageActivity());
 
@@ -208,6 +214,8 @@ public class ActivityDetailFragment extends Fragment {
             // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
             btnExpressInterest.setEnabled(false);
+            // Hide report button for creator
+            btnReportActivity.setVisibility(View.GONE);
             // Hide manage button (we have edit/delete now)
             btnManage.setVisibility(View.GONE);
             btnManage.setEnabled(false);
@@ -222,6 +230,8 @@ public class ActivityDetailFragment extends Fragment {
             btnEditActivity.setEnabled(false);
             btnDeleteActivity.setVisibility(View.GONE);
             btnDeleteActivity.setEnabled(false);
+            // Show report button for non-creators
+            btnReportActivity.setVisibility(View.VISIBLE);
             // Hide manage button for non-creators
             btnManage.setVisibility(View.GONE);
             btnManage.setEnabled(false);
@@ -1021,5 +1031,11 @@ public class ActivityDetailFragment extends Fragment {
                     loadParticipants();
                 });
         reviewDialog.show(getChildFragmentManager(), "ReviewDialog");
+    }
+
+    private void showReportActivityDialog() {
+        com.gege.activityfindermobile.ui.report.ReportDialog reportDialog =
+                com.gege.activityfindermobile.ui.report.ReportDialog.newInstanceForActivity(activityId);
+        reportDialog.show(getChildFragmentManager(), "ReportDialog");
     }
 }

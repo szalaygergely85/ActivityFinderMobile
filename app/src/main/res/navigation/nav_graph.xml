@@ -115,6 +115,9 @@
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_nav_profile_to_photoViewerFragment"
+            app:destination="@id/photoViewerFragment" />
     </fragment>
 
     <!-- Edit Profile Fragment -->
