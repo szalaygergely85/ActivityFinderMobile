@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -58,16 +59,16 @@ public class ProfileSetupFragment extends Fragment {
     @Inject SharedPreferencesManager prefsManager;
 
     private CircleImageView ivProfilePicture;
-    private MaterialButton btnChoosePhoto, btnRemovePhoto, btnContinue, btnSkip;
+    private MaterialButton btnContinue, btnSkip;
     private MaterialButton btnUploadPhoto;
     private TextInputEditText etBio;
     private ChipGroup chipGroupInterests;
     private CircularProgressIndicator progressLoading;
-    private RecyclerView rvSetupPhotos;
-    private LinearLayout layoutSetupPhotosEmpty;
+    private RecyclerView rvMyPhotos;
+    private LinearLayout layoutPhotosEmpty;
+    private TextView tvPhotoCount;
     private PhotoGalleryAdapter photoGalleryAdapter;
     private List<UserPhoto> setupPhotos = new ArrayList<>();
-    private de.hdodenhof.circleimageview.CircleImageView ivSetupProfilePicture;
 
     private Uri selectedImageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
@@ -85,7 +86,6 @@ public class ProfileSetupFragment extends Fragment {
                             if (uri != null) {
                                 selectedImageUri = uri;
                                 ivProfilePicture.setImageURI(uri);
-                                btnRemovePhoto.setVisibility(View.VISIBLE);
                             }
                         });
 
@@ -119,33 +119,27 @@ public class ProfileSetupFragment extends Fragment {
 
     private void initViews(View view) {
         ivProfilePicture = view.findViewById(R.id.iv_profile_picture);
-        btnChoosePhoto = view.findViewById(R.id.btn_choose_photo);
-        btnRemovePhoto = view.findViewById(R.id.btn_remove_photo);
         btnContinue = view.findViewById(R.id.btn_continue);
         btnSkip = view.findViewById(R.id.btn_skip);
-        btnUploadPhoto = view.findViewById(R.id.btn_upload_photo_setup);
+        btnUploadPhoto = view.findViewById(R.id.btn_upload_photo);
         etBio = view.findViewById(R.id.et_bio);
         chipGroupInterests = view.findViewById(R.id.chip_group_interests);
         progressLoading = view.findViewById(R.id.progress_loading);
-        rvSetupPhotos = view.findViewById(R.id.rv_setup_photos);
-        layoutSetupPhotosEmpty = view.findViewById(R.id.layout_setup_photos_empty);
-        ivSetupProfilePicture = view.findViewById(R.id.iv_setup_profile_picture);
+        rvMyPhotos = view.findViewById(R.id.rv_my_photos);
+        layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
+        tvPhotoCount = view.findViewById(R.id.tv_photo_count);
     }
 
     private void setupListeners() {
-        btnChoosePhoto.setOnClickListener(v -> openImagePicker());
-
-        btnRemovePhoto.setOnClickListener(
-                v -> {
-                    selectedImageUri = null;
-                    ivProfilePicture.setImageResource(R.drawable.ic_person);
-                    btnRemovePhoto.setVisibility(View.GONE);
-                });
+        // Allow clicking on profile picture to change it
+        ivProfilePicture.setOnClickListener(v -> openImagePicker());
 
         btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
         btnContinue.setOnClickListener(v -> saveProfileAndContinue());
-
         btnSkip.setOnClickListener(v -> navigateToFeed());
+
+        // Load existing photos on startup
+        loadSetupPhotos();
     }
 
     private void openImagePicker() {
@@ -317,14 +311,14 @@ public class ProfileSetupFragment extends Fragment {
         if (loading) {
             btnContinue.setEnabled(false);
             btnSkip.setEnabled(false);
-            btnChoosePhoto.setEnabled(false);
             btnUploadPhoto.setEnabled(false);
+            ivProfilePicture.setEnabled(false);
             progressLoading.setVisibility(View.VISIBLE);
         } else {
             btnContinue.setEnabled(true);
             btnSkip.setEnabled(true);
-            btnChoosePhoto.setEnabled(true);
             btnUploadPhoto.setEnabled(true);
+            ivProfilePicture.setEnabled(true);
             progressLoading.setVisibility(View.GONE);
         }
     }
@@ -346,17 +340,26 @@ public class ProfileSetupFragment extends Fragment {
             return;
         }
 
+        // Check if this is the first photo
+        boolean isFirstPhoto = setupPhotos.isEmpty();
+
         setLoading(true);
         userPhotoRepository.uploadPhoto(
                 photoFile,
                 new ApiCallback<ImageUploadResponse>() {
                     @Override
                     public void onSuccess(ImageUploadResponse uploadResponse) {
-                        setLoading(false);
                         Toast.makeText(requireContext(), "Photo uploaded!", Toast.LENGTH_SHORT)
                                 .show();
-                        // Reload photos from backend
-                        loadSetupPhotos();
+
+                        // If this is the first photo, reload photos and automatically set it as profile picture
+                        if (isFirstPhoto) {
+                            loadSetupPhotosAndSetFirst();
+                        } else {
+                            setLoading(false);
+                            // Reload photos from backend
+                            loadSetupPhotos();
+                        }
                     }
 
                     @Override
@@ -390,19 +393,53 @@ public class ProfileSetupFragment extends Fragment {
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        layoutSetupPhotosEmpty.setVisibility(View.VISIBLE);
+                        layoutPhotosEmpty.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
+    private void loadSetupPhotosAndSetFirst() {
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            setLoading(false);
+            return;
+        }
+
+        userPhotoRepository.getMyPhotos(
+                new ApiCallback<List<UserPhoto>>() {
+                    @Override
+                    public void onSuccess(List<UserPhoto> photos) {
+                        setupPhotos = photos;
+                        displaySetupPhotos(photos);
+
+                        // Automatically set first photo as profile picture
+                        if (photos != null && !photos.isEmpty()) {
+                            setPhotoAsProfile(photos.get(0).getId());
+                        } else {
+                            setLoading(false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        layoutPhotosEmpty.setVisibility(View.VISIBLE);
                     }
                 });
     }
 
     private void displaySetupPhotos(List<UserPhoto> photos) {
         if (photos != null && !photos.isEmpty()) {
-            rvSetupPhotos.setVisibility(View.VISIBLE);
-            layoutSetupPhotosEmpty.setVisibility(View.GONE);
+            tvPhotoCount.setText(photos.size() + "/6");
+            btnUploadPhoto.setEnabled(photos.size() < 6);
+            rvMyPhotos.setVisibility(View.VISIBLE);
+            layoutPhotosEmpty.setVisibility(View.GONE);
             setupPhotoAdapter(photos);
         } else {
-            rvSetupPhotos.setVisibility(View.GONE);
-            layoutSetupPhotosEmpty.setVisibility(View.VISIBLE);
+            tvPhotoCount.setText("0/6");
+            btnUploadPhoto.setEnabled(true);
+            rvMyPhotos.setVisibility(View.GONE);
+            layoutPhotosEmpty.setVisibility(View.VISIBLE);
         }
     }
 
@@ -427,13 +464,17 @@ public class ProfileSetupFragment extends Fragment {
                             }
                         });
         photoGalleryAdapter.setEditMode(true);
-        rvSetupPhotos.setAdapter(photoGalleryAdapter);
+        rvMyPhotos.setAdapter(photoGalleryAdapter);
     }
 
     private void setPhotoAsProfile(UserPhoto photo) {
+        setPhotoAsProfile(photo.getId());
+    }
+
+    private void setPhotoAsProfile(Long photoId) {
         setLoading(true);
         userPhotoRepository.setPhotoAsProfile(
-                photo.getId(),
+                photoId,
                 new ApiCallback<UserPhoto>() {
                     @Override
                     public void onSuccess(UserPhoto updatedPhoto) {
@@ -449,19 +490,24 @@ public class ProfileSetupFragment extends Fragment {
                                 break;
                             }
                         }
-                        photoGalleryAdapter.notifyDataSetChanged();
+                        if (photoGalleryAdapter != null) {
+                            photoGalleryAdapter.notifyDataSetChanged();
+                        }
 
                         // Update profile picture display
                         ImageLoader.loadCircularProfileImage(
                                 requireContext(),
                                 updatedPhoto.getPhotoUrl(),
-                                ivSetupProfilePicture);
+                                ivProfilePicture);
 
                         Toast.makeText(
                                         requireContext(),
-                                        "Profile picture updated!",
+                                        "Profile picture set!",
                                         Toast.LENGTH_SHORT)
                                 .show();
+
+                        // Reload photos to get updated data
+                        loadSetupPhotos();
                     }
 
                     @Override
@@ -469,25 +515,41 @@ public class ProfileSetupFragment extends Fragment {
                         setLoading(false);
                         Toast.makeText(
                                         requireContext(),
-                                        "Failed to update: " + errorMessage,
+                                        "Failed to set profile picture: " + errorMessage,
                                         Toast.LENGTH_SHORT)
                                 .show();
+                        // Still reload photos
+                        loadSetupPhotos();
                     }
                 });
     }
 
     private void deletePhoto(UserPhoto photo) {
+        // Check if the photo being deleted is the profile picture
+        boolean wasProfilePicture = photo.getIsProfilePicture() != null && photo.getIsProfilePicture();
+
         setLoading(true);
         userPhotoRepository.deletePhoto(
                 photo.getId(),
                 new ApiCallbackVoid() {
                     @Override
                     public void onSuccess() {
-                        setLoading(false);
                         setupPhotos.remove(photo);
                         displaySetupPhotos(setupPhotos);
                         Toast.makeText(requireContext(), "Photo deleted!", Toast.LENGTH_SHORT)
                                 .show();
+
+                        // If the deleted photo was the profile picture and there are remaining photos,
+                        // automatically set the first one as the new profile picture
+                        if (wasProfilePicture && !setupPhotos.isEmpty()) {
+                            setPhotoAsProfile(setupPhotos.get(0).getId());
+                        } else {
+                            setLoading(false);
+                            // If no photos left, reset profile picture to default
+                            if (setupPhotos.isEmpty()) {
+                                ivProfilePicture.setImageResource(R.drawable.ic_person);
+                            }
+                        }
                     }
 
                     @Override

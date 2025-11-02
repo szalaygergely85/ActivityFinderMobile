@@ -359,6 +359,36 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
+    private void loadUserPhotosAndSetFirst() {
+        Long userId = prefsManager.getUserId();
+        if (userId == null) {
+            setLoading(false);
+            return;
+        }
+
+        userPhotoRepository.getMyPhotos(
+                new ApiCallback<List<UserPhoto>>() {
+                    @Override
+                    public void onSuccess(List<UserPhoto> photos) {
+                        userPhotos = photos;
+                        displayPhotos(photos);
+
+                        // Automatically set first photo as profile picture
+                        if (photos != null && !photos.isEmpty()) {
+                            setPhotoAsProfile(photos.get(0).getId());
+                        } else {
+                            setLoading(false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        layoutPhotosEmpty.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
     private void displayPhotos(List<UserPhoto> photos) {
         if (photos != null && !photos.isEmpty()) {
             tvPhotoCount.setText(photos.size() + "/6");
@@ -413,6 +443,9 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
+        // Check if this is the first photo
+        boolean isFirstPhoto = userPhotos.isEmpty();
+
         setLoading(true);
         userPhotoRepository.uploadPhoto(
                 photoFile,
@@ -424,9 +457,15 @@ public class EditProfileFragment extends Fragment {
                                         "Photo uploaded successfully!",
                                         Toast.LENGTH_SHORT)
                                 .show();
-                        // Reload photos from backend to get complete data
-                        // loadUserPhotos() will call setLoading(false) when done
-                        loadUserPhotos();
+
+                        // If this is the first photo, reload photos and automatically set it as profile picture
+                        if (isFirstPhoto) {
+                            loadUserPhotosAndSetFirst();
+                        } else {
+                            // Reload photos from backend to get complete data
+                            // loadUserPhotos() will call setLoading(false) when done
+                            loadUserPhotos();
+                        }
                     }
 
                     @Override
@@ -442,9 +481,13 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void setPhotoAsProfile(UserPhoto photo) {
+        setPhotoAsProfile(photo.getId());
+    }
+
+    private void setPhotoAsProfile(Long photoId) {
         setLoading(true);
         userPhotoRepository.setPhotoAsProfile(
-                photo.getId(),
+                photoId,
                 new ApiCallback<UserPhoto>() {
                     @Override
                     public void onSuccess(UserPhoto updatedPhoto) {
@@ -460,7 +503,9 @@ public class EditProfileFragment extends Fragment {
                                 break;
                             }
                         }
-                        photoGalleryAdapter.notifyDataSetChanged();
+                        if (photoGalleryAdapter != null) {
+                            photoGalleryAdapter.notifyDataSetChanged();
+                        }
 
                         // Update profile picture display at top
                         ImageLoader.loadCircularProfileImage(
@@ -468,9 +513,12 @@ public class EditProfileFragment extends Fragment {
 
                         Toast.makeText(
                                         requireContext(),
-                                        "Profile picture updated!",
+                                        "Profile picture set!",
                                         Toast.LENGTH_SHORT)
                                 .show();
+
+                        // Reload photos to get updated data
+                        loadUserPhotos();
                     }
 
                     @Override
@@ -478,21 +526,25 @@ public class EditProfileFragment extends Fragment {
                         setLoading(false);
                         Toast.makeText(
                                         requireContext(),
-                                        "Failed to update profile picture: " + errorMessage,
+                                        "Failed to set profile picture: " + errorMessage,
                                         Toast.LENGTH_SHORT)
                                 .show();
+                        // Still reload photos
+                        loadUserPhotos();
                     }
                 });
     }
 
     private void deletePhoto(UserPhoto photo) {
+        // Check if the photo being deleted is the profile picture
+        boolean wasProfilePicture = photo.getIsProfilePicture() != null && photo.getIsProfilePicture();
+
         setLoading(true);
         userPhotoRepository.deletePhoto(
                 photo.getId(),
                 new ApiCallbackVoid() {
                     @Override
                     public void onSuccess() {
-                        setLoading(false);
                         userPhotos.remove(photo);
                         displayPhotos(userPhotos);
                         Toast.makeText(
@@ -500,6 +552,18 @@ public class EditProfileFragment extends Fragment {
                                         "Photo deleted successfully!",
                                         Toast.LENGTH_SHORT)
                                 .show();
+
+                        // If the deleted photo was the profile picture and there are remaining photos,
+                        // automatically set the first one as the new profile picture
+                        if (wasProfilePicture && !userPhotos.isEmpty()) {
+                            setPhotoAsProfile(userPhotos.get(0).getId());
+                        } else {
+                            setLoading(false);
+                            // If no photos left, reset profile picture to default
+                            if (userPhotos.isEmpty()) {
+                                ivProfilePicture.setImageResource(R.drawable.ic_person);
+                            }
+                        }
                     }
 
                     @Override

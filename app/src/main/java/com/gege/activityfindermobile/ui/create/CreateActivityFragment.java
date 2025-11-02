@@ -466,7 +466,7 @@ public class CreateActivityFragment extends Fragment {
                                     new SimpleDateFormat(
                                             "yyyy-MM-dd'T'HH:mm:ss",
                                             Locale.getDefault());
-                            java.util.Date dateTime = isoFormat.parse(activity.getDateTime());
+                            java.util.Date dateTime = isoFormat.parse(activity.getActivityDate());
 
                             // Set date
                             Calendar cal = Calendar.getInstance();

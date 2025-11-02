@@ -12,11 +12,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.User;
+import com.gege.activityfindermobile.data.model.UserPhoto;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.gms.common.ConnectionResult;
@@ -52,13 +55,16 @@ public class ProfileFragment extends Fragment
     @Inject UserRepository userRepository;
 
     private CircleImageView ivProfileAvatar;
-    private TextView tvName, tvEmail, tvBio, tvRatingValue, tvActivitiesCount, tvUserLocation;
+    private TextView tvName, tvEmail, tvBio, tvRatingValue, tvActivitiesCount, tvUserLocation, tvPhotoCount;
     private Chip chipBadge;
     private ChipGroup chipGroupInterests;
     private MaterialButton btnLogout, btnEditProfile, btnSetLocation;
     private CircularProgressIndicator progressLoading;
     private MaterialAutoCompleteTextView actvCity;
     private TextInputLayout tilCity;
+    private View cardPhotos, layoutPhotosEmpty;
+    private RecyclerView rvUserPhotos;
+    private PhotoGalleryAdapter photoGalleryAdapter;
 
     private User currentUser;
     private GoogleApiClient googleApiClient;
@@ -148,6 +154,10 @@ public class ProfileFragment extends Fragment
         progressLoading = view.findViewById(R.id.progress_loading);
         tilCity = view.findViewById(R.id.til_city);
         actvCity = view.findViewById(R.id.actv_city);
+        cardPhotos = view.findViewById(R.id.card_photos);
+        rvUserPhotos = view.findViewById(R.id.rv_user_photos);
+        layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
+        tvPhotoCount = view.findViewById(R.id.tv_photo_count);
     }
 
     private void setupListeners() {
@@ -507,6 +517,16 @@ public class ProfileFragment extends Fragment
 
         // Display user location
         displayUserLocation();
+
+        // Set photos
+        List<UserPhoto> photos = user.getPhotos();
+        if (photos != null && !photos.isEmpty()) {
+            setupPhotosAdapter(photos);
+            cardPhotos.setVisibility(View.VISIBLE);
+        } else {
+            layoutPhotosEmpty.setVisibility(View.VISIBLE);
+            cardPhotos.setVisibility(View.VISIBLE);
+        }
     }
 
     private void displayUserLocation() {
@@ -550,5 +570,48 @@ public class ProfileFragment extends Fragment
     private void navigateToLogin() {
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_profile_to_loginFragment);
+    }
+
+    private void setupPhotosAdapter(List<UserPhoto> photos) {
+        photoGalleryAdapter =
+                new PhotoGalleryAdapter(
+                        photos,
+                        new PhotoGalleryAdapter.OnPhotoActionListener() {
+                            @Override
+                            public void onSetAsProfile(UserPhoto photo) {
+                                // Not available in profile view
+                            }
+
+                            @Override
+                            public void onDeletePhoto(UserPhoto photo) {
+                                // Not available in profile view
+                            }
+
+                            @Override
+                            public void onPhotoClick(UserPhoto photo) {
+                                // Open full-screen photo viewer
+                                openPhotoViewer(photos, photos.indexOf(photo));
+                            }
+                        });
+        photoGalleryAdapter.setEditMode(false);
+        rvUserPhotos.setAdapter(photoGalleryAdapter);
+        tvPhotoCount.setText(photos.size() + "/6");
+        layoutPhotosEmpty.setVisibility(View.GONE);
+    }
+
+    private void openPhotoViewer(List<UserPhoto> photos, int position) {
+        // First, check if the navigation action exists
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("photos", new ArrayList<>(photos));
+            bundle.putInt("position", position);
+            bundle.putBoolean("editMode", false);
+
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.photoViewerFragment, bundle);
+        } catch (Exception e) {
+            // If navigation fails, show a toast
+            Toast.makeText(requireContext(), "Unable to open photo viewer", Toast.LENGTH_SHORT).show();
+        }
     }
 }

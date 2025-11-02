@@ -547,6 +547,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginEnd="@dimen/margin_small"
             android:text="@string/express_interest"
             android:textColor="@color/white"
             android:paddingVertical="16dp"
@@ -554,6 +555,22 @@
             app:backgroundTint="@color/primary"
             app:icon="@drawable/ic_check_circle"
             app:iconTint="@color/white"
+            android:visibility="visible" />
+
+        <!-- Report Activity Button (for non-creators) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_report_activity"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Report"
+            android:textColor="@color/error"
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="20dp"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/error"
+            app:icon="@drawable/ic_flag"
+            app:iconTint="@color/error"
             android:visibility="visible" />
 
         <!-- Edit Button (for creators) -->

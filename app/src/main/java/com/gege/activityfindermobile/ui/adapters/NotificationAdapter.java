@@ -13,8 +13,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.Notification;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
 
@@ -81,7 +85,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             tvTitle.setText(notification.getTitle());
             tvMessage.setText(notification.getMessage());
-            tvTime.setText(notification.getCreatedAt());
+            tvTime.setText(formatTime(notification.getCreatedAt()));
 
             // Show indicator for unread notifications
             if (notification.getIsRead() != null && !notification.getIsRead()) {
@@ -91,6 +95,49 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             } else {
                 indicatorUnread.setVisibility(View.GONE);
                 itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+            }
+        }
+
+        private String formatTime(String timestamp) {
+            if (timestamp == null || timestamp.isEmpty()) {
+                return "";
+            }
+
+            try {
+                // Parse ISO 8601 timestamp from backend
+                SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+                Date date = isoFormat.parse(timestamp);
+
+                if (date == null) {
+                    return timestamp;
+                }
+
+                // Calculate time difference
+                long now = System.currentTimeMillis();
+                long diff = now - date.getTime();
+
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(diff);
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(diff);
+                long hours = TimeUnit.MILLISECONDS.toHours(diff);
+                long days = TimeUnit.MILLISECONDS.toDays(diff);
+
+                // Format as relative time
+                if (seconds < 60) {
+                    return "Just now";
+                } else if (minutes < 60) {
+                    return minutes + "m ago";
+                } else if (hours < 24) {
+                    return hours + "h ago";
+                } else if (days < 7) {
+                    return days + "d ago";
+                } else {
+                    // For older notifications, show the actual date
+                    SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+                    return displayFormat.format(date);
+                }
+            } catch (Exception e) {
+                // If parsing fails, return the original timestamp
+                return timestamp;
             }
         }
     }
