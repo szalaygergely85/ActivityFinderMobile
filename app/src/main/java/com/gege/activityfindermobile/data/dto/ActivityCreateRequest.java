@@ -15,6 +15,9 @@ public class ActivityCreateRequest {
     @SerializedName("location")
     private String location;
 
+    @SerializedName("placeId")
+    private String placeId;
+
     @SerializedName("totalSpots")
     private Integer totalSpots;
 
@@ -76,6 +79,14 @@ public class ActivityCreateRequest {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public Integer getTotalSpots() {

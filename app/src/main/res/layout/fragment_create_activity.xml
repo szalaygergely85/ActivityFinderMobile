@@ -226,13 +226,17 @@
                 android:layout_marginTop="@dimen/margin_medium"
                 android:hint="@string/location"
                 app:startIconDrawable="@drawable/ic_location"
-                app:startIconTint="@color/primary">
+                app:startIconTint="@color/primary"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ic_map"
+                app:endIconContentDescription="Open map picker">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_location"
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/actv_location"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text|textCapWords" />
+                    android:inputType="text|textCapWords"
+                    android:completionThreshold="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
