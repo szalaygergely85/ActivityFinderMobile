@@ -30,12 +30,25 @@ import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceTypes;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceResponse;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,12 +78,21 @@ public class EditProfileFragment extends Fragment {
     private RecyclerView rvMyPhotos;
     private TextView tvPhotoCount;
     private View layoutPhotosEmpty;
+    private MaterialAutoCompleteTextView actvCity;
+    private TextInputLayout tilCity;
 
     private User currentUser;
     private List<String> selectedInterests = new ArrayList<>();
     private ActivityResultLauncher<String> photoPickerLauncher;
     private PhotoGalleryAdapter photoGalleryAdapter;
     private List<UserPhoto> userPhotos = new ArrayList<>();
+    private PlacesClient placesClient;
+    private AutocompleteSessionToken sessionToken;
+    private android.os.Handler debounceHandler = new android.os.Handler();
+    private Runnable debounceRunnable;
+    private String selectedPlaceId;
+    private Double selectedLatitude;
+    private Double selectedLongitude;
 
     // Available interests (in a real app, this would come from API)
     private static final String[] AVAILABLE_INTERESTS = {
@@ -109,7 +131,26 @@ public class EditProfileFragment extends Fragment {
 
         initViews(view);
         setupToolbar(view);
+        initPlacesClient();
+        setupCityAutocomplete();
         loadCurrentProfile();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Clean up debounce handler
+        if (debounceRunnable != null) {
+            debounceHandler.removeCallbacks(debounceRunnable);
+        }
+    }
+
+    private void initPlacesClient() {
+        if (!Places.isInitialized()) {
+            Places.initialize(requireContext(), getString(R.string.google_maps_key));
+        }
+        placesClient = Places.createClient(requireContext());
+        sessionToken = AutocompleteSessionToken.newInstance();
     }
 
     private void initViews(View view) {
@@ -123,6 +164,8 @@ public class EditProfileFragment extends Fragment {
         rvMyPhotos = view.findViewById(R.id.rv_my_photos);
         tvPhotoCount = view.findViewById(R.id.tv_photo_count);
         layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
+        actvCity = view.findViewById(R.id.actv_city);
+        tilCity = view.findViewById(R.id.til_city);
 
         btnSave.setOnClickListener(v -> saveProfile());
         btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
@@ -131,6 +174,163 @@ public class EditProfileFragment extends Fragment {
     private void setupToolbar(View view) {
         MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
+    }
+
+    private void setupCityAutocomplete() {
+        PlacesAutocompleteAdapter adapter = new PlacesAutocompleteAdapter(requireContext());
+        actvCity.setAdapter(adapter);
+        actvCity.setThreshold(1);
+
+        actvCity.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedCity = adapter.getItem(position);
+            String placeId = adapter.getPlaceId(position);
+            if (placeId != null) {
+                fetchPlaceDetails(placeId, selectedCity);
+            }
+        });
+
+        actvCity.addTextChangedListener(
+                new android.text.TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s, int start, int count, int after) {}
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        // Remove any pending callbacks
+                        if (debounceRunnable != null) {
+                            debounceHandler.removeCallbacks(debounceRunnable);
+                        }
+
+                        if (s.length() > 0) {
+                            // Create new runnable for debounced API call
+                            debounceRunnable = () -> {
+                                adapter.fetchPredictions(s.toString());
+                                actvCity.post(() -> actvCity.showDropDown());
+                            };
+                            // Wait 400ms before making the API call
+                            debounceHandler.postDelayed(debounceRunnable, 600);
+                        } else {
+                            actvCity.dismissDropDown();
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(android.text.Editable s) {}
+                });
+    }
+
+    private void fetchPlaceDetails(String placeId, String cityName) {
+        List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
+        FetchPlaceRequest request = FetchPlaceRequest.builder(placeId, placeFields)
+                .setSessionToken(sessionToken)
+                .build();
+
+        placesClient.fetchPlace(request)
+                .addOnSuccessListener((FetchPlaceResponse response) -> {
+                    Place place = response.getPlace();
+                    if (place.getLatLng() != null) {
+                        selectedPlaceId = placeId;
+                        selectedLatitude = place.getLatLng().latitude;
+                        selectedLongitude = place.getLatLng().longitude;
+                        android.util.Log.d("EditProfile", "Selected city: " + cityName +
+                                " at (" + selectedLatitude + ", " + selectedLongitude + ")");
+                    }
+                    // Regenerate token after successful place details fetch
+                    sessionToken = AutocompleteSessionToken.newInstance();
+                })
+                .addOnFailureListener((exception) -> {
+                    android.util.Log.e("EditProfile", "Error fetching place details: " + exception.getMessage());
+                    // Still regenerate token
+                    sessionToken = AutocompleteSessionToken.newInstance();
+                });
+    }
+
+    private class PlacesAutocompleteAdapter extends android.widget.ArrayAdapter<String> {
+        private final List<String> filteredCities = new ArrayList<>();
+        private final List<String> filteredPlaceIds = new ArrayList<>();
+
+        public PlacesAutocompleteAdapter(android.content.Context context) {
+            super(context, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        }
+
+        public void fetchPredictions(String query) {
+            filteredCities.clear();
+            filteredPlaceIds.clear();
+
+            if (placesClient != null) {
+                fetchFromGooglePlaces(query);
+            } else {
+                notifyDataSetChanged();
+            }
+        }
+
+        public String getPlaceId(int position) {
+            if (position < filteredPlaceIds.size()) {
+                return filteredPlaceIds.get(position);
+            }
+            return null;
+        }
+
+        private void fetchFromGooglePlaces(String query) {
+            try {
+                // Create autocomplete request for cities only
+                FindAutocompletePredictionsRequest request =
+                        FindAutocompletePredictionsRequest.builder()
+                                .setSessionToken(sessionToken)
+                                .setCountries("HU")
+                                .setTypesFilter(List.of(PlaceTypes.CITIES))
+                                .setQuery(query)
+                                .build();
+
+                placesClient
+                        .findAutocompletePredictions(request)
+                        .addOnSuccessListener(
+                                (FindAutocompletePredictionsResponse response) -> {
+                                    filteredCities.clear();
+                                    filteredPlaceIds.clear();
+                                    response.getAutocompletePredictions()
+                                            .forEach(
+                                                    prediction -> {
+                                                         String description =
+                                                                prediction.getFullText(null)
+                                                                        .toString();
+                                                        if (description != null
+                                                                && !description.isEmpty()) {
+                                                            filteredCities.add(description);
+                                                            filteredPlaceIds.add(prediction.getPlaceId());
+                                                        }
+                                                    });
+                                    notifyDataSetChanged();
+                                })
+                        .addOnFailureListener(
+                                exception -> {
+                                    android.util.Log.e(
+                                            "PlacesAdapter",
+                                            "Error fetching predictions: "
+                                                    + exception.getMessage(),
+                                            exception);
+                                    notifyDataSetChanged();
+                                });
+            } catch (Exception e) {
+                android.util.Log.e(
+                        "PlacesAdapter", "Exception in Places API: " + e.getMessage(), e);
+                notifyDataSetChanged();
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return filteredCities.size();
+        }
+
+        @Override
+        public String getItem(int position) {
+            if (position < filteredCities.size()) {
+                return filteredCities.get(position);
+            }
+            return null;
+        }
     }
 
     private void loadCurrentProfile() {
@@ -174,6 +374,14 @@ public class EditProfileFragment extends Fragment {
 
         if (user.getBio() != null) {
             etBio.setText(user.getBio());
+        }
+
+        // Set city and coordinates
+        if (user.getCity() != null && !user.getCity().isEmpty()) {
+            actvCity.setText(user.getCity());
+            // Store existing coordinates if available
+            selectedLatitude = user.getLatitude();
+            selectedLongitude = user.getLongitude();
         }
 
         // Load profile image from photos if exists
@@ -228,6 +436,7 @@ public class EditProfileFragment extends Fragment {
         String fullName =
                 etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
         String bio = etBio.getText() != null ? etBio.getText().toString().trim() : "";
+        String city = actvCity.getText() != null ? actvCity.getText().toString().trim() : "";
 
         if (fullName.isEmpty()) {
             etFullName.setError("Name cannot be empty");
@@ -244,14 +453,17 @@ public class EditProfileFragment extends Fragment {
         setLoading(true);
 
         // Profile image is now managed through the photos upload
-        updateProfileData(userId, fullName, bio, null);
+        updateProfileData(userId, fullName, bio, city, null);
     }
 
-    private void updateProfileData(Long userId, String fullName, String bio, String imageUrl) {
+    private void updateProfileData(Long userId, String fullName, String bio, String city, String imageUrl) {
         // Create update request
         UserProfileUpdateRequest request = new UserProfileUpdateRequest();
         request.setFullName(fullName);
         request.setBio(bio.isEmpty() ? null : bio);
+        request.setCity(city.isEmpty() ? null : city);
+        request.setLatitude(selectedLatitude);
+        request.setLongitude(selectedLongitude);
         request.setInterests(selectedInterests.isEmpty() ? null : selectedInterests);
         request.setProfileImageUrl(imageUrl);
 
