@@ -48,4 +48,7 @@
     <string name="location">Location</string>
     <string name="category">Category</string>
     <string name="total_spots">Total Spots</string>
+
+    <!-- Google Maps API Key (loaded from local.properties) -->
+    <string name="google_maps_key" translatable="false">AIzaSyCloP6U5KXPn454wevx1XQjDTeT8WQgIwY</string>
 </resources>

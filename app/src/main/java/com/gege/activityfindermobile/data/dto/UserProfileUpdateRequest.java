@@ -17,6 +17,15 @@ public class UserProfileUpdateRequest {
     @SerializedName("interests")
     private List<String> interests;
 
+    @SerializedName("city")
+    private String city;
+
+    @SerializedName("latitude")
+    private Double latitude;
+
+    @SerializedName("longitude")
+    private Double longitude;
+
     // Constructor
     public UserProfileUpdateRequest() {}
 
@@ -59,5 +68,29 @@ public class UserProfileUpdateRequest {
 
     public void setInterests(List<String> interests) {
         this.interests = interests;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 }

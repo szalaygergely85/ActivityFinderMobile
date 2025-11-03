@@ -18,9 +18,16 @@ android {
         minSdk 26
         targetSdk 36
         versionCode 1
-        versionName "1.0"
+        versionName "1.0 alpha"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Read API key from local.properties
+        Properties properties = new Properties()
+        if (rootProject.file("local.properties").exists()) {
+            properties.load(rootProject.file("local.properties").newDataInputStream())
+        }
+        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: properties.getProperty("GOOGLE_MAPS_API_KEY", "")]
     }
 
     buildTypes {
@@ -88,7 +95,9 @@ dependencies {
     // Google Play Services (Maps & Location)
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'com.google.android.gms:play-services-location:21.1.0'
-    implementation 'com.google.android.gms:play-services-places:17.1.0'
+
+    // New Places SDK (replaces deprecated play-services-places)
+    implementation 'com.google.android.libraries.places:places:3.3.0'
 
 }
 

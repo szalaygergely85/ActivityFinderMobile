@@ -38,6 +38,9 @@
             android:name=".utils.MapPickerActivity"
             android:exported="false"
             android:theme="@style/Theme.ActivityFinderMobile" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${GOOGLE_MAPS_API_KEY}" />
     </application>
 
 </manifest>
