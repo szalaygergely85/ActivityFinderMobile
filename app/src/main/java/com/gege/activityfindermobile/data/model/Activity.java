@@ -24,6 +24,9 @@ public class Activity {
     @SerializedName("location")
     private String location;
 
+    @SerializedName("placeId")
+    private String placeId;
+
     @SerializedName("latitude")
     private Double latitude;
 
@@ -186,6 +189,14 @@ public class Activity {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public Double getLatitude() {

@@ -90,6 +90,7 @@ public class EditProfileFragment extends Fragment {
     private AutocompleteSessionToken sessionToken;
     private android.os.Handler debounceHandler = new android.os.Handler();
     private Runnable debounceRunnable;
+    private boolean isSelectingItem = false;
     private String selectedPlaceId;
     private Double selectedLatitude;
     private Double selectedLongitude;
@@ -179,14 +180,21 @@ public class EditProfileFragment extends Fragment {
     private void setupCityAutocomplete() {
         PlacesAutocompleteAdapter adapter = new PlacesAutocompleteAdapter(requireContext());
         actvCity.setAdapter(adapter);
-        actvCity.setThreshold(1);
+        actvCity.setThreshold(2); // Minimum 2 characters before showing suggestions
 
         actvCity.setOnItemClickListener((parent, view, position, id) -> {
+            // Set flag to prevent text change listener from triggering
+            isSelectingItem = true;
             String selectedCity = adapter.getItem(position);
             String placeId = adapter.getPlaceId(position);
             if (placeId != null) {
                 fetchPlaceDetails(placeId, selectedCity);
             }
+            // Dismiss dropdown and clear flag after a short delay
+            actvCity.postDelayed(() -> {
+                actvCity.dismissDropDown();
+                isSelectingItem = false;
+            }, 100);
         });
 
         actvCity.addTextChangedListener(
@@ -197,19 +205,25 @@ public class EditProfileFragment extends Fragment {
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        // Skip if user is selecting an item
+                        if (isSelectingItem) {
+                            return;
+                        }
+
                         // Remove any pending callbacks
                         if (debounceRunnable != null) {
                             debounceHandler.removeCallbacks(debounceRunnable);
                         }
 
-                        if (s.length() > 0) {
+                        // Only search if at least 2 characters
+                        if (s.length() >= 2) {
                             // Create new runnable for debounced API call
                             debounceRunnable = () -> {
                                 adapter.fetchPredictions(s.toString());
                                 actvCity.post(() -> actvCity.showDropDown());
                             };
-                            // Wait 400ms before making the API call
-                            debounceHandler.postDelayed(debounceRunnable, 600);
+                            // Wait 800ms before making the API call
+                            debounceHandler.postDelayed(debounceRunnable, 800);
                         } else {
                             actvCity.dismissDropDown();
                         }
@@ -379,7 +393,8 @@ public class EditProfileFragment extends Fragment {
         // Set city and coordinates
         if (user.getCity() != null && !user.getCity().isEmpty()) {
             actvCity.setText(user.getCity());
-            // Store existing coordinates if available
+            // Store existing place data if available
+            selectedPlaceId = user.getPlaceId();
             selectedLatitude = user.getLatitude();
             selectedLongitude = user.getLongitude();
         }
@@ -462,6 +477,7 @@ public class EditProfileFragment extends Fragment {
         request.setFullName(fullName);
         request.setBio(bio.isEmpty() ? null : bio);
         request.setCity(city.isEmpty() ? null : city);
+        request.setPlaceId(selectedPlaceId);
         request.setLatitude(selectedLatitude);
         request.setLongitude(selectedLongitude);
         request.setInterests(selectedInterests.isEmpty() ? null : selectedInterests);

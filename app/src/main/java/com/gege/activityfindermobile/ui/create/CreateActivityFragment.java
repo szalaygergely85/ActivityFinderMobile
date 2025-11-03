@@ -23,14 +23,26 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.utils.MapPickerActivity;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceTypes;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceResponse;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import javax.inject.Inject;
@@ -51,7 +63,8 @@ public class CreateActivityFragment extends Fragment {
             tilTime,
             tilLocation,
             tilTotalSpots;
-    private TextInputEditText etTitle, etDescription, etDate, etTime, etLocation, etTotalSpots;
+    private TextInputEditText etTitle, etDescription, etDate, etTime, etTotalSpots;
+    private MaterialAutoCompleteTextView actvLocation;
     private AutoCompleteTextView etCategory;
     private MaterialButton btnCreate;
     private CircularProgressIndicator progressLoading;
@@ -63,7 +76,15 @@ public class CreateActivityFragment extends Fragment {
     private double selectedLatitude = 0.0;
     private double selectedLongitude = 0.0;
     private String selectedLocationName = "";
+    private String selectedPlaceId = null;
     private static final int MAP_PICKER_REQUEST_CODE = 100;
+
+    // Places API
+    private PlacesClient placesClient;
+    private AutocompleteSessionToken sessionToken;
+    private android.os.Handler debounceHandler = new android.os.Handler();
+    private Runnable debounceRunnable;
+    private boolean isSelectingItem = false;
 
     // Edit mode variables
     private Long editActivityId = null;
@@ -83,7 +104,9 @@ public class CreateActivityFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
+        initPlacesClient();
         setupCategoryDropdown();
+        setupLocationAutocomplete();
         setupListeners();
 
         // Check if we're in edit mode
@@ -94,6 +117,23 @@ public class CreateActivityFragment extends Fragment {
                 loadActivityForEditing(editActivityId);
             }
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Clean up debounce handler
+        if (debounceRunnable != null) {
+            debounceHandler.removeCallbacks(debounceRunnable);
+        }
+    }
+
+    private void initPlacesClient() {
+        if (!Places.isInitialized()) {
+            Places.initialize(requireContext(), getString(R.string.google_maps_key));
+        }
+        placesClient = Places.createClient(requireContext());
+        sessionToken = AutocompleteSessionToken.newInstance();
     }
 
     private void initViews(View view) {
@@ -117,7 +157,7 @@ public class CreateActivityFragment extends Fragment {
         etCategory = view.findViewById(R.id.et_category);
         etDate = view.findViewById(R.id.et_date);
         etTime = view.findViewById(R.id.et_time);
-        etLocation = view.findViewById(R.id.et_location);
+        actvLocation = view.findViewById(R.id.actv_location);
         etTotalSpots = view.findViewById(R.id.et_total_spots);
 
         btnCreate = view.findViewById(R.id.btn_create);
@@ -148,6 +188,90 @@ public class CreateActivityFragment extends Fragment {
         etCategory.setAdapter(adapter);
     }
 
+    private void setupLocationAutocomplete() {
+        PlacesAutocompleteAdapter adapter = new PlacesAutocompleteAdapter(requireContext());
+        actvLocation.setAdapter(adapter);
+        actvLocation.setThreshold(2); // Minimum 2 characters before showing suggestions
+
+        actvLocation.setOnItemClickListener((parent, view, position, id) -> {
+            // Set flag to prevent text change listener from triggering
+            isSelectingItem = true;
+            String selectedLocation = adapter.getItem(position);
+            String placeId = adapter.getPlaceId(position);
+            if (placeId != null) {
+                fetchPlaceDetails(placeId, selectedLocation);
+            }
+            // Dismiss dropdown and clear flag after a short delay
+            actvLocation.postDelayed(() -> {
+                actvLocation.dismissDropDown();
+                isSelectingItem = false;
+            }, 100);
+        });
+
+        actvLocation.addTextChangedListener(
+                new android.text.TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s, int start, int count, int after) {}
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        // Skip if user is selecting an item
+                        if (isSelectingItem) {
+                            return;
+                        }
+
+                        // Remove any pending callbacks
+                        if (debounceRunnable != null) {
+                            debounceHandler.removeCallbacks(debounceRunnable);
+                        }
+
+                        // Only search if at least 2 characters
+                        if (s.length() >= 2) {
+                            // Create new runnable for debounced API call
+                            debounceRunnable = () -> {
+                                adapter.fetchPredictions(s.toString());
+                                actvLocation.post(() -> actvLocation.showDropDown());
+                            };
+                            // Wait 800ms before making the API call
+                            debounceHandler.postDelayed(debounceRunnable, 800);
+                        } else {
+                            actvLocation.dismissDropDown();
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(android.text.Editable s) {}
+                });
+    }
+
+    private void fetchPlaceDetails(String placeId, String locationName) {
+        List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
+        FetchPlaceRequest request = FetchPlaceRequest.builder(placeId, placeFields)
+                .setSessionToken(sessionToken)
+                .build();
+
+        placesClient.fetchPlace(request)
+                .addOnSuccessListener((FetchPlaceResponse response) -> {
+                    Place place = response.getPlace();
+                    if (place.getLatLng() != null) {
+                        selectedPlaceId = placeId;
+                        selectedLatitude = place.getLatLng().latitude;
+                        selectedLongitude = place.getLatLng().longitude;
+                        selectedLocationName = locationName;
+                        android.util.Log.d("CreateActivity", "Selected location: " + locationName +
+                                " at (" + selectedLatitude + ", " + selectedLongitude + ")");
+                    }
+                    // Regenerate token after successful place details fetch
+                    sessionToken = AutocompleteSessionToken.newInstance();
+                })
+                .addOnFailureListener((exception) -> {
+                    android.util.Log.e("CreateActivity", "Error fetching place details: " + exception.getMessage());
+                    // Still regenerate token
+                    sessionToken = AutocompleteSessionToken.newInstance();
+                });
+    }
+
     private void setupListeners() {
         // Date picker
         etDate.setOnClickListener(v -> showDatePicker());
@@ -155,8 +279,8 @@ public class CreateActivityFragment extends Fragment {
         // Time picker
         etTime.setOnClickListener(v -> showTimePicker());
 
-        // Location picker - opens Google Maps for POI selection
-        etLocation.setOnClickListener(v -> openMapPicker());
+        // Map picker button (end icon)
+        tilLocation.setEndIconOnClickListener(v -> openMapPicker());
 
         // Create button
         btnCreate.setOnClickListener(v -> validateAndCreateActivity());
@@ -178,9 +302,10 @@ public class CreateActivityFragment extends Fragment {
                 selectedLocationName = data.getStringExtra(MapPickerActivity.EXTRA_PLACE_NAME);
                 selectedLatitude = data.getDoubleExtra(MapPickerActivity.EXTRA_LATITUDE, 0.0);
                 selectedLongitude = data.getDoubleExtra(MapPickerActivity.EXTRA_LONGITUDE, 0.0);
+                selectedPlaceId = null; // Map picker doesn't provide placeId
 
                 // Update UI with location name
-                etLocation.setText(selectedLocationName);
+                actvLocation.setText(selectedLocationName);
 
                 android.util.Log.d(
                         "CreateActivity",
@@ -248,7 +373,7 @@ public class CreateActivityFragment extends Fragment {
         String category = etCategory.getText().toString().trim();
         String date = etDate.getText().toString().trim();
         String time = etTime.getText().toString().trim();
-        String location = etLocation.getText().toString().trim();
+        String location = actvLocation.getText().toString().trim();
         String totalSpotsStr = etTotalSpots.getText().toString().trim();
 
         // Validation
@@ -341,12 +466,13 @@ public class CreateActivityFragment extends Fragment {
         // Show loading
         setLoading(true);
 
-        // Create request with coordinates if available
+        // Create request with location data
         ActivityCreateRequest request =
                 new ActivityCreateRequest(
                         title, description, activityDateTime, location, totalSpots, category);
 
-        // Set coordinates if location was selected via Places
+        // Set placeId and coordinates if available
+        request.setPlaceId(selectedPlaceId);
         if (selectedLatitude != 0.0 || selectedLongitude != 0.0) {
             request.setLatitude(selectedLatitude);
             request.setLongitude(selectedLongitude);
@@ -449,10 +575,11 @@ public class CreateActivityFragment extends Fragment {
                         etTitle.setText(activity.getTitle());
                         etDescription.setText(activity.getDescription());
                         etCategory.setText(activity.getCategory());
-                        etLocation.setText(activity.getLocation());
+                        actvLocation.setText(activity.getLocation());
                         etTotalSpots.setText(String.valueOf(activity.getTotalSpots()));
 
-                        // Set location coordinates if available
+                        // Set location data if available
+                        selectedPlaceId = activity.getPlaceId();
                         if (activity.getLatitude() != null) {
                             selectedLatitude = activity.getLatitude();
                         }
@@ -531,12 +658,13 @@ public class CreateActivityFragment extends Fragment {
         // Show loading
         setLoading(true);
 
-        // Create request with coordinates if available
+        // Create request with location data
         com.gege.activityfindermobile.data.dto.ActivityCreateRequest request =
                 new com.gege.activityfindermobile.data.dto.ActivityCreateRequest(
                         title, description, activityDateTime, location, totalSpots, category);
 
-        // Set coordinates if location was selected via Places
+        // Set placeId and coordinates if available
+        request.setPlaceId(selectedPlaceId);
         if (selectedLatitude != 0.0 || selectedLongitude != 0.0) {
             request.setLatitude(selectedLatitude);
             request.setLongitude(selectedLongitude);
@@ -573,5 +701,91 @@ public class CreateActivityFragment extends Fragment {
                                 .show();
                     }
                 });
+    }
+
+    private class PlacesAutocompleteAdapter extends android.widget.ArrayAdapter<String> {
+        private final List<String> filteredLocations = new ArrayList<>();
+        private final List<String> filteredPlaceIds = new ArrayList<>();
+
+        public PlacesAutocompleteAdapter(android.content.Context context) {
+            super(context, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        }
+
+        public void fetchPredictions(String query) {
+            filteredLocations.clear();
+            filteredPlaceIds.clear();
+
+            if (placesClient != null) {
+                fetchFromGooglePlaces(query);
+            } else {
+                notifyDataSetChanged();
+            }
+        }
+
+        public String getPlaceId(int position) {
+            if (position < filteredPlaceIds.size()) {
+                return filteredPlaceIds.get(position);
+            }
+            return null;
+        }
+
+        private void fetchFromGooglePlaces(String query) {
+            try {
+                // Create autocomplete request for all place types
+                FindAutocompletePredictionsRequest request =
+                        FindAutocompletePredictionsRequest.builder()
+                                .setSessionToken(sessionToken)
+                                .setCountries("HU")
+                                .setQuery(query)
+                                .build();
+
+                placesClient
+                        .findAutocompletePredictions(request)
+                        .addOnSuccessListener(
+                                (FindAutocompletePredictionsResponse response) -> {
+                                    filteredLocations.clear();
+                                    filteredPlaceIds.clear();
+                                    response.getAutocompletePredictions()
+                                            .forEach(
+                                                    prediction -> {
+                                                         String description =
+                                                                prediction.getFullText(null)
+                                                                        .toString();
+                                                        if (description != null
+                                                                && !description.isEmpty()) {
+                                                            filteredLocations.add(description);
+                                                            filteredPlaceIds.add(prediction.getPlaceId());
+                                                        }
+                                                    });
+                                    notifyDataSetChanged();
+                                })
+                        .addOnFailureListener(
+                                exception -> {
+                                    android.util.Log.e(
+                                            "PlacesAdapter",
+                                            "Error fetching predictions: "
+                                                    + exception.getMessage(),
+                                            exception);
+                                    notifyDataSetChanged();
+                                });
+            } catch (Exception e) {
+                android.util.Log.e(
+                        "PlacesAdapter", "Exception in Places API: " + e.getMessage(), e);
+                notifyDataSetChanged();
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return filteredLocations.size();
+        }
+
+        @Override
+        public String getItem(int position) {
+            if (position < filteredLocations.size()) {
+                return filteredLocations.get(position);
+            }
+            return null;
+        }
     }
 }

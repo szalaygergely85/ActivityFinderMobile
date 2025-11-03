@@ -20,6 +20,9 @@ public class UserProfileUpdateRequest {
     @SerializedName("city")
     private String city;
 
+    @SerializedName("placeId")
+    private String placeId;
+
     @SerializedName("latitude")
     private Double latitude;
 
@@ -76,6 +79,14 @@ public class UserProfileUpdateRequest {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public Double getLatitude() {
