@@ -83,7 +83,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
     class ViewHolder extends RecyclerView.ViewHolder {
         de.hdodenhof.circleimageview.CircleImageView ivCreatorAvatar;
-        TextView tvTitle, tvDescription, tvDate, tvTime, tvLocation;
+        TextView tvTitle, tvDescription, tvDate, tvTime, tvLocation, tvDistance;
         TextView tvCreatorName, tvCreatorRating, tvSpotsAvailable;
         Chip chipCategory, badgeTrending, chipStatus, chipExpired;
 
@@ -95,6 +95,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             tvDate = itemView.findViewById(R.id.tv_date);
             tvTime = itemView.findViewById(R.id.tv_time);
             tvLocation = itemView.findViewById(R.id.tv_location);
+            tvDistance = itemView.findViewById(R.id.tv_distance);
             tvCreatorName = itemView.findViewById(R.id.tv_creator_name);
             tvCreatorRating = itemView.findViewById(R.id.tv_creator_rating);
             tvSpotsAvailable = itemView.findViewById(R.id.tv_spots_available);
@@ -142,6 +143,15 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             }
 
             tvLocation.setText(activity.getLocation());
+
+            // Display distance if available
+            if (activity.getDistance() != null && activity.getDistance() > 0) {
+                tvDistance.setText(String.format("%.1f km", activity.getDistance()));
+                tvDistance.setVisibility(View.VISIBLE);
+            } else {
+                tvDistance.setVisibility(View.GONE);
+            }
+
             tvCreatorName.setText(activity.getCreatorName());
 
             // Display creator rating if available

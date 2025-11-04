@@ -21,6 +21,8 @@ import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.LocationManager;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
