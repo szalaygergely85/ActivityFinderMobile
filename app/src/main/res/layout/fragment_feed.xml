@@ -12,29 +12,98 @@
         android:background="@drawable/gradient_primary"
         app:elevation="0dp">
 
-        <!-- Search Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_search"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <!-- Search Row -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/margin_medium"
-            android:hint="Search activities..."
-            app:startIconDrawable="@drawable/ic_explore"
-            app:startIconTint="@color/primary"
-            app:endIconMode="clear_text">
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/padding_medium"
+            android:paddingEnd="@dimen/padding_small"
+            android:paddingTop="@dimen/padding_medium"
+            android:paddingBottom="@dimen/padding_small"
+            android:gravity="center_vertical"
+            android:weightSum="10">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_search"
+            <!-- Search Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_search"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="9"
+                android:hint="Search activities..."
+                app:startIconDrawable="@drawable/ic_explore"
+                app:startIconTint="@color/primary"
+                app:endIconMode="clear_text">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Toggle Filters Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_toggle_filters"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/margin_small"
+                app:icon="@drawable/ic_category"
+                app:iconTint="@color/primary" />
+
+        </LinearLayout>
+
+        <!-- Filters Container (can be hidden/shown) -->
+        <LinearLayout
+            android:id="@+id/filters_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Distance and Type Filters Row -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:maxLines="1" />
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/padding_medium"
+                android:paddingEnd="@dimen/padding_medium"
+                android:paddingBottom="@dimen/padding_small"
+                android:weightSum="2">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <!-- Distance Filter Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_distance_filter"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="@dimen/margin_small"
+                    android:text="Distance"
+                    app:icon="@drawable/ic_location"
+                    app:iconGravity="textStart" />
 
-        <!-- Filter Chips -->
-        <HorizontalScrollView
+                <!-- Activity Type Filter Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_type_filter"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/margin_small"
+                    android:text="Type"
+                    app:icon="@drawable/ic_category"
+                    app:iconGravity="textStart" />
+
+            </LinearLayout>
+
+            <!-- Filter Chips -->
+            <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
@@ -116,6 +185,8 @@
             </com.google.android.material.chip.ChipGroup>
 
         </HorizontalScrollView>
+
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 

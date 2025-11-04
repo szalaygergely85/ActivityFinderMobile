@@ -67,6 +67,8 @@ public class FeedFragment extends Fragment {
     private String currentCategoryFilter = null;
     private boolean showTrendingOnly = false;
     private List<Activity> allActivities = new ArrayList<>();
+    private Integer maxDistanceKm = null; // null = no distance filter
+    private String selectedActivityType = null; // null = all types
 
     @Nullable
     @Override
@@ -88,15 +90,33 @@ public class FeedFragment extends Fragment {
         etSearch = view.findViewById(R.id.et_search);
         chipGroupFilters = view.findViewById(R.id.chip_group_filters);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
+        View filtersContainer = view.findViewById(R.id.filters_container);
+        com.google.android.material.button.MaterialButton btnToggleFilters =
+                view.findViewById(R.id.btn_toggle_filters);
 
         // Initialize location manager
         locationManager = new LocationManager(requireContext());
+
+        // Setup toggle filters button
+        btnToggleFilters.setOnClickListener(v -> {
+            if (filtersContainer.getVisibility() == View.GONE) {
+                filtersContainer.setVisibility(View.VISIBLE);
+            } else {
+                filtersContainer.setVisibility(View.GONE);
+            }
+        });
 
         // Setup search bar
         setupSearchBar();
 
         // Setup filter chips
         setupFilterChips();
+
+        // Setup distance filter button
+        setupDistanceFilter();
+
+        // Setup activity type filter button
+        setupActivityTypeFilter();
 
         // Setup adapter with ParticipantRepository for accurate counts and current user ID
         Long currentUserId = prefsManager.getUserId();
@@ -423,6 +443,25 @@ public class FeedFragment extends Fragment {
                     .collect(Collectors.toList());
         }
 
+        // Apply distance filter
+        if (maxDistanceKm != null) {
+            filtered = filtered.stream()
+                    .filter(activity -> {
+                        if (activity.getDistance() == null) {
+                            return true; // Include activities without distance info
+                        }
+                        return activity.getDistance() <= maxDistanceKm;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Apply activity type filter
+        if (selectedActivityType != null && !selectedActivityType.isEmpty()) {
+            filtered = filtered.stream()
+                    .filter(activity -> selectedActivityType.equalsIgnoreCase(activity.getCategory()))
+                    .collect(Collectors.toList());
+        }
+
         // Update adapter
         adapter.setActivities(filtered);
 
@@ -431,5 +470,67 @@ public class FeedFragment extends Fragment {
         } else {
             showContent();
         }
+    }
+
+    private void setupDistanceFilter() {
+        com.google.android.material.button.MaterialButton btnDistanceFilter =
+                getView().findViewById(R.id.btn_distance_filter);
+
+        btnDistanceFilter.setOnClickListener(v -> {
+            String[] distances = {"All Distances", "5 km", "10 km", "25 km", "50 km", "100 km"};
+            Integer[] distanceValues = {null, 5, 10, 25, 50, 100};
+
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Filter by Distance")
+                    .setSingleChoiceItems(
+                            distances,
+                            maxDistanceKm == null ? 0 : java.util.Arrays.asList(distanceValues).indexOf(maxDistanceKm),
+                            (dialog, which) -> {
+                                maxDistanceKm = distanceValues[which];
+                                String selected = distances[which];
+                                btnDistanceFilter.setText(selected);
+                                applyFiltersAndSearch();
+                                dialog.dismiss();
+                            })
+                    .show();
+        });
+    }
+
+    private void setupActivityTypeFilter() {
+        com.google.android.material.button.MaterialButton btnTypeFilter =
+                getView().findViewById(R.id.btn_type_filter);
+
+        String[] types = {
+            "All Types",
+            "Sports",
+            "Social",
+            "Outdoor",
+            "Food",
+            "Travel",
+            "Photography",
+            "Music",
+            "Art",
+            "Gaming",
+            "Fitness"
+        };
+
+        btnTypeFilter.setOnClickListener(v -> {
+            int checkedItem = selectedActivityType == null ? 0 :
+                    java.util.Arrays.asList(types).indexOf(selectedActivityType);
+
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Filter by Activity Type")
+                    .setSingleChoiceItems(
+                            types,
+                            checkedItem,
+                            (dialog, which) -> {
+                                selectedActivityType = which == 0 ? null : types[which];
+                                String selected = types[which];
+                                btnTypeFilter.setText(selected);
+                                applyFiltersAndSearch();
+                                dialog.dismiss();
+                            })
+                    .show();
+        });
     }
 }
