@@ -12,15 +12,26 @@
         android:background="@drawable/gradient_primary"
         app:elevation="0dp">
 
-        <!-- Search Bar -->
-        <com.google.android.material.search.SearchBar
-            android:id="@+id/search_bar"
+        <!-- Search Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_search"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/margin_medium"
             android:hint="Search activities..."
-            android:background="@color/white"
-            app:navigationIcon="@drawable/ic_explore" />
+            app:startIconDrawable="@drawable/ic_explore"
+            app:startIconTint="@color/primary"
+            app:endIconMode="clear_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Filter Chips -->
         <HorizontalScrollView
