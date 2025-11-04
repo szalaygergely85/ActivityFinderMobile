@@ -1,6 +1,8 @@
 package com.gege.activityfindermobile.ui.feed;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +30,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -47,6 +50,10 @@ public class FeedFragment extends Fragment {
     private SwipeRefreshLayout swipeRefresh;
     private CircularProgressIndicator progressLoading;
     private View layoutEmpty;
+    private com.google.android.material.textfield.TextInputEditText etSearch;
+    private ChipGroup chipGroupFilters;
+    private android.os.Handler debounceHandler = new android.os.Handler();
+    private Runnable debounceRunnable;
 
     // Location variables
     private LocationManager locationManager;
@@ -54,6 +61,12 @@ public class FeedFragment extends Fragment {
     private double userLatitude = 0.0;
     private double userLongitude = 0.0;
     private float nearbyRadiusKm = 10f;
+
+    // Search and filter variables
+    private String currentSearchQuery = "";
+    private String currentCategoryFilter = null;
+    private boolean showTrendingOnly = false;
+    private List<Activity> allActivities = new ArrayList<>();
 
     @Nullable
     @Override
@@ -72,10 +85,18 @@ public class FeedFragment extends Fragment {
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         progressLoading = view.findViewById(R.id.progress_loading);
         layoutEmpty = view.findViewById(R.id.layout_empty);
+        etSearch = view.findViewById(R.id.et_search);
+        chipGroupFilters = view.findViewById(R.id.chip_group_filters);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
 
         // Initialize location manager
         locationManager = new LocationManager(requireContext());
+
+        // Setup search bar
+        setupSearchBar();
+
+        // Setup filter chips
+        setupFilterChips();
 
         // Setup adapter with ParticipantRepository for accurate counts and current user ID
         Long currentUserId = prefsManager.getUserId();
@@ -121,9 +142,11 @@ public class FeedFragment extends Fragment {
                             swipeRefresh.setRefreshing(false);
 
                             if (activities != null && !activities.isEmpty()) {
-                                adapter.setActivities(activities);
+                                allActivities = activities;
+                                applyFiltersAndSearch();
                                 showContent();
                             } else {
+                                allActivities = new ArrayList<>();
                                 adapter.setActivities(new ArrayList<>());
                                 showEmptyView();
                             }
@@ -159,7 +182,8 @@ public class FeedFragment extends Fragment {
                         swipeRefresh.setRefreshing(false);
 
                         if (activities != null && !activities.isEmpty()) {
-                            adapter.setActivities(activities);
+                            allActivities = activities;
+                            applyFiltersAndSearch();
                             showContent();
                             Toast.makeText(
                                             requireContext(),
@@ -167,6 +191,7 @@ public class FeedFragment extends Fragment {
                                             Toast.LENGTH_SHORT)
                                     .show();
                         } else {
+                            allActivities = new ArrayList<>();
                             adapter.setActivities(new ArrayList<>());
                             showEmptyView();
                             Toast.makeText(
@@ -290,5 +315,121 @@ public class FeedFragment extends Fragment {
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_feed_to_activityDetailFragment, bundle);
+    }
+
+    private void setupSearchBar() {
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Remove any pending callbacks
+                if (debounceRunnable != null) {
+                    debounceHandler.removeCallbacks(debounceRunnable);
+                }
+
+                // Create new runnable for debounced search
+                debounceRunnable = () -> {
+                    currentSearchQuery = s.toString().trim();
+                    applyFiltersAndSearch();
+                };
+                // Wait 300ms before doing the search
+                debounceHandler.postDelayed(debounceRunnable, 300);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void setupFilterChips() {
+        chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) {
+                // Reset all filters
+                currentCategoryFilter = null;
+                showTrendingOnly = false;
+                useNearbyFilter = false;
+                applyFiltersAndSearch();
+                return;
+            }
+
+            int checkedId = checkedIds.get(0);
+
+            if (checkedId == R.id.chip_all) {
+                currentCategoryFilter = null;
+                showTrendingOnly = false;
+                disableNearbyFilter();
+            } else if (checkedId == R.id.chip_trending) {
+                showTrendingOnly = true;
+                currentCategoryFilter = null;
+                disableNearbyFilter();
+            } else if (checkedId == R.id.chip_upcoming) {
+                showTrendingOnly = false;
+                currentCategoryFilter = null;
+                disableNearbyFilter();
+            } else if (checkedId == R.id.chip_sports) {
+                currentCategoryFilter = "Sports";
+                showTrendingOnly = false;
+                disableNearbyFilter();
+            } else if (checkedId == R.id.chip_social) {
+                currentCategoryFilter = "Social";
+                showTrendingOnly = false;
+                disableNearbyFilter();
+            } else if (checkedId == R.id.chip_outdoor) {
+                currentCategoryFilter = "Outdoor";
+                showTrendingOnly = false;
+                disableNearbyFilter();
+            } else if (checkedId == R.id.chip_nearby) {
+                currentCategoryFilter = null;
+                showTrendingOnly = false;
+                enableNearbyFilter(nearbyRadiusKm);
+                return; // Don't apply filters yet - wait for location
+            }
+
+            applyFiltersAndSearch();
+        });
+    }
+
+    private void applyFiltersAndSearch() {
+        List<Activity> filtered = new ArrayList<>(allActivities);
+
+        // Apply category filter
+        if (currentCategoryFilter != null && !currentCategoryFilter.isEmpty()) {
+            filtered = filtered.stream()
+                    .filter(activity -> currentCategoryFilter.equalsIgnoreCase(activity.getCategory()))
+                    .collect(Collectors.toList());
+        }
+
+        // Apply trending filter
+        if (showTrendingOnly) {
+            filtered = filtered.stream()
+                    .filter(activity -> activity.getTrending() != null && activity.getTrending())
+                    .collect(Collectors.toList());
+        }
+
+        // Apply search query
+        if (!currentSearchQuery.isEmpty()) {
+            String query = currentSearchQuery.toLowerCase();
+            filtered = filtered.stream()
+                    .filter(activity -> {
+                        String title = activity.getTitle() != null ? activity.getTitle().toLowerCase() : "";
+                        String description = activity.getDescription() != null ? activity.getDescription().toLowerCase() : "";
+                        String location = activity.getLocation() != null ? activity.getLocation().toLowerCase() : "";
+                        String category = activity.getCategory() != null ? activity.getCategory().toLowerCase() : "";
+                        return title.contains(query) || description.contains(query) ||
+                               location.contains(query) || category.contains(query);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Update adapter
+        adapter.setActivities(filtered);
+
+        if (filtered.isEmpty()) {
+            showEmptyView();
+        } else {
+            showContent();
+        }
     }
 }
