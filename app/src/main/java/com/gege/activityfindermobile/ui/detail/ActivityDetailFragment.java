@@ -90,7 +90,11 @@ public class ActivityDetailFragment extends Fragment {
         super.onResume();
         Log.d(
                 "ActivityDetailFragment",
-                "onResume() called - reloading participants and checking status");
+                "onResume() called - reloading activity data, participants and checking status");
+
+        // Reload activity details from API to reflect any changes
+        reloadActivityData();
+
         // Reload participants and check button state when returning to this screen
         loadParticipants();
 
@@ -1037,5 +1041,63 @@ public class ActivityDetailFragment extends Fragment {
         com.gege.activityfindermobile.ui.report.ReportDialog reportDialog =
                 com.gege.activityfindermobile.ui.report.ReportDialog.newInstanceForActivity(activityId);
         reportDialog.show(getChildFragmentManager(), "ReportDialog");
+    }
+
+    private void reloadActivityData() {
+        if (activityId == null || activityId == 0L) {
+            return;
+        }
+
+        activityRepository.getActivityById(
+                activityId,
+                new ApiCallback<com.gege.activityfindermobile.data.model.Activity>() {
+                    @Override
+                    public void onSuccess(com.gege.activityfindermobile.data.model.Activity activity) {
+                        // Update UI with fresh data
+                        if (getView() != null) {
+                            TextView tvTitle = getView().findViewById(R.id.tv_title);
+                            TextView tvDescription = getView().findViewById(R.id.tv_description);
+                            TextView tvDate = getView().findViewById(R.id.tv_date);
+                            TextView tvTime = getView().findViewById(R.id.tv_time);
+                            TextView tvLocation = getView().findViewById(R.id.tv_location);
+                            TextView tvSpots = getView().findViewById(R.id.tv_spots);
+                            Chip chipCategory = getView().findViewById(R.id.chip_category);
+
+                            tvTitle.setText(activity.getTitle());
+                            tvDescription.setText(activity.getDescription());
+                            chipCategory.setText(activity.getCategory());
+                            tvLocation.setText(activity.getLocation());
+
+                            // Format and set date and time
+                            try {
+                                java.text.SimpleDateFormat isoFormat =
+                                        new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+                                java.util.Date dateTime = isoFormat.parse(activity.getActivityDate());
+
+                                java.text.SimpleDateFormat dateFormat =
+                                        new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault());
+                                tvDate.setText(dateFormat.format(dateTime));
+
+                                java.text.SimpleDateFormat timeFormat =
+                                        new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault());
+                                tvTime.setText(timeFormat.format(dateTime));
+                            } catch (Exception e) {
+                                Log.e("ActivityDetailFragment", "Error parsing activity date", e);
+                            }
+
+                            // Update spots count
+                            int totalSpots = activity.getTotalSpots();
+                            int availableSpots = activity.getAvailableSpots();
+                            int currentParticipants = totalSpots - availableSpots;
+                            tvSpots.setText(currentParticipants + " / " + totalSpots + " joined");
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("ActivityDetailFragment", "Failed to reload activity data: " + errorMessage);
+                        // Silently fail - keep showing the old data
+                    }
+                });
     }
 }

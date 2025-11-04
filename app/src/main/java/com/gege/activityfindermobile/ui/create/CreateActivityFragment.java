@@ -182,6 +182,14 @@ public class CreateActivityFragment extends Fragment {
                 new ArrayAdapter<>(
                         requireContext(), android.R.layout.simple_dropdown_item_1line, categories);
         etCategory.setAdapter(adapter);
+
+        // Prevent filtering - show all items when clicked
+        etCategory.setOnClickListener(v -> etCategory.showDropDown());
+        etCategory.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                etCategory.showDropDown();
+            }
+        });
     }
 
     private void setupLocationAutocomplete() {
@@ -584,7 +592,7 @@ public class CreateActivityFragment extends Fragment {
                         // Populate form fields with activity data
                         etTitle.setText(activity.getTitle());
                         etDescription.setText(activity.getDescription());
-                        etCategory.setText(activity.getCategory());
+                        etCategory.setText(activity.getCategory(), false);
 
                         // Set flag to prevent autocomplete dropdown from showing
                         isSelectingItem = true;
