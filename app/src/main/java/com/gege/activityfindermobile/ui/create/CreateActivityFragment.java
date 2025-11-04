@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
@@ -162,11 +163,6 @@ public class CreateActivityFragment extends Fragment {
 
         btnCreate = view.findViewById(R.id.btn_create);
         progressLoading = view.findViewById(R.id.progress_loading);
-
-        // Update button text for edit mode
-        if (isEditMode) {
-            btnCreate.setText("Update Activity");
-        }
     }
 
     private void setupCategoryDropdown() {
@@ -196,16 +192,28 @@ public class CreateActivityFragment extends Fragment {
         actvLocation.setOnItemClickListener((parent, view, position, id) -> {
             // Set flag to prevent text change listener from triggering
             isSelectingItem = true;
+
+            // Cancel any pending debounce callbacks
+            if (debounceRunnable != null) {
+                debounceHandler.removeCallbacks(debounceRunnable);
+            }
+
             String selectedLocation = adapter.getItem(position);
             String placeId = adapter.getPlaceId(position);
             if (placeId != null) {
                 fetchPlaceDetails(placeId, selectedLocation);
             }
-            // Dismiss dropdown and clear flag after a short delay
+
+            // Dismiss dropdown immediately
+            actvLocation.dismissDropDown();
+
+            // Clear focus to prevent further interactions
+            actvLocation.clearFocus();
+
+            // Reset flag after a longer delay to ensure text change doesn't trigger
             actvLocation.postDelayed(() -> {
-                actvLocation.dismissDropDown();
                 isSelectingItem = false;
-            }, 100);
+            }, 300);
         });
 
         actvLocation.addTextChangedListener(
@@ -227,7 +235,7 @@ public class CreateActivityFragment extends Fragment {
                         }
 
                         // Only search if at least 2 characters
-                        if (s.length() >= 2) {
+                        if (s.length() >= 2 && !isSelectingItem) {
                             // Create new runnable for debounced API call
                             debounceRunnable = () -> {
                                 adapter.fetchPredictions(s.toString());
@@ -304,8 +312,10 @@ public class CreateActivityFragment extends Fragment {
                 selectedLongitude = data.getDoubleExtra(MapPickerActivity.EXTRA_LONGITUDE, 0.0);
                 selectedPlaceId = null; // Map picker doesn't provide placeId
 
-                // Update UI with location name
+                // Update UI with location name - prevent autocomplete dropdown
+                isSelectingItem = true;
                 actvLocation.setText(selectedLocationName);
+                isSelectingItem = false;
 
                 android.util.Log.d(
                         "CreateActivity",
@@ -575,7 +585,12 @@ public class CreateActivityFragment extends Fragment {
                         etTitle.setText(activity.getTitle());
                         etDescription.setText(activity.getDescription());
                         etCategory.setText(activity.getCategory());
+
+                        // Set flag to prevent autocomplete dropdown from showing
+                        isSelectingItem = true;
                         actvLocation.setText(activity.getLocation());
+                        isSelectingItem = false;
+
                         etTotalSpots.setText(String.valueOf(activity.getTotalSpots()));
 
                         // Set location data if available

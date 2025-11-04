@@ -77,6 +77,9 @@ public class Activity {
     @SerializedName("createdAt")
     private String createdAt;
 
+    @SerializedName("distance")
+    private Double distance; // Distance from user in kilometers
+
     // Constructor
     public Activity() {}
 
@@ -352,5 +355,13 @@ public class Activity {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
     }
 }

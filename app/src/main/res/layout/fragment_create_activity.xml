@@ -290,18 +290,18 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Create Button -->
+            <!-- Save Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_create"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_large"
-                android:text="@string/create_activity"
+                android:text="@string/save"
                 android:textColor="@color/white"
                 android:paddingVertical="16dp"
                 app:cornerRadius="@dimen/card_corner_radius"
                 app:backgroundTint="@color/primary"
-                app:icon="@drawable/ic_add"
+                app:icon="@drawable/ic_check_circle"
                 app:iconTint="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"

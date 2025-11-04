@@ -150,22 +150,41 @@
 
         </LinearLayout>
 
-        <!-- Location -->
-        <TextView
-            android:id="@+id/tv_location"
+        <!-- Location & Distance Row -->
+        <LinearLayout
+            android:id="@+id/layout_location"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_small"
-            android:drawablePadding="4dp"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/text_secondary"
-            android:drawableStart="@drawable/ic_location"
-            android:drawableTint="@color/primary"
-            android:maxLines="1"
-            android:ellipsize="end"
+            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/layout_datetime"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tv_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="4dp"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/text_secondary"
+                android:drawableStart="@drawable/ic_location"
+                android:drawableTint="@color/primary"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_small"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/primary"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
         <!-- Divider -->
         <View
@@ -174,7 +193,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="@dimen/margin_medium"
             android:background="@color/gray_light"
-            app:layout_constraintTop_toBottomOf="@id/tv_location"
+            app:layout_constraintTop_toBottomOf="@id/layout_location"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
