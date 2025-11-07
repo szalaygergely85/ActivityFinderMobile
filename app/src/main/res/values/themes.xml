@@ -54,4 +54,10 @@
         <item name="contentPadding">16dp</item>
         <item name="strokeWidth">0dp</item>
     </style>
+
+    <!-- Search TextInputLayout Style -->
+    <style name="SearchTextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="android:textColor">@color/primary_light</item>
+        <item name="android:textColorHint">@color/primary_light</item>
+    </style>
 </resources>

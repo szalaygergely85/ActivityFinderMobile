@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/primary_light">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -17,31 +17,45 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingStart="@dimen/padding_medium"
-            android:paddingEnd="@dimen/padding_small"
-            android:paddingTop="@dimen/padding_medium"
-            android:paddingBottom="@dimen/padding_small"
+            android:paddingStart="@dimen/padding_large"
+            android:paddingEnd="@dimen/padding_medium"
+            android:paddingTop="@dimen/padding_large"
+            android:paddingBottom="@dimen/padding_large"
             android:gravity="center_vertical"
             android:weightSum="10">
 
             <!-- Search Input -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_search"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/SearchTextInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="9"
                 android:hint="Search activities..."
+                android:textColorHint="@color/white"
+                android:paddingStart="@dimen/padding_small"
+                android:paddingEnd="@dimen/padding_small"
                 app:startIconDrawable="@drawable/ic_explore"
-                app:startIconTint="@color/primary"
-                app:endIconMode="clear_text">
+                app:startIconTint="@color/primary_light"
+                app:endIconTint="@color/primary_light"
+                app:endIconMode="clear_text"
+                app:boxStrokeColor="@color/primary_light"
+                app:boxStrokeWidthFocused="1dp"
+                app:boxStrokeWidth="1dp"
+                app:hintTextColor="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_search"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:paddingStart="@dimen/padding_small"
+                    android:paddingEnd="@dimen/padding_small"
+                    android:paddingTop="@dimen/padding_small"
+                    android:paddingBottom="@dimen/padding_small"
+                    android:textColor="@color/accent_light"
+                    android:textColorHint="@color/accent_light" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -54,7 +68,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="@dimen/margin_small"
                 app:icon="@drawable/ic_category"
-                app:iconTint="@color/primary" />
+                app:iconTint="@color/primary_light" />
 
         </LinearLayout>
 
@@ -124,6 +138,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="All"
+                    android:textColor="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light"
                     android:checked="true" />
 
                 <com.google.android.material.chip.Chip
@@ -132,7 +148,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="🔥 Trending"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_upcoming"
@@ -140,7 +157,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Upcoming"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_sports"
@@ -148,9 +166,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sports"
+                    android:textColor="@color/primary_dark"
                     app:chipIcon="@drawable/ic_sports"
-                    app:chipIconTint="@color/white"
-                    android:textColor="@color/white" />
+                    app:chipIconTint="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_social"
@@ -158,9 +177,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Social"
+                    android:textColor="@color/primary_dark"
                     app:chipIcon="@drawable/ic_social"
-                    app:chipIconTint="@color/white"
-                    android:textColor="@color/white" />
+                    app:chipIconTint="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_outdoor"
@@ -168,9 +188,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Outdoor"
+                    android:textColor="@color/primary_dark"
                     app:chipIcon="@drawable/ic_outdoor"
-                    app:chipIconTint="@color/white"
-                    android:textColor="@color/white" />
+                    app:chipIconTint="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_nearby"
@@ -178,9 +199,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Nearby (10km)"
+                    android:textColor="@color/primary_dark"
                     app:chipIcon="@drawable/ic_location"
-                    app:chipIconTint="@color/white"
-                    android:textColor="@color/white" />
+                    app:chipIconTint="@color/primary_dark"
+                    app:chipBackgroundColor="@color/primary_light" />
 
             </com.google.android.material.chip.ChipGroup>
 

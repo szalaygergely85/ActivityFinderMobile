@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary Brand Colors - Professional Modern Theme -->
-    <color name="primary">#2563EB</color> <!-- Deep Blue -->
-    <color name="primary_dark">#1E40AF</color> <!-- Darker Blue -->
-    <color name="primary_light">#DBEAFE</color> <!-- Very Light Blue -->
-    <color name="accent">#64748B</color> <!-- Slate Gray -->
-    <color name="accent_light">#F1F5F9</color> <!-- Very Light Slate -->
+    <color name="primary">#6d9773</color> <!-- Sage Green -->
+    <color name="primary_dark">#0c3b2e</color> <!-- Dark Teal -->
+    <color name="primary_light">#E8EFE6</color> <!-- Very Light Green -->
+    <color name="accent">#bb8a52</color> <!-- Warm Tan -->
+    <color name="accent_light">#ffba00</color> <!-- Golden Yellow -->
 
     <!-- Background Colors -->
     <color name="background">#F8F9FB</color> <!-- Subtle Gray-Blue -->
@@ -15,9 +15,9 @@
     <color name="black">#FF000000</color>
 
     <!-- Text Colors - High Contrast -->
-    <color name="text_primary">#0F172A</color> <!-- Near Black -->
-    <color name="text_secondary">#475569</color> <!-- Medium Gray -->
-    <color name="text_hint">#94A3B8</color> <!-- Light Gray -->
+    <color name="text_primary">#FF000000</color> <!-- Black -->
+    <color name="text_secondary">#0c3b2e</color> <!-- Dark Green -->
+    <color name="text_hint">#666666</color> <!-- Medium Gray -->
     <color name="divider">#E2E8F0</color> <!-- Subtle Divider -->
 
     <!-- Other Colors -->
@@ -28,9 +28,9 @@
     <color name="error">#DC2626</color> <!-- Clean Red -->
 
     <!-- Gradient Colors - Subtle Professional -->
-    <color name="gradient_start">#1E40AF</color> <!-- Deep Blue -->
-    <color name="gradient_mid">#2563EB</color> <!-- Blue -->
-    <color name="gradient_end">#3B82F6</color> <!-- Lighter Blue -->
+    <color name="gradient_start">#0c3b2e</color> <!-- Dark Teal -->
+    <color name="gradient_mid">#6d9773</color> <!-- Sage Green -->
+    <color name="gradient_end">#bb8a52</color> <!-- Warm Tan -->
 
     <!-- Category Colors - Muted Professional Palette -->
     <color name="category_sports">#2563EB</color> <!-- Deep Blue -->
@@ -45,11 +45,15 @@
     <color name="category_fitness">#0D9488</color> <!-- Deep Teal -->
 
     <!-- Chip/Filter Colors -->
-    <color name="chip_selected">#2563EB</color>
+    <color name="chip_selected">#6d9773</color>
     <color name="chip_unselected">#F1F5F9</color>
     <color name="chip_text_selected">#FFFFFF</color>
     <color name="chip_text_unselected">#475569</color>
 
     <!-- Notification Colors -->
     <color name="notification_unread_bg">#F0F9FF</color> <!-- Very Light Blue -->
+
+    <!-- Bottom Navigation Colors -->
+    <color name="bottom_nav_unselected">#0c3b2e</color> <!-- Dark Green for unselected -->
+    <color name="bottom_nav_selected">#ffba00</color> <!-- Golden Yellow for selected -->
 </resources>

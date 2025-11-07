@@ -4,19 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/primary_light">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white">
+        android:background="@color/primary_dark">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/profile"
-            app:titleTextColor="@color/text_primary"
+            app:titleTextColor="@color/white"
+            app:navigationIconTint="@color/white"
             app:menu="@menu/menu_profile" />
 
     </com.google.android.material.appbar.AppBarLayout>
