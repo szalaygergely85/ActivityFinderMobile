@@ -5,15 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:background="@color/primary_light">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/primary_dark"
         app:title="Notifications"
         app:titleCentered="false"
+        app:titleTextColor="@color/white"
+        app:navigationIconTint="@color/white"
         android:elevation="@dimen/card_elevation" />
 
     <!-- Filter Chips -->
