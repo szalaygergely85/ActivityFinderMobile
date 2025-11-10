@@ -3,8 +3,10 @@
 
     <!-- Bottom Navigation -->
     <string name="nav_explore">Explore</string>
+    <string name="nav_recommended">Recommended</string>
     <string name="nav_my_activities">My Activities</string>
     <string name="nav_joined">Joined</string>
+    <string name="nav_notifications">Notifications</string>
     <string name="nav_profile">Profile</string>
 
     <!-- Common -->
@@ -20,6 +22,7 @@
     <!-- Activities -->
     <string name="activities_title">Activities</string>
     <string name="no_activities">No activities found</string>
+    <string name="no_recommended_activities">No recommended activities. Add interests to your profile to get personalized recommendations!</string>
     <string name="create_activity">Create Activity</string>
     <string name="activity_details">Activity Details</string>
     <string name="express_interest">Express Interest</string>

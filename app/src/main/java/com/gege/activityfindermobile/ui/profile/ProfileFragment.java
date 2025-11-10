@@ -44,7 +44,13 @@ public class ProfileFragment extends Fragment {
     @Inject UserRepository userRepository;
 
     private CircleImageView ivProfileAvatar;
-    private TextView tvName, tvEmail, tvBio, tvRatingValue, tvActivitiesCount, tvUserLocation, tvPhotoCount;
+    private TextView tvName,
+            tvEmail,
+            tvBio,
+            tvRatingValue,
+            tvActivitiesCount,
+            tvUserLocation,
+            tvPhotoCount;
     private Chip chipBadge;
     private ChipGroup chipGroupInterests;
     private MaterialButton btnLogout, btnEditProfile;
@@ -297,7 +303,8 @@ public class ProfileFragment extends Fragment {
             navController.navigate(R.id.photoViewerFragment, bundle);
         } catch (Exception e) {
             // If navigation fails, show a toast
-            Toast.makeText(requireContext(), "Unable to open photo viewer", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Unable to open photo viewer", Toast.LENGTH_SHORT)
+                    .show();
         }
     }
 }

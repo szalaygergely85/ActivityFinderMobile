@@ -2,8 +2,8 @@ package com.gege.activityfindermobile.utils;
 
 public class Constants {
     // Change this to your backend URL
-    public static final String BASE_URL = "http://10.0.2.2:8080/"; // Android emulator localhost
-    // For real device: "http://YOUR_IP_ADDRESS:8080/"
+   // public static final String BASE_URL = "http://10.0.2.2:8080/"; // Android emulator localhost
+     public static final String BASE_URL = "https://af.zen-vy.com/";
     // For production: "https://your-domain.com/"
 
     // SharedPreferences keys

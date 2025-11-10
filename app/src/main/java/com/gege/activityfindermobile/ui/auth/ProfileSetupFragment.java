@@ -352,7 +352,8 @@ public class ProfileSetupFragment extends Fragment {
                         Toast.makeText(requireContext(), "Photo uploaded!", Toast.LENGTH_SHORT)
                                 .show();
 
-                        // If this is the first photo, reload photos and automatically set it as profile picture
+                        // If this is the first photo, reload photos and automatically set it as
+                        // profile picture
                         if (isFirstPhoto) {
                             loadSetupPhotosAndSetFirst();
                         } else {
@@ -496,14 +497,9 @@ public class ProfileSetupFragment extends Fragment {
 
                         // Update profile picture display
                         ImageLoader.loadCircularProfileImage(
-                                requireContext(),
-                                updatedPhoto.getPhotoUrl(),
-                                ivProfilePicture);
+                                requireContext(), updatedPhoto.getPhotoUrl(), ivProfilePicture);
 
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Profile picture set!",
-                                        Toast.LENGTH_SHORT)
+                        Toast.makeText(requireContext(), "Profile picture set!", Toast.LENGTH_SHORT)
                                 .show();
 
                         // Reload photos to get updated data
@@ -526,7 +522,8 @@ public class ProfileSetupFragment extends Fragment {
 
     private void deletePhoto(UserPhoto photo) {
         // Check if the photo being deleted is the profile picture
-        boolean wasProfilePicture = photo.getIsProfilePicture() != null && photo.getIsProfilePicture();
+        boolean wasProfilePicture =
+                photo.getIsProfilePicture() != null && photo.getIsProfilePicture();
 
         setLoading(true);
         userPhotoRepository.deletePhoto(
@@ -539,7 +536,8 @@ public class ProfileSetupFragment extends Fragment {
                         Toast.makeText(requireContext(), "Photo deleted!", Toast.LENGTH_SHORT)
                                 .show();
 
-                        // If the deleted photo was the profile picture and there are remaining photos,
+                        // If the deleted photo was the profile picture and there are remaining
+                        // photos,
                         // automatically set the first one as the new profile picture
                         if (wasProfilePicture && !setupPhotos.isEmpty()) {
                             setPhotoAsProfile(setupPhotos.get(0).getId());
