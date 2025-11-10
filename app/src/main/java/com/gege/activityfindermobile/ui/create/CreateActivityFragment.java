@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
@@ -27,7 +26,6 @@ import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.PlaceTypes;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
@@ -185,11 +183,12 @@ public class CreateActivityFragment extends Fragment {
 
         // Prevent filtering - show all items when clicked
         etCategory.setOnClickListener(v -> etCategory.showDropDown());
-        etCategory.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                etCategory.showDropDown();
-            }
-        });
+        etCategory.setOnFocusChangeListener(
+                (v, hasFocus) -> {
+                    if (hasFocus) {
+                        etCategory.showDropDown();
+                    }
+                });
     }
 
     private void setupLocationAutocomplete() {
@@ -197,32 +196,35 @@ public class CreateActivityFragment extends Fragment {
         actvLocation.setAdapter(adapter);
         actvLocation.setThreshold(2); // Minimum 2 characters before showing suggestions
 
-        actvLocation.setOnItemClickListener((parent, view, position, id) -> {
-            // Set flag to prevent text change listener from triggering
-            isSelectingItem = true;
+        actvLocation.setOnItemClickListener(
+                (parent, view, position, id) -> {
+                    // Set flag to prevent text change listener from triggering
+                    isSelectingItem = true;
 
-            // Cancel any pending debounce callbacks
-            if (debounceRunnable != null) {
-                debounceHandler.removeCallbacks(debounceRunnable);
-            }
+                    // Cancel any pending debounce callbacks
+                    if (debounceRunnable != null) {
+                        debounceHandler.removeCallbacks(debounceRunnable);
+                    }
 
-            String selectedLocation = adapter.getItem(position);
-            String placeId = adapter.getPlaceId(position);
-            if (placeId != null) {
-                fetchPlaceDetails(placeId, selectedLocation);
-            }
+                    String selectedLocation = adapter.getItem(position);
+                    String placeId = adapter.getPlaceId(position);
+                    if (placeId != null) {
+                        fetchPlaceDetails(placeId, selectedLocation);
+                    }
 
-            // Dismiss dropdown immediately
-            actvLocation.dismissDropDown();
+                    // Dismiss dropdown immediately
+                    actvLocation.dismissDropDown();
 
-            // Clear focus to prevent further interactions
-            actvLocation.clearFocus();
+                    // Clear focus to prevent further interactions
+                    actvLocation.clearFocus();
 
-            // Reset flag after a longer delay to ensure text change doesn't trigger
-            actvLocation.postDelayed(() -> {
-                isSelectingItem = false;
-            }, 300);
-        });
+                    // Reset flag after a longer delay to ensure text change doesn't trigger
+                    actvLocation.postDelayed(
+                            () -> {
+                                isSelectingItem = false;
+                            },
+                            300);
+                });
 
         actvLocation.addTextChangedListener(
                 new android.text.TextWatcher() {
@@ -245,10 +247,11 @@ public class CreateActivityFragment extends Fragment {
                         // Only search if at least 2 characters
                         if (s.length() >= 2 && !isSelectingItem) {
                             // Create new runnable for debounced API call
-                            debounceRunnable = () -> {
-                                adapter.fetchPredictions(s.toString());
-                                actvLocation.post(() -> actvLocation.showDropDown());
-                            };
+                            debounceRunnable =
+                                    () -> {
+                                        adapter.fetchPredictions(s.toString());
+                                        actvLocation.post(() -> actvLocation.showDropDown());
+                                    };
                             // Wait 800ms before making the API call
                             debounceHandler.postDelayed(debounceRunnable, 800);
                         } else {
@@ -263,29 +266,42 @@ public class CreateActivityFragment extends Fragment {
 
     private void fetchPlaceDetails(String placeId, String locationName) {
         List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
-        FetchPlaceRequest request = FetchPlaceRequest.builder(placeId, placeFields)
-                .setSessionToken(sessionToken)
-                .build();
+        FetchPlaceRequest request =
+                FetchPlaceRequest.builder(placeId, placeFields)
+                        .setSessionToken(sessionToken)
+                        .build();
 
-        placesClient.fetchPlace(request)
-                .addOnSuccessListener((FetchPlaceResponse response) -> {
-                    Place place = response.getPlace();
-                    if (place.getLatLng() != null) {
-                        selectedPlaceId = placeId;
-                        selectedLatitude = place.getLatLng().latitude;
-                        selectedLongitude = place.getLatLng().longitude;
-                        selectedLocationName = locationName;
-                        android.util.Log.d("CreateActivity", "Selected location: " + locationName +
-                                " at (" + selectedLatitude + ", " + selectedLongitude + ")");
-                    }
-                    // Regenerate token after successful place details fetch
-                    sessionToken = AutocompleteSessionToken.newInstance();
-                })
-                .addOnFailureListener((exception) -> {
-                    android.util.Log.e("CreateActivity", "Error fetching place details: " + exception.getMessage());
-                    // Still regenerate token
-                    sessionToken = AutocompleteSessionToken.newInstance();
-                });
+        placesClient
+                .fetchPlace(request)
+                .addOnSuccessListener(
+                        (FetchPlaceResponse response) -> {
+                            Place place = response.getPlace();
+                            if (place.getLatLng() != null) {
+                                selectedPlaceId = placeId;
+                                selectedLatitude = place.getLatLng().latitude;
+                                selectedLongitude = place.getLatLng().longitude;
+                                selectedLocationName = locationName;
+                                android.util.Log.d(
+                                        "CreateActivity",
+                                        "Selected location: "
+                                                + locationName
+                                                + " at ("
+                                                + selectedLatitude
+                                                + ", "
+                                                + selectedLongitude
+                                                + ")");
+                            }
+                            // Regenerate token after successful place details fetch
+                            sessionToken = AutocompleteSessionToken.newInstance();
+                        })
+                .addOnFailureListener(
+                        (exception) -> {
+                            android.util.Log.e(
+                                    "CreateActivity",
+                                    "Error fetching place details: " + exception.getMessage());
+                            // Still regenerate token
+                            sessionToken = AutocompleteSessionToken.newInstance();
+                        });
     }
 
     private void setupListeners() {
@@ -614,8 +630,7 @@ public class CreateActivityFragment extends Fragment {
                         try {
                             SimpleDateFormat isoFormat =
                                     new SimpleDateFormat(
-                                            "yyyy-MM-dd'T'HH:mm:ss",
-                                            Locale.getDefault());
+                                            "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
                             java.util.Date dateTime = isoFormat.parse(activity.getActivityDate());
 
                             // Set date
@@ -771,13 +786,15 @@ public class CreateActivityFragment extends Fragment {
                                     response.getAutocompletePredictions()
                                             .forEach(
                                                     prediction -> {
-                                                         String description =
-                                                                prediction.getFullText(null)
+                                                        String description =
+                                                                prediction
+                                                                        .getFullText(null)
                                                                         .toString();
                                                         if (description != null
                                                                 && !description.isEmpty()) {
                                                             filteredLocations.add(description);
-                                                            filteredPlaceIds.add(prediction.getPlaceId());
+                                                            filteredPlaceIds.add(
+                                                                    prediction.getPlaceId());
                                                         }
                                                     });
                                     notifyDataSetChanged();
@@ -786,8 +803,7 @@ public class CreateActivityFragment extends Fragment {
                                 exception -> {
                                     android.util.Log.e(
                                             "PlacesAdapter",
-                                            "Error fetching predictions: "
-                                                    + exception.getMessage(),
+                                            "Error fetching predictions: " + exception.getMessage(),
                                             exception);
                                     notifyDataSetChanged();
                                 });

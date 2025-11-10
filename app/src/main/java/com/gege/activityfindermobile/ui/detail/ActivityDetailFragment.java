@@ -207,9 +207,7 @@ public class ActivityDetailFragment extends Fragment {
                 "ActivityDetailFragment",
                 "Creator check - currentUserId: " + currentUserId + ", creatorId: " + creatorId);
         if (currentUserId != null && currentUserId.equals(creatorId)) {
-            Log.d(
-                    "ActivityDetailFragment",
-                    "User IS the creator - showing edit/delete buttons");
+            Log.d("ActivityDetailFragment", "User IS the creator - showing edit/delete buttons");
             // Show edit and delete buttons for creator
             btnEditActivity.setVisibility(View.VISIBLE);
             btnEditActivity.setEnabled(true);
@@ -722,7 +720,8 @@ public class ActivityDetailFragment extends Fragment {
         bundle.putLong("activityId", activityId);
 
         NavController navController = Navigation.findNavController(requireView());
-        // Navigate to edit activity screen - you may need to adjust the action ID based on your navigation graph
+        // Navigate to edit activity screen - you may need to adjust the action ID based on your
+        // navigation graph
         navController.navigate(
                 R.id.action_activityDetailFragment_to_createActivityFragment, bundle);
     }
@@ -730,7 +729,9 @@ public class ActivityDetailFragment extends Fragment {
     private void confirmDeleteActivity() {
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Delete Activity")
-                .setMessage("Are you sure you want to delete this activity? This action cannot be undone.")
+                .setMessage(
+                        "Are you sure you want to delete this activity? This action cannot be"
+                                + " undone.")
                 .setPositiveButton(
                         "Delete",
                         (dialog, which) -> {
@@ -1039,7 +1040,8 @@ public class ActivityDetailFragment extends Fragment {
 
     private void showReportActivityDialog() {
         com.gege.activityfindermobile.ui.report.ReportDialog reportDialog =
-                com.gege.activityfindermobile.ui.report.ReportDialog.newInstanceForActivity(activityId);
+                com.gege.activityfindermobile.ui.report.ReportDialog.newInstanceForActivity(
+                        activityId);
         reportDialog.show(getChildFragmentManager(), "ReportDialog");
     }
 
@@ -1052,7 +1054,8 @@ public class ActivityDetailFragment extends Fragment {
                 activityId,
                 new ApiCallback<com.gege.activityfindermobile.data.model.Activity>() {
                     @Override
-                    public void onSuccess(com.gege.activityfindermobile.data.model.Activity activity) {
+                    public void onSuccess(
+                            com.gege.activityfindermobile.data.model.Activity activity) {
                         // Update UI with fresh data
                         if (getView() != null) {
                             TextView tvTitle = getView().findViewById(R.id.tv_title);
@@ -1071,15 +1074,20 @@ public class ActivityDetailFragment extends Fragment {
                             // Format and set date and time
                             try {
                                 java.text.SimpleDateFormat isoFormat =
-                                        new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
-                                java.util.Date dateTime = isoFormat.parse(activity.getActivityDate());
+                                        new java.text.SimpleDateFormat(
+                                                "yyyy-MM-dd'T'HH:mm:ss",
+                                                java.util.Locale.getDefault());
+                                java.util.Date dateTime =
+                                        isoFormat.parse(activity.getActivityDate());
 
                                 java.text.SimpleDateFormat dateFormat =
-                                        new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault());
+                                        new java.text.SimpleDateFormat(
+                                                "MMM dd, yyyy", java.util.Locale.getDefault());
                                 tvDate.setText(dateFormat.format(dateTime));
 
                                 java.text.SimpleDateFormat timeFormat =
-                                        new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault());
+                                        new java.text.SimpleDateFormat(
+                                                "hh:mm a", java.util.Locale.getDefault());
                                 tvTime.setText(timeFormat.format(dateTime));
                             } catch (Exception e) {
                                 Log.e("ActivityDetailFragment", "Error parsing activity date", e);
@@ -1095,7 +1103,9 @@ public class ActivityDetailFragment extends Fragment {
 
                     @Override
                     public void onError(String errorMessage) {
-                        Log.e("ActivityDetailFragment", "Failed to reload activity data: " + errorMessage);
+                        Log.e(
+                                "ActivityDetailFragment",
+                                "Failed to reload activity data: " + errorMessage);
                         // Silently fail - keep showing the old data
                     }
                 });

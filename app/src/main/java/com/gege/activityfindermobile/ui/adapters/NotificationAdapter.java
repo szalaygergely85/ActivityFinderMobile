@@ -105,7 +105,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             try {
                 // Parse ISO 8601 timestamp from backend
-                SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+                SimpleDateFormat isoFormat =
+                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
                 Date date = isoFormat.parse(timestamp);
 
                 if (date == null) {
@@ -132,7 +133,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     return days + "d ago";
                 } else {
                     // For older notifications, show the actual date
-                    SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+                    SimpleDateFormat displayFormat =
+                            new SimpleDateFormat("MMM dd, yyyy", Locale.US);
                     return displayFormat.format(date);
                 }
             } catch (Exception e) {

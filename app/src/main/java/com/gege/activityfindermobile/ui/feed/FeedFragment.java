@@ -23,7 +23,6 @@ import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.LocationManager;
-import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -98,13 +97,14 @@ public class FeedFragment extends Fragment {
         locationManager = new LocationManager(requireContext());
 
         // Setup toggle filters button
-        btnToggleFilters.setOnClickListener(v -> {
-            if (filtersContainer.getVisibility() == View.GONE) {
-                filtersContainer.setVisibility(View.VISIBLE);
-            } else {
-                filtersContainer.setVisibility(View.GONE);
-            }
-        });
+        btnToggleFilters.setOnClickListener(
+                v -> {
+                    if (filtersContainer.getVisibility() == View.GONE) {
+                        filtersContainer.setVisibility(View.VISIBLE);
+                    } else {
+                        filtersContainer.setVisibility(View.GONE);
+                    }
+                });
 
         // Setup search bar
         setupSearchBar();
@@ -338,77 +338,81 @@ public class FeedFragment extends Fragment {
     }
 
     private void setupSearchBar() {
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        etSearch.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Remove any pending callbacks
-                if (debounceRunnable != null) {
-                    debounceHandler.removeCallbacks(debounceRunnable);
-                }
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        // Remove any pending callbacks
+                        if (debounceRunnable != null) {
+                            debounceHandler.removeCallbacks(debounceRunnable);
+                        }
 
-                // Create new runnable for debounced search
-                debounceRunnable = () -> {
-                    currentSearchQuery = s.toString().trim();
-                    applyFiltersAndSearch();
-                };
-                // Wait 300ms before doing the search
-                debounceHandler.postDelayed(debounceRunnable, 300);
-            }
+                        // Create new runnable for debounced search
+                        debounceRunnable =
+                                () -> {
+                                    currentSearchQuery = s.toString().trim();
+                                    applyFiltersAndSearch();
+                                };
+                        // Wait 300ms before doing the search
+                        debounceHandler.postDelayed(debounceRunnable, 300);
+                    }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+                    @Override
+                    public void afterTextChanged(Editable s) {}
+                });
     }
 
     private void setupFilterChips() {
-        chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.isEmpty()) {
-                // Reset all filters
-                currentCategoryFilter = null;
-                showTrendingOnly = false;
-                useNearbyFilter = false;
-                applyFiltersAndSearch();
-                return;
-            }
+        chipGroupFilters.setOnCheckedStateChangeListener(
+                (group, checkedIds) -> {
+                    if (checkedIds.isEmpty()) {
+                        // Reset all filters
+                        currentCategoryFilter = null;
+                        showTrendingOnly = false;
+                        useNearbyFilter = false;
+                        applyFiltersAndSearch();
+                        return;
+                    }
 
-            int checkedId = checkedIds.get(0);
+                    int checkedId = checkedIds.get(0);
 
-            if (checkedId == R.id.chip_all) {
-                currentCategoryFilter = null;
-                showTrendingOnly = false;
-                disableNearbyFilter();
-            } else if (checkedId == R.id.chip_trending) {
-                showTrendingOnly = true;
-                currentCategoryFilter = null;
-                disableNearbyFilter();
-            } else if (checkedId == R.id.chip_upcoming) {
-                showTrendingOnly = false;
-                currentCategoryFilter = null;
-                disableNearbyFilter();
-            } else if (checkedId == R.id.chip_sports) {
-                currentCategoryFilter = "Sports";
-                showTrendingOnly = false;
-                disableNearbyFilter();
-            } else if (checkedId == R.id.chip_social) {
-                currentCategoryFilter = "Social";
-                showTrendingOnly = false;
-                disableNearbyFilter();
-            } else if (checkedId == R.id.chip_outdoor) {
-                currentCategoryFilter = "Outdoor";
-                showTrendingOnly = false;
-                disableNearbyFilter();
-            } else if (checkedId == R.id.chip_nearby) {
-                currentCategoryFilter = null;
-                showTrendingOnly = false;
-                enableNearbyFilter(nearbyRadiusKm);
-                return; // Don't apply filters yet - wait for location
-            }
+                    if (checkedId == R.id.chip_all) {
+                        currentCategoryFilter = null;
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_trending) {
+                        showTrendingOnly = true;
+                        currentCategoryFilter = null;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_upcoming) {
+                        showTrendingOnly = false;
+                        currentCategoryFilter = null;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_sports) {
+                        currentCategoryFilter = "Sports";
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_social) {
+                        currentCategoryFilter = "Social";
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_outdoor) {
+                        currentCategoryFilter = "Outdoor";
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_nearby) {
+                        currentCategoryFilter = null;
+                        showTrendingOnly = false;
+                        enableNearbyFilter(nearbyRadiusKm);
+                        return; // Don't apply filters yet - wait for location
+                    }
 
-            applyFiltersAndSearch();
-        });
+                    applyFiltersAndSearch();
+                });
     }
 
     private void applyFiltersAndSearch() {
@@ -416,50 +420,80 @@ public class FeedFragment extends Fragment {
 
         // Apply category filter
         if (currentCategoryFilter != null && !currentCategoryFilter.isEmpty()) {
-            filtered = filtered.stream()
-                    .filter(activity -> currentCategoryFilter.equalsIgnoreCase(activity.getCategory()))
-                    .collect(Collectors.toList());
+            filtered =
+                    filtered.stream()
+                            .filter(
+                                    activity ->
+                                            currentCategoryFilter.equalsIgnoreCase(
+                                                    activity.getCategory()))
+                            .collect(Collectors.toList());
         }
 
         // Apply trending filter
         if (showTrendingOnly) {
-            filtered = filtered.stream()
-                    .filter(activity -> activity.getTrending() != null && activity.getTrending())
-                    .collect(Collectors.toList());
+            filtered =
+                    filtered.stream()
+                            .filter(
+                                    activity ->
+                                            activity.getTrending() != null
+                                                    && activity.getTrending())
+                            .collect(Collectors.toList());
         }
 
         // Apply search query
         if (!currentSearchQuery.isEmpty()) {
             String query = currentSearchQuery.toLowerCase();
-            filtered = filtered.stream()
-                    .filter(activity -> {
-                        String title = activity.getTitle() != null ? activity.getTitle().toLowerCase() : "";
-                        String description = activity.getDescription() != null ? activity.getDescription().toLowerCase() : "";
-                        String location = activity.getLocation() != null ? activity.getLocation().toLowerCase() : "";
-                        String category = activity.getCategory() != null ? activity.getCategory().toLowerCase() : "";
-                        return title.contains(query) || description.contains(query) ||
-                               location.contains(query) || category.contains(query);
-                    })
-                    .collect(Collectors.toList());
+            filtered =
+                    filtered.stream()
+                            .filter(
+                                    activity -> {
+                                        String title =
+                                                activity.getTitle() != null
+                                                        ? activity.getTitle().toLowerCase()
+                                                        : "";
+                                        String description =
+                                                activity.getDescription() != null
+                                                        ? activity.getDescription().toLowerCase()
+                                                        : "";
+                                        String location =
+                                                activity.getLocation() != null
+                                                        ? activity.getLocation().toLowerCase()
+                                                        : "";
+                                        String category =
+                                                activity.getCategory() != null
+                                                        ? activity.getCategory().toLowerCase()
+                                                        : "";
+                                        return title.contains(query)
+                                                || description.contains(query)
+                                                || location.contains(query)
+                                                || category.contains(query);
+                                    })
+                            .collect(Collectors.toList());
         }
 
         // Apply distance filter
         if (maxDistanceKm != null) {
-            filtered = filtered.stream()
-                    .filter(activity -> {
-                        if (activity.getDistance() == null) {
-                            return true; // Include activities without distance info
-                        }
-                        return activity.getDistance() <= maxDistanceKm;
-                    })
-                    .collect(Collectors.toList());
+            filtered =
+                    filtered.stream()
+                            .filter(
+                                    activity -> {
+                                        if (activity.getDistance() == null) {
+                                            return true; // Include activities without distance info
+                                        }
+                                        return activity.getDistance() <= maxDistanceKm;
+                                    })
+                            .collect(Collectors.toList());
         }
 
         // Apply activity type filter
         if (selectedActivityType != null && !selectedActivityType.isEmpty()) {
-            filtered = filtered.stream()
-                    .filter(activity -> selectedActivityType.equalsIgnoreCase(activity.getCategory()))
-                    .collect(Collectors.toList());
+            filtered =
+                    filtered.stream()
+                            .filter(
+                                    activity ->
+                                            selectedActivityType.equalsIgnoreCase(
+                                                    activity.getCategory()))
+                            .collect(Collectors.toList());
         }
 
         // Update adapter
@@ -476,24 +510,30 @@ public class FeedFragment extends Fragment {
         com.google.android.material.button.MaterialButton btnDistanceFilter =
                 getView().findViewById(R.id.btn_distance_filter);
 
-        btnDistanceFilter.setOnClickListener(v -> {
-            String[] distances = {"All Distances", "5 km", "10 km", "25 km", "50 km", "100 km"};
-            Integer[] distanceValues = {null, 5, 10, 25, 50, 100};
+        btnDistanceFilter.setOnClickListener(
+                v -> {
+                    String[] distances = {
+                        "All Distances", "5 km", "10 km", "25 km", "50 km", "100 km"
+                    };
+                    Integer[] distanceValues = {null, 5, 10, 25, 50, 100};
 
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Filter by Distance")
-                    .setSingleChoiceItems(
-                            distances,
-                            maxDistanceKm == null ? 0 : java.util.Arrays.asList(distanceValues).indexOf(maxDistanceKm),
-                            (dialog, which) -> {
-                                maxDistanceKm = distanceValues[which];
-                                String selected = distances[which];
-                                btnDistanceFilter.setText(selected);
-                                applyFiltersAndSearch();
-                                dialog.dismiss();
-                            })
-                    .show();
-        });
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("Filter by Distance")
+                            .setSingleChoiceItems(
+                                    distances,
+                                    maxDistanceKm == null
+                                            ? 0
+                                            : java.util.Arrays.asList(distanceValues)
+                                                    .indexOf(maxDistanceKm),
+                                    (dialog, which) -> {
+                                        maxDistanceKm = distanceValues[which];
+                                        String selected = distances[which];
+                                        btnDistanceFilter.setText(selected);
+                                        applyFiltersAndSearch();
+                                        dialog.dismiss();
+                                    })
+                            .show();
+                });
     }
 
     private void setupActivityTypeFilter() {
@@ -514,23 +554,26 @@ public class FeedFragment extends Fragment {
             "Fitness"
         };
 
-        btnTypeFilter.setOnClickListener(v -> {
-            int checkedItem = selectedActivityType == null ? 0 :
-                    java.util.Arrays.asList(types).indexOf(selectedActivityType);
+        btnTypeFilter.setOnClickListener(
+                v -> {
+                    int checkedItem =
+                            selectedActivityType == null
+                                    ? 0
+                                    : java.util.Arrays.asList(types).indexOf(selectedActivityType);
 
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Filter by Activity Type")
-                    .setSingleChoiceItems(
-                            types,
-                            checkedItem,
-                            (dialog, which) -> {
-                                selectedActivityType = which == 0 ? null : types[which];
-                                String selected = types[which];
-                                btnTypeFilter.setText(selected);
-                                applyFiltersAndSearch();
-                                dialog.dismiss();
-                            })
-                    .show();
-        });
+                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle("Filter by Activity Type")
+                            .setSingleChoiceItems(
+                                    types,
+                                    checkedItem,
+                                    (dialog, which) -> {
+                                        selectedActivityType = which == 0 ? null : types[which];
+                                        String selected = types[which];
+                                        btnTypeFilter.setText(selected);
+                                        applyFiltersAndSearch();
+                                        dialog.dismiss();
+                                    })
+                            .show();
+                });
     }
 }

@@ -223,6 +223,40 @@ public class ActivityRepository {
                         });
     }
 
+    /** Get recommended activities based on user interests */
+    public void getRecommendedActivities(ApiCallback<List<Activity>> callback) {
+        activityApiService
+                .getRecommendedActivities()
+                .enqueue(
+                        new Callback<List<Activity>>() {
+                            @Override
+                            public void onResponse(
+                                    Call<List<Activity>> call, Response<List<Activity>> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    Log.d(
+                                            TAG,
+                                            "Fetched "
+                                                    + response.body().size()
+                                                    + " recommended activities");
+                                    callback.onSuccess(response.body());
+                                } else {
+                                    String errorMsg =
+                                            "Failed to fetch recommended activities: "
+                                                    + response.code();
+                                    Log.e(TAG, errorMsg);
+                                    callback.onError(errorMsg);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<Activity>> call, Throwable t) {
+                                String errorMsg = "Network error: " + t.getMessage();
+                                Log.e(TAG, errorMsg, t);
+                                callback.onError(errorMsg);
+                            }
+                        });
+    }
+
     /** Get activities by location */
     public void getActivitiesByLocation(String location, ApiCallback<List<Activity>> callback) {
         activityApiService

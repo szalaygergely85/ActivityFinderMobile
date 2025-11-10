@@ -30,12 +30,10 @@ import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceTypes;
-import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
@@ -182,20 +180,23 @@ public class EditProfileFragment extends Fragment {
         actvCity.setAdapter(adapter);
         actvCity.setThreshold(2); // Minimum 2 characters before showing suggestions
 
-        actvCity.setOnItemClickListener((parent, view, position, id) -> {
-            // Set flag to prevent text change listener from triggering
-            isSelectingItem = true;
-            String selectedCity = adapter.getItem(position);
-            String placeId = adapter.getPlaceId(position);
-            if (placeId != null) {
-                fetchPlaceDetails(placeId, selectedCity);
-            }
-            // Dismiss dropdown and clear flag after a short delay
-            actvCity.postDelayed(() -> {
-                actvCity.dismissDropDown();
-                isSelectingItem = false;
-            }, 100);
-        });
+        actvCity.setOnItemClickListener(
+                (parent, view, position, id) -> {
+                    // Set flag to prevent text change listener from triggering
+                    isSelectingItem = true;
+                    String selectedCity = adapter.getItem(position);
+                    String placeId = adapter.getPlaceId(position);
+                    if (placeId != null) {
+                        fetchPlaceDetails(placeId, selectedCity);
+                    }
+                    // Dismiss dropdown and clear flag after a short delay
+                    actvCity.postDelayed(
+                            () -> {
+                                actvCity.dismissDropDown();
+                                isSelectingItem = false;
+                            },
+                            100);
+                });
 
         actvCity.addTextChangedListener(
                 new android.text.TextWatcher() {
@@ -218,10 +219,11 @@ public class EditProfileFragment extends Fragment {
                         // Only search if at least 2 characters
                         if (s.length() >= 2) {
                             // Create new runnable for debounced API call
-                            debounceRunnable = () -> {
-                                adapter.fetchPredictions(s.toString());
-                                actvCity.post(() -> actvCity.showDropDown());
-                            };
+                            debounceRunnable =
+                                    () -> {
+                                        adapter.fetchPredictions(s.toString());
+                                        actvCity.post(() -> actvCity.showDropDown());
+                                    };
                             // Wait 800ms before making the API call
                             debounceHandler.postDelayed(debounceRunnable, 800);
                         } else {
@@ -236,28 +238,41 @@ public class EditProfileFragment extends Fragment {
 
     private void fetchPlaceDetails(String placeId, String cityName) {
         List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
-        FetchPlaceRequest request = FetchPlaceRequest.builder(placeId, placeFields)
-                .setSessionToken(sessionToken)
-                .build();
+        FetchPlaceRequest request =
+                FetchPlaceRequest.builder(placeId, placeFields)
+                        .setSessionToken(sessionToken)
+                        .build();
 
-        placesClient.fetchPlace(request)
-                .addOnSuccessListener((FetchPlaceResponse response) -> {
-                    Place place = response.getPlace();
-                    if (place.getLatLng() != null) {
-                        selectedPlaceId = placeId;
-                        selectedLatitude = place.getLatLng().latitude;
-                        selectedLongitude = place.getLatLng().longitude;
-                        android.util.Log.d("EditProfile", "Selected city: " + cityName +
-                                " at (" + selectedLatitude + ", " + selectedLongitude + ")");
-                    }
-                    // Regenerate token after successful place details fetch
-                    sessionToken = AutocompleteSessionToken.newInstance();
-                })
-                .addOnFailureListener((exception) -> {
-                    android.util.Log.e("EditProfile", "Error fetching place details: " + exception.getMessage());
-                    // Still regenerate token
-                    sessionToken = AutocompleteSessionToken.newInstance();
-                });
+        placesClient
+                .fetchPlace(request)
+                .addOnSuccessListener(
+                        (FetchPlaceResponse response) -> {
+                            Place place = response.getPlace();
+                            if (place.getLatLng() != null) {
+                                selectedPlaceId = placeId;
+                                selectedLatitude = place.getLatLng().latitude;
+                                selectedLongitude = place.getLatLng().longitude;
+                                android.util.Log.d(
+                                        "EditProfile",
+                                        "Selected city: "
+                                                + cityName
+                                                + " at ("
+                                                + selectedLatitude
+                                                + ", "
+                                                + selectedLongitude
+                                                + ")");
+                            }
+                            // Regenerate token after successful place details fetch
+                            sessionToken = AutocompleteSessionToken.newInstance();
+                        })
+                .addOnFailureListener(
+                        (exception) -> {
+                            android.util.Log.e(
+                                    "EditProfile",
+                                    "Error fetching place details: " + exception.getMessage());
+                            // Still regenerate token
+                            sessionToken = AutocompleteSessionToken.newInstance();
+                        });
     }
 
     private class PlacesAutocompleteAdapter extends android.widget.ArrayAdapter<String> {
@@ -306,13 +321,15 @@ public class EditProfileFragment extends Fragment {
                                     response.getAutocompletePredictions()
                                             .forEach(
                                                     prediction -> {
-                                                         String description =
-                                                                prediction.getFullText(null)
+                                                        String description =
+                                                                prediction
+                                                                        .getFullText(null)
                                                                         .toString();
                                                         if (description != null
                                                                 && !description.isEmpty()) {
                                                             filteredCities.add(description);
-                                                            filteredPlaceIds.add(prediction.getPlaceId());
+                                                            filteredPlaceIds.add(
+                                                                    prediction.getPlaceId());
                                                         }
                                                     });
                                     notifyDataSetChanged();
@@ -321,8 +338,7 @@ public class EditProfileFragment extends Fragment {
                                 exception -> {
                                     android.util.Log.e(
                                             "PlacesAdapter",
-                                            "Error fetching predictions: "
-                                                    + exception.getMessage(),
+                                            "Error fetching predictions: " + exception.getMessage(),
                                             exception);
                                     notifyDataSetChanged();
                                 });
@@ -471,7 +487,8 @@ public class EditProfileFragment extends Fragment {
         updateProfileData(userId, fullName, bio, city, null);
     }
 
-    private void updateProfileData(Long userId, String fullName, String bio, String city, String imageUrl) {
+    private void updateProfileData(
+            Long userId, String fullName, String bio, String city, String imageUrl) {
         // Create update request
         UserProfileUpdateRequest request = new UserProfileUpdateRequest();
         request.setFullName(fullName);
@@ -686,7 +703,8 @@ public class EditProfileFragment extends Fragment {
                                         Toast.LENGTH_SHORT)
                                 .show();
 
-                        // If this is the first photo, reload photos and automatically set it as profile picture
+                        // If this is the first photo, reload photos and automatically set it as
+                        // profile picture
                         if (isFirstPhoto) {
                             loadUserPhotosAndSetFirst();
                         } else {
@@ -739,10 +757,7 @@ public class EditProfileFragment extends Fragment {
                         ImageLoader.loadCircularProfileImage(
                                 requireContext(), updatedPhoto.getPhotoUrl(), ivProfilePicture);
 
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Profile picture set!",
-                                        Toast.LENGTH_SHORT)
+                        Toast.makeText(requireContext(), "Profile picture set!", Toast.LENGTH_SHORT)
                                 .show();
 
                         // Reload photos to get updated data
@@ -765,7 +780,8 @@ public class EditProfileFragment extends Fragment {
 
     private void deletePhoto(UserPhoto photo) {
         // Check if the photo being deleted is the profile picture
-        boolean wasProfilePicture = photo.getIsProfilePicture() != null && photo.getIsProfilePicture();
+        boolean wasProfilePicture =
+                photo.getIsProfilePicture() != null && photo.getIsProfilePicture();
 
         setLoading(true);
         userPhotoRepository.deletePhoto(
@@ -781,7 +797,8 @@ public class EditProfileFragment extends Fragment {
                                         Toast.LENGTH_SHORT)
                                 .show();
 
-                        // If the deleted photo was the profile picture and there are remaining photos,
+                        // If the deleted photo was the profile picture and there are remaining
+                        // photos,
                         // automatically set the first one as the new profile picture
                         if (wasProfilePicture && !userPhotos.isEmpty()) {
                             setPhotoAsProfile(userPhotos.get(0).getId());

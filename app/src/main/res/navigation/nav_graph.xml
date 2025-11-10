@@ -210,4 +210,25 @@
             app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
+    <!-- Recommended Activities Fragment -->
+    <fragment
+        android:id="@+id/nav_recommended"
+        android:name="com.gege.activityfindermobile.ui.recommended.RecommendedActivitiesFragment"
+        android:label="@string/nav_recommended">
+        <action
+            android:id="@+id/action_nav_recommended_to_activityDetail"
+            app:destination="@id/activityDetailFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_nav_recommended_to_createActivity"
+            app:destination="@id/createActivityFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
 </navigation>

@@ -2,6 +2,8 @@ package com.gege.activityfindermobile.data.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Activity {
     @SerializedName("id")
     private Long id;
@@ -79,6 +81,9 @@ public class Activity {
 
     @SerializedName("distance")
     private Double distance; // Distance from user in kilometers
+
+    @SerializedName("interests")
+    private List<String> interests; // Activity interests/tags
 
     // Constructor
     public Activity() {}
@@ -363,5 +368,13 @@ public class Activity {
 
     public void setDistance(Double distance) {
         this.distance = distance;
+    }
+
+    public List<String> getInterests() {
+        return interests;
+    }
+
+    public void setInterests(List<String> interests) {
+        this.interests = interests;
     }
 }

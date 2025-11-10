@@ -72,4 +72,7 @@ public interface ActivityApiService {
 
     @DELETE("api/activities/{id}")
     Call<Void> cancelActivity(@Path("id") Long id, @Header("User-Id") Long userId);
+
+    @GET("api/activities/recommended")
+    Call<List<Activity>> getRecommendedActivities();
 }
