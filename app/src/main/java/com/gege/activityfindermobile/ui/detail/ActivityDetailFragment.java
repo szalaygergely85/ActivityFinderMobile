@@ -100,25 +100,63 @@ public class ActivityDetailFragment extends Fragment {
 
         // Only check participation status if user is not the creator
         Long currentUserId = prefsManager.getUserId();
+
+        String dateStr = getArguments() != null ? getArguments().getString("date", "") : "";
+        boolean isExpired = isActivityExpired(dateStr);
+        setVisibilities(isExpired, currentUserId);
+    }
+
+    private void setVisibilities(boolean isExpired, Long currentUserId){
+
         if (currentUserId != null && currentUserId.equals(creatorId)) {
-            // Creator - ensure edit/delete buttons are visible
-            Log.d(
-                    "ActivityDetailFragment",
-                    "User is creator in onResume - showing edit/delete buttons");
+            Log.d("ActivityDetailFragment", "User IS the creator - showing edit/delete buttons");
+            // Show edit and delete buttons for creator
             btnEditActivity.setVisibility(View.VISIBLE);
-            btnDeleteActivity.setVisibility(View.VISIBLE);
+            btnEditActivity.setEnabled(true);
+
+            // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
+            btnExpressInterest.setEnabled(false);
+            // Hide report button for creator
             btnReportActivity.setVisibility(View.GONE);
-            btnManage.setVisibility(View.GONE);
+            // Hide manage button (we have edit/delete now)
+            btnManage.setVisibility(View.VISIBLE);
+            btnManage.setEnabled(true);
+
+            if (isExpired) {
+                btnDeleteActivity.setVisibility(View.GONE);
+                btnDeleteActivity.setEnabled(false);
+            } else {
+                btnDeleteActivity.setVisibility(View.VISIBLE);
+                btnDeleteActivity.setEnabled(true);
+            }
+            // Creator can see and send messages
             showCommentSection();
         } else {
             Log.d(
                     "ActivityDetailFragment",
-                    "User is not creator in onResume - checking participation status");
+                    "User is NOT the creator - checking participation status");
+            // Hide edit and delete buttons for non-creators
             btnEditActivity.setVisibility(View.GONE);
+            btnEditActivity.setEnabled(false);
             btnDeleteActivity.setVisibility(View.GONE);
+            btnDeleteActivity.setEnabled(false);
+            // Show report button for non-creators
+            btnReportActivity.setVisibility(View.VISIBLE);
+            // Hide manage button for non-creators
+            btnManage.setVisibility(View.GONE);
+            btnManage.setEnabled(false);
+            // Hide comment section by default, will show if user is joined
+            hideCommentSection();
+            // Hide join button if activity is expired
+            if (isExpired) {
+                btnExpressInterest.setVisibility(View.GONE);
+            }
+            // Check if user has already joined this activity
             checkUserParticipationStatus();
         }
+
+
     }
 
     @Override
@@ -206,46 +244,8 @@ public class ActivityDetailFragment extends Fragment {
         Log.d(
                 "ActivityDetailFragment",
                 "Creator check - currentUserId: " + currentUserId + ", creatorId: " + creatorId);
-        if (currentUserId != null && currentUserId.equals(creatorId)) {
-            Log.d("ActivityDetailFragment", "User IS the creator - showing edit/delete buttons");
-            // Show edit and delete buttons for creator
-            btnEditActivity.setVisibility(View.VISIBLE);
-            btnEditActivity.setEnabled(true);
-            btnDeleteActivity.setVisibility(View.VISIBLE);
-            btnDeleteActivity.setEnabled(true);
-            // Hide join button for creator
-            btnExpressInterest.setVisibility(View.GONE);
-            btnExpressInterest.setEnabled(false);
-            // Hide report button for creator
-            btnReportActivity.setVisibility(View.GONE);
-            // Hide manage button (we have edit/delete now)
-            btnManage.setVisibility(View.GONE);
-            btnManage.setEnabled(false);
-            // Creator can see and send messages
-            showCommentSection();
-        } else {
-            Log.d(
-                    "ActivityDetailFragment",
-                    "User is NOT the creator - checking participation status");
-            // Hide edit and delete buttons for non-creators
-            btnEditActivity.setVisibility(View.GONE);
-            btnEditActivity.setEnabled(false);
-            btnDeleteActivity.setVisibility(View.GONE);
-            btnDeleteActivity.setEnabled(false);
-            // Show report button for non-creators
-            btnReportActivity.setVisibility(View.VISIBLE);
-            // Hide manage button for non-creators
-            btnManage.setVisibility(View.GONE);
-            btnManage.setEnabled(false);
-            // Hide comment section by default, will show if user is joined
-            hideCommentSection();
-            // Hide join button if activity is expired
-            if (isExpired) {
-                btnExpressInterest.setVisibility(View.GONE);
-            }
-            // Check if user has already joined this activity
-            checkUserParticipationStatus();
-        }
+
+        setVisibilities(isExpired, currentUserId);
 
         // Load participants from API
         loadParticipants();

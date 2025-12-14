@@ -178,6 +178,9 @@ public class MyActivitiesFragment extends Fragment {
         bundle.putString(
                 "creatorName",
                 activity.getCreatorName() != null ? activity.getCreatorName() : "You");
+        bundle.putLong(
+                "creatorId",
+                activity.getCreatorId() != null ? activity.getCreatorId() : 0L);
         bundle.putDouble(
                 "creatorRating",
                 activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
