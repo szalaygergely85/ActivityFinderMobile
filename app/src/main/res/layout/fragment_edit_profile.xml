@@ -295,7 +295,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Location Card -->
+            <!-- Location Card
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -347,7 +347,7 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
+            -->
             <!-- Save Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save"
