@@ -76,8 +76,9 @@ public class EditProfileFragment extends Fragment {
     private RecyclerView rvMyPhotos;
     private TextView tvPhotoCount;
     private View layoutPhotosEmpty;
-    private MaterialAutoCompleteTextView actvCity;
-    private TextInputLayout tilCity;
+
+    //private MaterialAutoCompleteTextView actvCity;
+   // private TextInputLayout tilCity;
 
     private User currentUser;
     private List<String> selectedInterests = new ArrayList<>();
@@ -131,7 +132,7 @@ public class EditProfileFragment extends Fragment {
         initViews(view);
         setupToolbar(view);
         initPlacesClient();
-        setupCityAutocomplete();
+        //setupCityAutocomplete();
         loadCurrentProfile();
     }
 
@@ -163,9 +164,10 @@ public class EditProfileFragment extends Fragment {
         rvMyPhotos = view.findViewById(R.id.rv_my_photos);
         tvPhotoCount = view.findViewById(R.id.tv_photo_count);
         layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
+        /*
         actvCity = view.findViewById(R.id.actv_city);
         tilCity = view.findViewById(R.id.til_city);
-
+*/
         btnSave.setOnClickListener(v -> saveProfile());
         btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
     }
@@ -175,6 +177,7 @@ public class EditProfileFragment extends Fragment {
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
     }
 
+    /*
     private void setupCityAutocomplete() {
         PlacesAutocompleteAdapter adapter = new PlacesAutocompleteAdapter(requireContext());
         actvCity.setAdapter(adapter);
@@ -235,6 +238,7 @@ public class EditProfileFragment extends Fragment {
                     public void afterTextChanged(android.text.Editable s) {}
                 });
     }
+
 
     private void fetchPlaceDetails(String placeId, String cityName) {
         List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
@@ -362,7 +366,7 @@ public class EditProfileFragment extends Fragment {
             return null;
         }
     }
-
+*/
     private void loadCurrentProfile() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
@@ -408,7 +412,7 @@ public class EditProfileFragment extends Fragment {
 
         // Set city and coordinates
         if (user.getCity() != null && !user.getCity().isEmpty()) {
-            actvCity.setText(user.getCity());
+            // actvCity.setText(user.getCity());
             // Store existing place data if available
             selectedPlaceId = user.getPlaceId();
             selectedLatitude = user.getLatitude();
@@ -467,7 +471,7 @@ public class EditProfileFragment extends Fragment {
         String fullName =
                 etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
         String bio = etBio.getText() != null ? etBio.getText().toString().trim() : "";
-        String city = actvCity.getText() != null ? actvCity.getText().toString().trim() : "";
+        //String city = actvCity.getText() != null ? actvCity.getText().toString().trim() : "";
 
         if (fullName.isEmpty()) {
             etFullName.setError("Name cannot be empty");
@@ -484,16 +488,15 @@ public class EditProfileFragment extends Fragment {
         setLoading(true);
 
         // Profile image is now managed through the photos upload
-        updateProfileData(userId, fullName, bio, city, null);
+        updateProfileData(userId, fullName, bio, null);
     }
 
     private void updateProfileData(
-            Long userId, String fullName, String bio, String city, String imageUrl) {
+            Long userId, String fullName, String bio, String imageUrl) {
         // Create update request
         UserProfileUpdateRequest request = new UserProfileUpdateRequest();
         request.setFullName(fullName);
         request.setBio(bio.isEmpty() ? null : bio);
-        request.setCity(city.isEmpty() ? null : city);
         request.setPlaceId(selectedPlaceId);
         request.setLatitude(selectedLatitude);
         request.setLongitude(selectedLongitude);

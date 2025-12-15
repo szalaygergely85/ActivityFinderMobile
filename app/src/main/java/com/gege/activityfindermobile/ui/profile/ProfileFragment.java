@@ -49,7 +49,6 @@ public class ProfileFragment extends Fragment {
             tvBio,
             tvRatingValue,
             tvActivitiesCount,
-            tvUserLocation,
             tvPhotoCount;
     private Chip chipBadge;
     private ChipGroup chipGroupInterests;
@@ -93,7 +92,8 @@ public class ProfileFragment extends Fragment {
         tvBio = view.findViewById(R.id.tv_bio);
         tvRatingValue = view.findViewById(R.id.tv_rating_value);
         tvActivitiesCount = view.findViewById(R.id.tv_activities_count);
-        tvUserLocation = view.findViewById(R.id.tv_user_location);
+        // Location Feature
+        // tvUserLocation = view.findViewById(R.id.tv_user_location);
         chipBadge = view.findViewById(R.id.chip_badge);
         chipGroupInterests = view.findViewById(R.id.chip_group_interests);
         btnLogout = view.findViewById(R.id.btn_logout);
@@ -210,7 +210,7 @@ public class ProfileFragment extends Fragment {
                 requireContext(), user.getProfileImageUrl(), ivProfileAvatar);
 
         // Display user location
-        displayUserLocation();
+        // displayUserLocation();
 
         // Set photos
         List<UserPhoto> photos = user.getPhotos();
@@ -223,11 +223,13 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    /*
     private void displayUserLocation() {
         if (currentUser != null
                 && currentUser.getCity() != null
                 && !currentUser.getCity().isEmpty()) {
             String locationText = "📍 " + currentUser.getCity();
+
             tvUserLocation.setText(locationText);
             tvUserLocation.setVisibility(View.VISIBLE);
         } else {
@@ -235,7 +237,7 @@ public class ProfileFragment extends Fragment {
             tvUserLocation.setVisibility(View.VISIBLE);
         }
     }
-
+*/
     private void showLogoutDialog() {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Logout")
