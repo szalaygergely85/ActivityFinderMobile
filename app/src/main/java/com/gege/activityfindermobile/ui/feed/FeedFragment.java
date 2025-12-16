@@ -1,5 +1,7 @@
 package com.gege.activityfindermobile.ui.feed;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,8 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -23,6 +31,7 @@ import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.LocationManager;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -59,7 +68,7 @@ public class FeedFragment extends Fragment {
     private boolean useNearbyFilter = false;
     private double userLatitude = 0.0;
     private double userLongitude = 0.0;
-    private float nearbyRadiusKm = 10f;
+    private float nearbyRadiusKm = 250f;
 
     // Search and filter variables
     private String currentSearchQuery = "";
@@ -68,6 +77,40 @@ public class FeedFragment extends Fragment {
     private List<Activity> allActivities = new ArrayList<>();
     private Integer maxDistanceKm = null; // null = no distance filter
     private String selectedActivityType = null; // null = all types
+
+    // Permission launcher
+    private ActivityResultLauncher<String[]> locationPermissionLauncher;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Setup permission launcher
+        locationPermissionLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.RequestMultiplePermissions(),
+                        result -> {
+                            Boolean fineLocationGranted =
+                                    result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+                            Boolean coarseLocationGranted =
+                                    result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                            if ((fineLocationGranted != null && fineLocationGranted)
+                                    || (coarseLocationGranted != null && coarseLocationGranted)) {
+                                // Permission granted, acquire location
+                                acquireUserLocation();
+                            } else {
+                                // Permission denied
+                                Toast.makeText(
+                                                requireContext(),
+                                                "Location permission is required to find nearby activities",
+                                                Toast.LENGTH_LONG)
+                                        .show();
+                                setLoading(false);
+                                showEmptyView();
+                            }
+                        });
+    }
 
     @Nullable
     @Override
@@ -82,6 +125,30 @@ public class FeedFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            AppBarLayout appBar = v.findViewById(R.id.app_bar);
+            if (appBar != null) {
+                appBar.setPadding(
+                        0,
+                        systemBars.top,
+                        0,
+                        0
+                );
+            }
+
+            // Adjust FAB for bottom insets
+            ExtendedFloatingActionButton fabCreate = v.findViewById(R.id.fab_create);
+            if (fabCreate != null) {
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) fabCreate.getLayoutParams();
+                params.bottomMargin = systemBars.bottom + (int) getResources().getDimension(R.dimen.margin_medium);
+                fabCreate.setLayoutParams(params);
+            }
+
+            return insets;
+        });
+
         rvActivities = view.findViewById(R.id.rv_activities);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         progressLoading = view.findViewById(R.id.progress_loading);
@@ -95,6 +162,9 @@ public class FeedFragment extends Fragment {
 
         // Initialize location manager
         locationManager = new LocationManager(requireContext());
+
+        // Check and request location permission
+        checkAndRequestLocationPermission();
 
         // Setup toggle filters button
         btnToggleFilters.setOnClickListener(
@@ -149,44 +219,13 @@ public class FeedFragment extends Fragment {
     private void loadActivitiesFromApi() {
         setLoading(true);
 
-        // If nearby filter is enabled, use location-based search
-        if (useNearbyFilter && userLatitude != 0.0 && userLongitude != 0.0) {
+        // Check if location is available
+        if (userLatitude != 0.0 && userLongitude != 0.0) {
             loadNearbyActivities();
         } else {
-            // Load all upcoming activities
-            activityRepository.getUpcomingActivities(
-                    new ApiCallback<List<Activity>>() {
-                        @Override
-                        public void onSuccess(List<Activity> activities) {
-                            setLoading(false);
-                            swipeRefresh.setRefreshing(false);
-
-                            if (activities != null && !activities.isEmpty()) {
-                                allActivities = activities;
-                                applyFiltersAndSearch();
-                                showContent();
-                            } else {
-                                allActivities = new ArrayList<>();
-                                adapter.setActivities(new ArrayList<>());
-                                showEmptyView();
-                            }
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            setLoading(false);
-                            swipeRefresh.setRefreshing(false);
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Failed to load activities: " + errorMessage,
-                                            Toast.LENGTH_SHORT)
-                                    .show();
-
-                            // Show empty view on error
-                            adapter.setActivities(new ArrayList<>());
-                            showEmptyView();
-                        }
-                    });
+            // Wait for location to be acquired
+            setLoading(false);
+            swipeRefresh.setRefreshing(false);
         }
     }
 
@@ -274,7 +313,53 @@ public class FeedFragment extends Fragment {
                                         Toast.LENGTH_LONG)
                                 .show();
                         // Fall back to all activities
+                        // loadActivitiesFromApi();
+                    }
+                });
+    }
+
+    /** Check and request location permission */
+    private void checkAndRequestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(
+                                requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+            // Permission already granted
+            acquireUserLocation();
+        } else {
+            // Request permission
+            locationPermissionLauncher.launch(
+                    new String[] {
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    });
+        }
+    }
+
+    /** Acquire user location on startup */
+    private void acquireUserLocation() {
+        locationManager.getCurrentLocation(
+                requireContext(),
+                new LocationManager.LocationCallback() {
+                    @Override
+                    public void onLocationReceived(double latitude, double longitude) {
+                        userLatitude = latitude;
+                        userLongitude = longitude;
+                        // Load activities once location is acquired
                         loadActivitiesFromApi();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Unable to get location: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                        setLoading(false);
+                        showEmptyView();
                     }
                 });
     }

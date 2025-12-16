@@ -13,7 +13,7 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.Task;
 
 public class LocationManager {
-    private static final float DEFAULT_RADIUS_KM = 10f;
+    private static final float DEFAULT_RADIUS_KM = 250f;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int EARTH_RADIUS_KM = 6371;
 
