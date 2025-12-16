@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -22,6 +25,7 @@ import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -72,6 +76,22 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            AppBarLayout appBar = v.findViewById(R.id.app_bar);
+            if (appBar != null) {
+                appBar.setPadding(
+                        0,
+                        systemBars.top,
+                        0,
+                        0
+                );
+            }
+
+            return insets;
+        });
 
         initViews(view);
         setupListeners();

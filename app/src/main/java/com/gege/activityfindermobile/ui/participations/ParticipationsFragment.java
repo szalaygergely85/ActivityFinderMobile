@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -23,6 +26,7 @@ import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
 
@@ -65,6 +69,22 @@ public class ParticipationsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            AppBarLayout appBar = v.findViewById(R.id.app_bar);
+            if (appBar != null) {
+                appBar.setPadding(
+                        0,
+                        systemBars.top,
+                        0,
+                        0
+                );
+            }
+
+            return insets;
+        });
 
         rvParticipations = view.findViewById(R.id.rv_participations);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);

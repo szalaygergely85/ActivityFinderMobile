@@ -11,6 +11,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -31,6 +34,7 @@ import com.gege.activityfindermobile.ui.adapters.ParticipantAdapter;
 import com.gege.activityfindermobile.ui.review.ReviewDialog;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -163,8 +167,42 @@ public class ActivityDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
+
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            AppBarLayout appBar = v.findViewById(R.id.app_bar);
+            if (appBar != null) {
+                appBar.setPadding(
+                        0,
+                        systemBars.top,
+                        0,
+                        0
+                );
+            }
+
+            // Find the bottom action buttons container (it's a LinearLayout)
+            View expressInterestBtn = v.findViewById(R.id.btn_express_interest);
+            if (expressInterestBtn != null && expressInterestBtn.getParent() instanceof View) {
+                View bottomButtons = (View) expressInterestBtn.getParent();
+                bottomButtons.setPadding(
+                        bottomButtons.getPaddingLeft(),
+                        bottomButtons.getPaddingTop(),
+                        bottomButtons.getPaddingRight(),
+                        systemBars.bottom + bottomButtons.getPaddingBottom()
+                );
+            }
+
+            return insets;
+        });
+
+            MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
+            toolbar.setNavigationOnClickListener(v ->
+                    requireActivity()
+                            .getOnBackPressedDispatcher()
+                            .onBackPressed()
+            );
+
 
         btnExpressInterest = view.findViewById(R.id.btn_express_interest);
         btnReportActivity = view.findViewById(R.id.btn_report_activity);
