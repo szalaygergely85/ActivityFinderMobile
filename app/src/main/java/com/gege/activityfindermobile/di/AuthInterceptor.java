@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.gege.activityfindermobile.data.api.UserApiService;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
+import com.gege.activityfindermobile.data.dto.RefreshTokenRequest;
 import com.gege.activityfindermobile.ui.main.MainActivity;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 
@@ -78,9 +79,10 @@ public class AuthInterceptor implements Interceptor {
                         // Get the UserApiService lazily to avoid circular dependency
                         UserApiService userApiService = userApiServiceLazy.get();
 
-                        // Call refresh token endpoint
+                        // Call refresh token endpoint with request body
+                        RefreshTokenRequest refreshRequest = new RefreshTokenRequest(refreshToken);
                         retrofit2.Response<LoginResponse> refreshResponse =
-                                userApiService.refreshToken("Bearer " + refreshToken).execute();
+                                userApiService.refreshToken(refreshRequest).execute();
 
                         if (refreshResponse.isSuccessful() && refreshResponse.body() != null) {
                             LoginResponse loginResponse = refreshResponse.body();
