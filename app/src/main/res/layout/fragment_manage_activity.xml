@@ -27,10 +27,10 @@
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/primary_dark"
+            android:background="@color/primary"
             app:tabIndicatorColor="@color/accent_light"
-            app:tabSelectedTextColor="@color/primary"
-            app:tabTextColor="@color/text_secondary"
+            app:tabSelectedTextColor="@color/text_secondary"
+            app:tabTextColor="@color/white"
             app:tabMode="fixed">
 
             <com.google.android.material.tabs.TabItem

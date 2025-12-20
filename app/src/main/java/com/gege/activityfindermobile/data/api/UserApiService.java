@@ -2,6 +2,7 @@ package com.gege.activityfindermobile.data.api;
 
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
+import com.gege.activityfindermobile.data.dto.RefreshTokenRequest;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.model.ImageUploadResponse;
@@ -39,7 +40,7 @@ public interface UserApiService {
     Call<LoginResponse> loginUserAuth(@Body LoginRequest request);
 
     @POST("api/users/refresh-token")
-    Call<LoginResponse> refreshToken(@Header("Authorization") String refreshToken);
+    Call<LoginResponse> refreshToken(@Body RefreshTokenRequest request);
 
     @GET("api/users/{id}")
     Call<User> getUserById(@Path("id") Long id);

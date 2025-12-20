@@ -23,10 +23,19 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
     private List<Participant> participants = new ArrayList<>();
     private OnParticipantClickListener listener;
     private OnReviewClickListener reviewListener;
+    private OnRemoveClickListener removeListener;
     private Long activityId;
     private String activityDate;
     private Long currentUserId;
     private Long creatorId;
+
+    private final Owner owner;
+
+    public enum Owner {
+        ParticipantsTabFragment,
+        ActivityDetailFragment
+    }
+
 
     public interface OnParticipantClickListener {
         void onParticipantClick(Participant participant);
@@ -36,14 +45,22 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         void onReviewClick(Participant participant, Long activityId);
     }
 
-    public ParticipantAdapter() {
-        this(null);
+    public interface OnRemoveClickListener {
+        void onRemoveClick(Participant participant);
     }
 
-    public ParticipantAdapter(OnParticipantClickListener listener) {
+    public ParticipantAdapter(Owner participantsTabFragment) {
+        this(null, participantsTabFragment);
+    }
+
+    public ParticipantAdapter(OnParticipantClickListener listener, Owner owner) {
         this.listener = listener;
+        this.owner = owner;
     }
 
+    public boolean isParticpantTabFragment(){
+        return owner == Owner.ParticipantsTabFragment;
+    }
     public void setParticipants(List<Participant> participants) {
         this.participants = participants;
         notifyDataSetChanged();
@@ -51,6 +68,10 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
 
     public void setReviewListener(OnReviewClickListener reviewListener) {
         this.reviewListener = reviewListener;
+    }
+
+    public void setRemoveListener(OnRemoveClickListener removeListener) {
+        this.removeListener = removeListener;
     }
 
     public void setActivityId(Long activityId) {
@@ -69,6 +90,16 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         this.creatorId = creatorId;
     }
 
+    public void removeParticipant(Long participantId) {
+        for (int i = 0; i < participants.size(); i++) {
+            if (participants.get(i).getId().equals(participantId)) {
+                participants.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -85,10 +116,12 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                 participant,
                 listener,
                 reviewListener,
+                removeListener,
                 activityId,
                 activityDate,
                 currentUserId,
-                creatorId);
+                creatorId,
+                owner);
     }
 
     @Override
@@ -101,6 +134,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         TextView tvUserName, tvUserRating;
         Chip chipStatus;
         MaterialButton btnReview;
+        MaterialButton btnRemove;
         View cardParticipant;
 
         ViewHolder(@NonNull View itemView) {
@@ -111,16 +145,19 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             tvUserRating = itemView.findViewById(R.id.tv_user_rating);
             chipStatus = itemView.findViewById(R.id.chip_status);
             btnReview = itemView.findViewById(R.id.btn_review);
+            btnRemove = itemView.findViewById(R.id.btn_remove);
         }
 
         void bind(
                 Participant participant,
                 OnParticipantClickListener listener,
                 OnReviewClickListener reviewListener,
+                OnRemoveClickListener removeListener,
                 Long activityId,
                 String activityDate,
                 Long currentUserId,
-                Long creatorId) {
+                Long creatorId,
+                Owner owner) {
             // Load user avatar
             ImageLoader.loadCircularProfileImage(
                     itemView.getContext(), participant.getUserAvatar(), ivUserAvatar);
@@ -182,8 +219,9 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             boolean isActivityExpired = isActivityExpired(activityDate);
             boolean isCurrentUser =
                     currentUserId != null && currentUserId.equals(participant.getUserId());
+            boolean isParticipantTabFragment = owner == ParticipantAdapter.Owner.ParticipantsTabFragment;
 
-            if (("JOINED".equals(status) || "ACCEPTED".equals(status))
+            if (("JOINED".equals(status) || "ACCEPTED".equals(status)) && isParticipantTabFragment
                     && isActivityExpired
                     && !isCurrentUser) {
                 btnReview.setVisibility(View.VISIBLE);
@@ -209,6 +247,21 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                         });
             } else {
                 btnReview.setVisibility(View.GONE);
+            }
+
+            // Show remove button only for activity creator and not for themselves
+            boolean isCreator = creatorId != null && currentUserId != null && creatorId.equals(currentUserId);
+            boolean isCurrentUserParticipant = currentUserId != null && currentUserId.equals(participant.getUserId());
+
+            if (isCreator && !isCurrentUserParticipant && ("ACCEPTED".equals(status) || "JOINED".equals(status)) && isParticipantTabFragment) {
+                btnRemove.setVisibility(View.VISIBLE);
+                btnRemove.setOnClickListener(v -> {
+                    if (removeListener != null) {
+                        removeListener.onRemoveClick(participant);
+                    }
+                });
+            } else {
+                btnRemove.setVisibility(View.GONE);
             }
 
             // Set click listener

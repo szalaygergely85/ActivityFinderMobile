@@ -39,6 +39,8 @@ public class ManageActivityFragment extends Fragment {
     @Inject SharedPreferencesManager prefsManager;
 
     private Long activityId;
+    private Long creatorId;
+
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
 
@@ -74,6 +76,8 @@ public class ManageActivityFragment extends Fragment {
         // Get activity ID from arguments
         if (getArguments() != null) {
             activityId = getArguments().getLong("activityId", 0L);
+            creatorId = getArguments().getLong("creatorId", 0L);
+
         }
 
         MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
@@ -84,7 +88,7 @@ public class ManageActivityFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tab_layout);
 
         // Setup ViewPager
-        ManagePagerAdapter adapter = new ManagePagerAdapter(this, activityId);
+        ManagePagerAdapter adapter = new ManagePagerAdapter(this, activityId, creatorId);
         viewPager.setAdapter(adapter);
 
         // Link TabLayout and ViewPager
@@ -156,10 +160,12 @@ public class ManageActivityFragment extends Fragment {
 
     private static class ManagePagerAdapter extends FragmentStateAdapter {
         private final Long activityId;
+        private final Long creatorId;
 
-        public ManagePagerAdapter(@NonNull Fragment fragment, Long activityId) {
+        public ManagePagerAdapter(@NonNull Fragment fragment, Long activityId,Long creatorId) {
             super(fragment);
             this.activityId = activityId;
+            this.creatorId = creatorId;
         }
 
         @NonNull
@@ -168,7 +174,7 @@ public class ManageActivityFragment extends Fragment {
             if (position == 0) {
                 return RequestsTabFragment.newInstance(activityId);
             } else {
-                return ParticipantsTabFragment.newInstance(activityId);
+                return ParticipantsTabFragment.newInstance(activityId, creatorId);
             }
         }
 

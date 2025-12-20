@@ -226,7 +226,7 @@ public class ActivityDetailFragment extends Fragment {
                 new ParticipantAdapter(
                         participant -> {
                             navigateToUserProfile(participant.getUserId());
-                        });
+                        }, ParticipantAdapter.Owner.ActivityDetailFragment);
         participantAdapter.setReviewListener(
                 (participant, activityIdParam) -> {
                     showReviewDialog(participant, activityIdParam);
@@ -747,6 +747,9 @@ public class ActivityDetailFragment extends Fragment {
     private void navigateToManageActivity() {
         Bundle bundle = new Bundle();
         bundle.putLong("activityId", activityId);
+        bundle.putLong("currentUserId", prefsManager.getUserId());
+        bundle.putLong("creatorId", creatorId);
+
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(
