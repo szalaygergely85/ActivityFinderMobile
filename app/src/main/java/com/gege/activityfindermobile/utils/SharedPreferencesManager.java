@@ -100,4 +100,14 @@ public class SharedPreferencesManager {
     public void clearAll() {
         sharedPreferences.edit().clear().apply();
     }
+
+    /** Save a boolean value */
+    public void saveBoolean(String key, boolean value) {
+        sharedPreferences.edit().putBoolean(key, value).apply();
+    }
+
+    /** Get a boolean value with a default */
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return sharedPreferences.getBoolean(key, defaultValue);
+    }
 }

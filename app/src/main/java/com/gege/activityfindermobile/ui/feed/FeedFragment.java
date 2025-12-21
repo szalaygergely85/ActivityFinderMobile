@@ -1,13 +1,17 @@
 package com.gege.activityfindermobile.ui.feed;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -58,6 +62,10 @@ public class FeedFragment extends Fragment {
     private SwipeRefreshLayout swipeRefresh;
     private CircularProgressIndicator progressLoading;
     private View layoutEmpty;
+    private TextView tvEmptyIcon;
+    private TextView tvEmptyTitle;
+    private TextView tvEmptyMessage;
+    private com.google.android.material.button.MaterialButton btnOpenSettings;
     private com.google.android.material.textfield.TextInputEditText etSearch;
     private ChipGroup chipGroupFilters;
     private android.os.Handler debounceHandler = new android.os.Handler();
@@ -101,13 +109,8 @@ public class FeedFragment extends Fragment {
                                 acquireUserLocation();
                             } else {
                                 // Permission denied
-                                Toast.makeText(
-                                                requireContext(),
-                                                "Location permission is required to find nearby activities",
-                                                Toast.LENGTH_LONG)
-                                        .show();
                                 setLoading(false);
-                                showEmptyView();
+                                showEmptyViewForLocationPermission();
                             }
                         });
     }
@@ -153,6 +156,10 @@ public class FeedFragment extends Fragment {
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         progressLoading = view.findViewById(R.id.progress_loading);
         layoutEmpty = view.findViewById(R.id.layout_empty);
+        tvEmptyIcon = view.findViewById(R.id.tv_empty_icon);
+        tvEmptyTitle = view.findViewById(R.id.tv_empty_title);
+        tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
+        btnOpenSettings = view.findViewById(R.id.btn_open_settings);
         etSearch = view.findViewById(R.id.et_search);
         chipGroupFilters = view.findViewById(R.id.chip_group_filters);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
@@ -162,6 +169,9 @@ public class FeedFragment extends Fragment {
 
         // Initialize location manager
         locationManager = new LocationManager(requireContext());
+
+        // Setup open settings button
+        btnOpenSettings.setOnClickListener(v -> openAppSettings());
 
         // Check and request location permission
         checkAndRequestLocationPermission();
@@ -359,7 +369,7 @@ public class FeedFragment extends Fragment {
                                         Toast.LENGTH_LONG)
                                 .show();
                         setLoading(false);
-                        showEmptyView();
+                        showEmptyViewForLocationPermission();
                     }
                 });
     }
@@ -389,7 +399,34 @@ public class FeedFragment extends Fragment {
         if (rvActivities != null && layoutEmpty != null) {
             rvActivities.setVisibility(View.GONE);
             layoutEmpty.setVisibility(View.VISIBLE);
+
+            // Reset to default empty state
+            tvEmptyIcon.setText("🔍");
+            tvEmptyTitle.setText(R.string.no_activities);
+            tvEmptyMessage.setVisibility(View.GONE);
+            btnOpenSettings.setVisibility(View.GONE);
         }
+    }
+
+    private void showEmptyViewForLocationPermission() {
+        if (rvActivities != null && layoutEmpty != null) {
+            rvActivities.setVisibility(View.GONE);
+            layoutEmpty.setVisibility(View.VISIBLE);
+
+            // Show location permission required state
+            tvEmptyIcon.setText("📍");
+            tvEmptyTitle.setText(R.string.location_permission_required_title);
+            tvEmptyMessage.setText(R.string.location_permission_required_message);
+            tvEmptyMessage.setVisibility(View.VISIBLE);
+            btnOpenSettings.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void openAppSettings() {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
     }
 
     private void navigateToDetail(Activity activity) {

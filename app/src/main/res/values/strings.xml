@@ -29,6 +29,11 @@
     <string name="spots_available">%1$d/%2$d spots available</string>
     <string name="interested_count">%d interested</string>
 
+    <!-- Location Permission -->
+    <string name="location_permission_required_title">Location Permission Required</string>
+    <string name="location_permission_required_message">To find activities near you, please enable location permission in your phone settings.</string>
+    <string name="open_settings">Open Settings</string>
+
     <!-- Profile -->
     <string name="profile">Profile</string>
     <string name="edit_profile">Edit Profile</string>

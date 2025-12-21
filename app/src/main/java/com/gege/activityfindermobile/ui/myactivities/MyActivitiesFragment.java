@@ -26,10 +26,12 @@ import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -50,6 +52,8 @@ public class MyActivitiesFragment extends Fragment {
     private CircularProgressIndicator progressLoading;
     private View layoutEmpty;
     private MaterialButton btnCreateFirst;
+    private MaterialSwitch switchShowExpired;
+    private List<Activity> allActivities = new ArrayList<>();
 
     @Nullable
     @Override
@@ -85,6 +89,7 @@ public class MyActivitiesFragment extends Fragment {
         progressLoading = view.findViewById(R.id.progress_loading);
         layoutEmpty = view.findViewById(R.id.layout_empty);
         btnCreateFirst = view.findViewById(R.id.btn_create_first);
+        switchShowExpired = view.findViewById(R.id.switch_show_expired);
 
         // Setup adapter with ParticipantRepository for accurate counts and current user ID
         Long currentUserId = prefsManager.getUserId();
@@ -96,6 +101,17 @@ public class MyActivitiesFragment extends Fragment {
                         participantRepository,
                         currentUserId);
         rvActivities.setAdapter(adapter);
+
+        // Restore switch state from preferences
+        boolean showExpired = prefsManager.getBoolean("show_expired_activities", true);
+        switchShowExpired.setChecked(showExpired);
+
+        // Switch listener
+        switchShowExpired.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
+                    prefsManager.saveBoolean("show_expired_activities", isChecked);
+                    filterActivities();
+                });
 
         // Swipe refresh
         swipeRefresh.setOnRefreshListener(
@@ -132,10 +148,11 @@ public class MyActivitiesFragment extends Fragment {
                         setLoading(false);
                         swipeRefresh.setRefreshing(false);
 
-                        if (activities != null && !activities.isEmpty()) {
-                            adapter.setActivities(activities);
-                            showContent();
+                        if (activities != null) {
+                            allActivities = activities;
+                            filterActivities();
                         } else {
+                            allActivities = new ArrayList<>();
                             adapter.setActivities(new ArrayList<>());
                             showEmptyView();
                         }
@@ -152,6 +169,7 @@ public class MyActivitiesFragment extends Fragment {
                                 .show();
 
                         // Show empty view on error
+                        allActivities = new ArrayList<>();
                         adapter.setActivities(new ArrayList<>());
                         showEmptyView();
                     }
@@ -175,6 +193,45 @@ public class MyActivitiesFragment extends Fragment {
         if (rvActivities != null && layoutEmpty != null) {
             rvActivities.setVisibility(View.GONE);
             layoutEmpty.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void filterActivities() {
+        if (allActivities == null || allActivities.isEmpty()) {
+            adapter.setActivities(new ArrayList<>());
+            showEmptyView();
+            return;
+        }
+
+        boolean showExpired = switchShowExpired.isChecked();
+        List<Activity> filteredActivities;
+
+        if (showExpired) {
+            // Show all activities
+            filteredActivities = allActivities;
+        } else {
+            // Filter out expired activities
+            // Check for various possible status values: "EXPIRED", "CANCELLED", "COMPLETED"
+            filteredActivities = new ArrayList<>();
+            for (Activity activity : allActivities) {
+                String status = activity.getStatus();
+                // Keep activity if status is null or is "ACTIVE" or "OPEN"
+                if (status == null ||
+                    status.equalsIgnoreCase("ACTIVE") ||
+                    status.equalsIgnoreCase("OPEN") ||
+                    status.equalsIgnoreCase("SCHEDULED")) {
+                    filteredActivities.add(activity);
+                }
+                // Skip if status is EXPIRED, CANCELLED, COMPLETED, CLOSED
+            }
+        }
+
+        if (filteredActivities.isEmpty()) {
+            adapter.setActivities(new ArrayList<>());
+            showEmptyView();
+        } else {
+            adapter.setActivities(filteredActivities);
+            showContent();
         }
     }
 
