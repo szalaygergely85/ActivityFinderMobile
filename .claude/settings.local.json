@@ -7,7 +7,8 @@
       "Bash(./gradlew:*)",
       "Bash(bash gradlew clean assembleDebug:*)",
       "Bash(bash gradlew assembleDebug:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

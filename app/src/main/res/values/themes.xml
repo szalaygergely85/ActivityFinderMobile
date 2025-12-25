@@ -21,6 +21,9 @@
         <!-- Text appearance -->
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Disable elevation overlay to prevent color changes on scroll -->
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="Theme.ActivityFinderMobile" parent="Base.Theme.ActivityFinderMobile" />

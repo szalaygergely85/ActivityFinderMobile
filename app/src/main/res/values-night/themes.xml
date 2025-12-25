@@ -3,5 +3,8 @@
     <style name="Base.Theme.ActivityFinderMobile" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+        <!-- Disable elevation overlay to prevent color changes on scroll -->
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 </resources>

@@ -23,8 +23,10 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
+import com.gege.activityfindermobile.data.model.ActivityGalleryAccess;
 import com.gege.activityfindermobile.data.model.ActivityMessage;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.data.repository.ActivityPhotoRepository;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.MessageRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
@@ -60,15 +62,22 @@ public class ActivityDetailFragment extends Fragment {
 
     @Inject MessageRepository messageRepository;
 
+    @Inject ActivityPhotoRepository activityPhotoRepository;
+
     @Inject SharedPreferencesManager prefsManager;
 
     private Long activityId;
     private Long creatorId;
+    private String activityTitle;
     private MaterialButton btnExpressInterest;
     private MaterialButton btnReportActivity;
     private MaterialButton btnManage;
     private MaterialButton btnEditActivity;
     private MaterialButton btnDeleteActivity;
+    private MaterialButton btnViewGallery;
+    private View cardGallery;
+    private TextView tvPhotoCountBadge;
+    private TextView tvGalleryStatus;
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvParticipants;
     private TextView tvNoParticipants;
@@ -209,6 +218,10 @@ public class ActivityDetailFragment extends Fragment {
         btnManage = view.findViewById(R.id.btn_manage);
         btnEditActivity = view.findViewById(R.id.btn_edit_activity);
         btnDeleteActivity = view.findViewById(R.id.btn_delete_activity);
+        btnViewGallery = view.findViewById(R.id.btn_view_gallery);
+        cardGallery = view.findViewById(R.id.card_gallery);
+        tvPhotoCountBadge = view.findViewById(R.id.tv_photo_count_badge);
+        tvGalleryStatus = view.findViewById(R.id.tv_gallery_status);
         progressLoading = view.findViewById(R.id.progress_loading);
         rvParticipants = view.findViewById(R.id.rv_participants);
         tvNoParticipants = view.findViewById(R.id.tv_no_participants);
@@ -249,6 +262,7 @@ public class ActivityDetailFragment extends Fragment {
         if (args != null) {
             activityId = args.getLong("activityId", 0L);
             creatorId = args.getLong("creatorId", 0L);
+            activityTitle = args.getString("title", "Event");
             activityDateStr = args.getString("date", "");
             displayActivityData(view, args);
         }
@@ -274,8 +288,14 @@ public class ActivityDetailFragment extends Fragment {
         // Setup delete button
         btnDeleteActivity.setOnClickListener(v -> confirmDeleteActivity());
 
+        // Setup gallery button
+        btnViewGallery.setOnClickListener(v -> navigateToGallery());
+
         // Setup creator card click
         cardCreator.setOnClickListener(v -> navigateToUserProfile(creatorId));
+
+        // Check gallery access
+        checkGalleryAccess();
 
         // Check if current user is the creator
         Long currentUserId = prefsManager.getUserId();
@@ -1150,5 +1170,56 @@ public class ActivityDetailFragment extends Fragment {
                         // Silently fail - keep showing the old data
                     }
                 });
+    }
+
+    /**
+     * Check if current user has access to the activity gallery
+     * Gallery is only accessible to participants who joined, after the event has ended
+     */
+    private void checkGalleryAccess() {
+        activityPhotoRepository.checkGalleryAccess(activityId, new ApiCallback<ActivityGalleryAccess>() {
+            @Override
+            public void onSuccess(ActivityGalleryAccess access) {
+                if (access.getHasAccess()) {
+                    // User has access - show gallery card
+                    cardGallery.setVisibility(View.VISIBLE);
+
+                    // Update photo count badge
+                    int photoCount = access.getPhotoCount() != null ? access.getPhotoCount() : 0;
+                    String countText = photoCount == 1 ? "1 photo" : photoCount + " photos";
+                    tvPhotoCountBadge.setText(countText);
+
+                    // Update status message
+                    if (access.getCanUpload()) {
+                        tvGalleryStatus.setText("Share memories from this event");
+                    } else {
+                        tvGalleryStatus.setText("Gallery is full (" + access.getMaxPhotos() + " photos max)");
+                    }
+                } else {
+                    // User doesn't have access - hide gallery card
+                    cardGallery.setVisibility(View.GONE);
+                    Log.d("ActivityDetailFragment", "Gallery access denied: " + access.getReason());
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                // Hide gallery card on error
+                cardGallery.setVisibility(View.GONE);
+                Log.e("ActivityDetailFragment", "Failed to check gallery access: " + errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Navigate to the activity gallery
+     */
+    private void navigateToGallery() {
+        Bundle bundle = new Bundle();
+        bundle.putLong("activityId", activityId);
+        bundle.putString("activityTitle", activityTitle);
+
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.action_activityDetailFragment_to_activityGalleryFragment, bundle);
     }
 }
