@@ -17,9 +17,12 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
+import com.gege.activityfindermobile.data.model.ActivityPhoto;
 import com.gege.activityfindermobile.data.model.UserPhoto;
+import com.gege.activityfindermobile.data.repository.ActivityPhotoRepository;
 import com.gege.activityfindermobile.data.repository.UserPhotoRepository;
 import com.gege.activityfindermobile.ui.adapters.FullScreenPhotoAdapter;
+import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -33,6 +36,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class PhotoViewerFragment extends Fragment {
 
     @Inject UserPhotoRepository userPhotoRepository;
+    @Inject ActivityPhotoRepository activityPhotoRepository;
+    @Inject SharedPreferencesManager prefsManager;
 
     private ViewPager2 viewPagerPhotos;
     private ImageButton btnClose;
@@ -42,22 +47,33 @@ public class PhotoViewerFragment extends Fragment {
     private LinearLayout layoutEditButtons;
     private FullScreenPhotoAdapter photoAdapter;
 
-    private List<UserPhoto> photos = new ArrayList<>();
+    private List<UserPhoto> userPhotos = new ArrayList<>();
+    private List<ActivityPhoto> activityPhotos = new ArrayList<>();
     private int currentPosition = 0;
     private boolean isEditMode = false;
+    private boolean isActivityGallery = false;
+    private Long activityId;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            photos = (ArrayList<UserPhoto>) getArguments().getSerializable("photos");
-            currentPosition = getArguments().getInt("position", 0);
-            isEditMode = getArguments().getBoolean("editMode", false);
+            // Check if this is for activity gallery
+            activityId = getArguments().getLong("activityId", 0L);
+            if (activityId > 0) {
+                isActivityGallery = true;
+                currentPosition = getArguments().getInt("position", 0);
+            } else {
+                // User profile photos
+                userPhotos = (ArrayList<UserPhoto>) getArguments().getSerializable("photos");
+                currentPosition = getArguments().getInt("position", 0);
+                isEditMode = getArguments().getBoolean("editMode", false);
+            }
         }
 
-        if (photos == null) {
-            photos = new ArrayList<>();
+        if (userPhotos == null) {
+            userPhotos = new ArrayList<>();
         }
     }
 
@@ -75,7 +91,12 @@ public class PhotoViewerFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
-        setupViewPager();
+
+        if (isActivityGallery) {
+            loadActivityPhotos();
+        } else {
+            setupViewPager();
+        }
     }
 
     private void initViews(View view) {
@@ -88,16 +109,74 @@ public class PhotoViewerFragment extends Fragment {
 
         btnClose.setOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Only show edit buttons in edit mode
-        if (isEditMode) {
+        // Show edit buttons based on mode
+        if (isActivityGallery) {
+            // For activity gallery, only show delete button if user owns the photo
+            layoutEditButtons.setVisibility(View.VISIBLE);
+            btnSetAsProfile.setVisibility(View.GONE);
+            btnDeletePhoto.setOnClickListener(v -> deleteCurrentActivityPhoto());
+        } else if (isEditMode) {
+            // For user photos in edit mode
             layoutEditButtons.setVisibility(View.VISIBLE);
             btnSetAsProfile.setOnClickListener(v -> setCurrentPhotoAsProfile());
             btnDeletePhoto.setOnClickListener(v -> deleteCurrentPhoto());
+        } else {
+            layoutEditButtons.setVisibility(View.GONE);
         }
     }
 
+    private void loadActivityPhotos() {
+        activityPhotoRepository.getActivityPhotos(activityId, new ApiCallback<List<ActivityPhoto>>() {
+            @Override
+            public void onSuccess(List<ActivityPhoto> photos) {
+                activityPhotos = photos;
+                if (activityPhotos != null && !activityPhotos.isEmpty()) {
+                    setupActivityPhotoViewPager();
+                } else {
+                    Toast.makeText(requireContext(), "No photos found", Toast.LENGTH_SHORT).show();
+                    requireActivity().onBackPressed();
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(requireContext(), "Failed to load photos: " + errorMessage, Toast.LENGTH_SHORT).show();
+                requireActivity().onBackPressed();
+            }
+        });
+    }
+
+    private void setupActivityPhotoViewPager() {
+        // Convert ActivityPhoto list to UserPhoto list for the adapter
+        List<UserPhoto> convertedPhotos = new ArrayList<>();
+        for (ActivityPhoto activityPhoto : activityPhotos) {
+            UserPhoto userPhoto = new UserPhoto();
+            userPhoto.setId(activityPhoto.getId());
+            userPhoto.setPhotoUrl(activityPhoto.getPhotoUrl());
+            convertedPhotos.add(userPhoto);
+        }
+
+        photoAdapter = new FullScreenPhotoAdapter(convertedPhotos);
+        viewPagerPhotos.setAdapter(photoAdapter);
+        viewPagerPhotos.setCurrentItem(currentPosition, false);
+
+        // Update counter when page changes
+        viewPagerPhotos.registerOnPageChangeCallback(
+                new ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        currentPosition = position;
+                        updatePhotoCounter();
+                        updateDeleteButtonVisibility();
+                    }
+                });
+
+        updatePhotoCounter();
+        updateDeleteButtonVisibility();
+    }
+
     private void setupViewPager() {
-        photoAdapter = new FullScreenPhotoAdapter(photos);
+        photoAdapter = new FullScreenPhotoAdapter(userPhotos);
         viewPagerPhotos.setAdapter(photoAdapter);
         viewPagerPhotos.setCurrentItem(currentPosition, false);
 
@@ -115,15 +194,33 @@ public class PhotoViewerFragment extends Fragment {
     }
 
     private void updatePhotoCounter() {
-        tvPhotoCounter.setText(String.format("%d/%d", currentPosition + 1, photos.size()));
+        int totalPhotos = isActivityGallery ? activityPhotos.size() : userPhotos.size();
+        tvPhotoCounter.setText(String.format("%d/%d", currentPosition + 1, totalPhotos));
     }
 
-    private void setCurrentPhotoAsProfile() {
-        if (currentPosition < 0 || currentPosition >= photos.size()) {
+    private void updateDeleteButtonVisibility() {
+        if (!isActivityGallery || activityPhotos.isEmpty() || currentPosition >= activityPhotos.size()) {
+            btnDeletePhoto.setVisibility(View.GONE);
             return;
         }
 
-        UserPhoto currentPhoto = photos.get(currentPosition);
+        ActivityPhoto currentPhoto = activityPhotos.get(currentPosition);
+        Long currentUserId = prefsManager.getUserId();
+
+        // Only show delete button if user owns this photo
+        if (currentUserId != null && currentUserId.equals(currentPhoto.getUserId())) {
+            btnDeletePhoto.setVisibility(View.VISIBLE);
+        } else {
+            btnDeletePhoto.setVisibility(View.GONE);
+        }
+    }
+
+    private void setCurrentPhotoAsProfile() {
+        if (currentPosition < 0 || currentPosition >= userPhotos.size()) {
+            return;
+        }
+
+        UserPhoto currentPhoto = userPhotos.get(currentPosition);
         userPhotoRepository.setPhotoAsProfile(
                 currentPhoto.getId(),
                 new ApiCallback<UserPhoto>() {
@@ -136,9 +233,9 @@ public class PhotoViewerFragment extends Fragment {
                                 .show();
                         currentPhoto.setIsProfilePicture(true);
                         // Update other photos to not be profile picture
-                        for (int i = 0; i < photos.size(); i++) {
+                        for (int i = 0; i < userPhotos.size(); i++) {
                             if (i != currentPosition) {
-                                photos.get(i).setIsProfilePicture(false);
+                                userPhotos.get(i).setIsProfilePicture(false);
                             }
                         }
                         photoAdapter.notifyDataSetChanged();
@@ -156,11 +253,11 @@ public class PhotoViewerFragment extends Fragment {
     }
 
     private void deleteCurrentPhoto() {
-        if (currentPosition < 0 || currentPosition >= photos.size()) {
+        if (currentPosition < 0 || currentPosition >= userPhotos.size()) {
             return;
         }
 
-        UserPhoto currentPhoto = photos.get(currentPosition);
+        UserPhoto currentPhoto = userPhotos.get(currentPosition);
         userPhotoRepository.deletePhoto(
                 currentPhoto.getId(),
                 new ApiCallbackVoid() {
@@ -171,15 +268,15 @@ public class PhotoViewerFragment extends Fragment {
                                         "Photo deleted successfully!",
                                         Toast.LENGTH_SHORT)
                                 .show();
-                        photos.remove(currentPosition);
+                        userPhotos.remove(currentPosition);
 
-                        if (photos.isEmpty()) {
+                        if (userPhotos.isEmpty()) {
                             // No more photos, go back
                             requireActivity().onBackPressed();
                         } else {
                             // Adjust current position if necessary
-                            if (currentPosition >= photos.size()) {
-                                currentPosition = photos.size() - 1;
+                            if (currentPosition >= userPhotos.size()) {
+                                currentPosition = userPhotos.size() - 1;
                             }
                             photoAdapter.notifyDataSetChanged();
                             updatePhotoCounter();
@@ -193,6 +290,57 @@ public class PhotoViewerFragment extends Fragment {
                                         requireContext(),
                                         "Failed to delete: " + errorMessage,
                                         Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
+    }
+
+    private void deleteCurrentActivityPhoto() {
+        if (currentPosition < 0 || currentPosition >= activityPhotos.size()) {
+            return;
+        }
+
+        ActivityPhoto currentPhoto = activityPhotos.get(currentPosition);
+        Long currentUserId = prefsManager.getUserId();
+
+        // Verify user owns this photo
+        if (currentUserId == null || !currentUserId.equals(currentPhoto.getUserId())) {
+            Toast.makeText(requireContext(), "You can only delete your own photos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        activityPhotoRepository.deletePhoto(
+                activityId,
+                currentPhoto.getId(),
+                new ApiCallbackVoid() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Photo deleted successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        activityPhotos.remove(currentPosition);
+
+                        if (activityPhotos.isEmpty()) {
+                            // No more photos, go back
+                            requireActivity().onBackPressed();
+                        } else {
+                            // Adjust current position if necessary
+                            if (currentPosition >= activityPhotos.size()) {
+                                currentPosition = activityPhotos.size() - 1;
+                            }
+                            // Reload to update adapter
+                            setupActivityPhotoViewPager();
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to delete: " + errorMessage,
+                                        Toast.LENGTH_LONG)
                                 .show();
                     }
                 });
