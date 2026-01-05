@@ -2,6 +2,7 @@ package com.gege.activityfindermobile.di;
 
 import com.gege.activityfindermobile.data.api.ActivityApiService;
 import com.gege.activityfindermobile.data.api.ActivityPhotoApiService;
+import com.gege.activityfindermobile.data.api.CategoryApiService;
 import com.gege.activityfindermobile.data.api.MessageApiService;
 import com.gege.activityfindermobile.data.api.NotificationApiService;
 import com.gege.activityfindermobile.data.api.ParticipantApiService;
@@ -128,5 +129,11 @@ public class NetworkModule {
     @Singleton
     public ActivityPhotoApiService provideActivityPhotoApiService(Retrofit retrofit) {
         return retrofit.create(ActivityPhotoApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public CategoryApiService provideCategoryApiService(Retrofit retrofit) {
+        return retrofit.create(CategoryApiService.class);
     }
 }

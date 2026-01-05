@@ -46,6 +46,8 @@ public class ParticipationsFragment extends Fragment {
 
     @Inject SharedPreferencesManager prefsManager;
 
+    @Inject com.gege.activityfindermobile.utils.CategoryManager categoryManager;
+
     private RecyclerView rvParticipations;
     private ActivityAdapter adapter;
     private SwipeRefreshLayout swipeRefresh;
@@ -104,7 +106,8 @@ public class ParticipationsFragment extends Fragment {
                             navigateToDetail(activity);
                         },
                         participantRepository,
-                        currentUserId);
+                        currentUserId,
+                        categoryManager);
         rvParticipations.setAdapter(adapter);
 
         // Tab selection listener
