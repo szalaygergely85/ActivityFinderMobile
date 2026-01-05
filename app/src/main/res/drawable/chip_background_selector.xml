@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Checked state - Blue primary color -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#0D7FF2"/>
+            <corners android:radius="20dp"/>
+        </shape>
+    </item>
+
+    <!-- Unchecked state - Dark gray -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#1E293B"/>
+            <corners android:radius="20dp"/>
+        </shape>
+    </item>
+</selector>

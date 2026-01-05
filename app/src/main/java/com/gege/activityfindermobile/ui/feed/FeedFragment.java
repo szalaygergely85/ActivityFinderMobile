@@ -57,6 +57,8 @@ public class FeedFragment extends Fragment {
 
     @Inject com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager;
 
+    @Inject com.gege.activityfindermobile.utils.CategoryManager categoryManager;
+
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
     private SwipeRefreshLayout swipeRefresh;
@@ -67,6 +69,9 @@ public class FeedFragment extends Fragment {
     private TextView tvEmptyMessage;
     private com.google.android.material.button.MaterialButton btnOpenSettings;
     private com.google.android.material.textfield.TextInputEditText etSearch;
+    private com.google.android.material.card.MaterialCardView searchCard;
+    private com.google.android.material.button.MaterialButton btnSearch;
+    private com.google.android.material.button.MaterialButton btnFilter;
     private ChipGroup chipGroupFilters;
     private android.os.Handler debounceHandler = new android.os.Handler();
     private Runnable debounceRunnable;
@@ -141,14 +146,6 @@ public class FeedFragment extends Fragment {
                 );
             }
 
-            // Adjust FAB for bottom insets
-            ExtendedFloatingActionButton fabCreate = v.findViewById(R.id.fab_create);
-            if (fabCreate != null) {
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) fabCreate.getLayoutParams();
-                params.bottomMargin = systemBars.bottom + (int) getResources().getDimension(R.dimen.margin_medium);
-                fabCreate.setLayoutParams(params);
-            }
-
             return insets;
         });
 
@@ -161,11 +158,11 @@ public class FeedFragment extends Fragment {
         tvEmptyMessage = view.findViewById(R.id.tv_empty_message);
         btnOpenSettings = view.findViewById(R.id.btn_open_settings);
         etSearch = view.findViewById(R.id.et_search);
+        searchCard = view.findViewById(R.id.search_card);
+        btnSearch = view.findViewById(R.id.btn_search);
+        btnFilter = view.findViewById(R.id.btn_filter);
         chipGroupFilters = view.findViewById(R.id.chip_group_filters);
         ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
-        View filtersContainer = view.findViewById(R.id.filters_container);
-        com.google.android.material.button.MaterialButton btnToggleFilters =
-                view.findViewById(R.id.btn_toggle_filters);
 
         // Initialize location manager
         locationManager = new LocationManager(requireContext());
@@ -176,27 +173,40 @@ public class FeedFragment extends Fragment {
         // Check and request location permission
         checkAndRequestLocationPermission();
 
-        // Setup toggle filters button
-        btnToggleFilters.setOnClickListener(
+        // Setup search button to toggle search card
+        btnSearch.setOnClickListener(
                 v -> {
-                    if (filtersContainer.getVisibility() == View.GONE) {
-                        filtersContainer.setVisibility(View.VISIBLE);
+                    if (searchCard.getVisibility() == View.GONE) {
+                        searchCard.setVisibility(View.VISIBLE);
+                        etSearch.requestFocus();
+                        // Show keyboard
+                        android.view.inputmethod.InputMethodManager imm =
+                                (android.view.inputmethod.InputMethodManager)
+                                        requireContext()
+                                                .getSystemService(
+                                                        android.content.Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
                     } else {
-                        filtersContainer.setVisibility(View.GONE);
+                        searchCard.setVisibility(View.GONE);
+                        etSearch.clearFocus();
+                        // Hide keyboard
+                        android.view.inputmethod.InputMethodManager imm =
+                                (android.view.inputmethod.InputMethodManager)
+                                        requireContext()
+                                                .getSystemService(
+                                                        android.content.Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                     }
                 });
+
+        // Setup filter button to show general filter dialog
+        btnFilter.setOnClickListener(v -> showGeneralFilterDialog());
 
         // Setup search bar
         setupSearchBar();
 
         // Setup filter chips
         setupFilterChips();
-
-        // Setup distance filter button
-        setupDistanceFilter();
-
-        // Setup activity type filter button
-        setupActivityTypeFilter();
 
         // Setup adapter with ParticipantRepository for accurate counts and current user ID
         Long currentUserId = prefsManager.getUserId();
@@ -206,7 +216,8 @@ public class FeedFragment extends Fragment {
                             navigateToDetail(activity);
                         },
                         participantRepository,
-                        currentUserId);
+                        currentUserId,
+                        categoryManager);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh
@@ -390,8 +401,12 @@ public class FeedFragment extends Fragment {
 
     private void showContent() {
         if (rvActivities != null && layoutEmpty != null) {
+            swipeRefresh.setVisibility(View.VISIBLE);
             rvActivities.setVisibility(View.VISIBLE);
             layoutEmpty.setVisibility(View.GONE);
+            android.util.Log.d("FeedFragment", "showContent() called - RV visibility: " + rvActivities.getVisibility() +
+                    ", RV child count: " + rvActivities.getChildCount() +
+                    ", Adapter item count: " + (adapter != null ? adapter.getItemCount() : "null adapter"));
         }
     }
 
@@ -518,12 +533,24 @@ public class FeedFragment extends Fragment {
                         currentCategoryFilter = "Sports";
                         showTrendingOnly = false;
                         disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_music) {
+                        currentCategoryFilter = "Music";
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_art) {
+                        currentCategoryFilter = "Art";
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
                     } else if (checkedId == R.id.chip_social) {
                         currentCategoryFilter = "Social";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_outdoor) {
                         currentCategoryFilter = "Outdoor";
+                        showTrendingOnly = false;
+                        disableNearbyFilter();
+                    } else if (checkedId == R.id.chip_food) {
+                        currentCategoryFilter = "Food";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_nearby) {
@@ -620,6 +647,7 @@ public class FeedFragment extends Fragment {
 
         // Update adapter
         adapter.setActivities(filtered);
+        android.util.Log.d("FeedFragment", "applyFiltersAndSearch: filtered size = " + filtered.size());
 
         if (filtered.isEmpty()) {
             showEmptyView();
@@ -628,74 +656,117 @@ public class FeedFragment extends Fragment {
         }
     }
 
-    private void setupDistanceFilter() {
-        com.google.android.material.button.MaterialButton btnDistanceFilter =
-                getView().findViewById(R.id.btn_distance_filter);
+    private void showGeneralFilterDialog() {
+        View dialogView =
+                getLayoutInflater().inflate(R.layout.dialog_general_filter, null);
 
-        btnDistanceFilter.setOnClickListener(
-                v -> {
-                    String[] distances = {
-                        "All Distances", "5 km", "10 km", "25 km", "50 km", "100 km"
-                    };
-                    Integer[] distanceValues = {null, 5, 10, 25, 50, 100};
+        // Get dialog views
+        ChipGroup chipGroupDistance = dialogView.findViewById(R.id.chip_group_distance);
+        ChipGroup chipGroupType = dialogView.findViewById(R.id.chip_group_type);
 
-                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                            .setTitle("Filter by Distance")
-                            .setSingleChoiceItems(
-                                    distances,
-                                    maxDistanceKm == null
-                                            ? 0
-                                            : java.util.Arrays.asList(distanceValues)
-                                                    .indexOf(maxDistanceKm),
-                                    (dialog, which) -> {
-                                        maxDistanceKm = distanceValues[which];
-                                        String selected = distances[which];
-                                        btnDistanceFilter.setText(selected);
-                                        applyFiltersAndSearch();
-                                        dialog.dismiss();
-                                    })
-                            .show();
-                });
-    }
+        // Set current selections
+        if (maxDistanceKm == null) {
+            chipGroupDistance.check(R.id.chip_distance_all);
+        } else if (maxDistanceKm == 5) {
+            chipGroupDistance.check(R.id.chip_distance_5);
+        } else if (maxDistanceKm == 10) {
+            chipGroupDistance.check(R.id.chip_distance_10);
+        } else if (maxDistanceKm == 25) {
+            chipGroupDistance.check(R.id.chip_distance_25);
+        } else if (maxDistanceKm == 50) {
+            chipGroupDistance.check(R.id.chip_distance_50);
+        } else if (maxDistanceKm == 100) {
+            chipGroupDistance.check(R.id.chip_distance_100);
+        }
 
-    private void setupActivityTypeFilter() {
-        com.google.android.material.button.MaterialButton btnTypeFilter =
-                getView().findViewById(R.id.btn_type_filter);
+        if (selectedActivityType == null) {
+            chipGroupType.check(R.id.chip_type_all);
+        } else {
+            switch (selectedActivityType) {
+                case "Sports":
+                    chipGroupType.check(R.id.chip_type_sports);
+                    break;
+                case "Social":
+                    chipGroupType.check(R.id.chip_type_social);
+                    break;
+                case "Outdoor":
+                    chipGroupType.check(R.id.chip_type_outdoor);
+                    break;
+                case "Food":
+                    chipGroupType.check(R.id.chip_type_food);
+                    break;
+                case "Travel":
+                    chipGroupType.check(R.id.chip_type_travel);
+                    break;
+                case "Photography":
+                    chipGroupType.check(R.id.chip_type_photography);
+                    break;
+                case "Music":
+                    chipGroupType.check(R.id.chip_type_music);
+                    break;
+                case "Art":
+                    chipGroupType.check(R.id.chip_type_art);
+                    break;
+                case "Gaming":
+                    chipGroupType.check(R.id.chip_type_gaming);
+                    break;
+                case "Fitness":
+                    chipGroupType.check(R.id.chip_type_fitness);
+                    break;
+            }
+        }
 
-        String[] types = {
-            "All Types",
-            "Sports",
-            "Social",
-            "Outdoor",
-            "Food",
-            "Travel",
-            "Photography",
-            "Music",
-            "Art",
-            "Gaming",
-            "Fitness"
-        };
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Filters")
+                .setView(dialogView)
+                .setPositiveButton(
+                        "Apply",
+                        (dialog, which) -> {
+                            // Get selected distance
+                            int selectedDistanceId = chipGroupDistance.getCheckedChipId();
+                            if (selectedDistanceId == R.id.chip_distance_all) {
+                                maxDistanceKm = null;
+                            } else if (selectedDistanceId == R.id.chip_distance_5) {
+                                maxDistanceKm = 5;
+                            } else if (selectedDistanceId == R.id.chip_distance_10) {
+                                maxDistanceKm = 10;
+                            } else if (selectedDistanceId == R.id.chip_distance_25) {
+                                maxDistanceKm = 25;
+                            } else if (selectedDistanceId == R.id.chip_distance_50) {
+                                maxDistanceKm = 50;
+                            } else if (selectedDistanceId == R.id.chip_distance_100) {
+                                maxDistanceKm = 100;
+                            }
 
-        btnTypeFilter.setOnClickListener(
-                v -> {
-                    int checkedItem =
-                            selectedActivityType == null
-                                    ? 0
-                                    : java.util.Arrays.asList(types).indexOf(selectedActivityType);
+                            // Get selected activity type
+                            int selectedTypeId = chipGroupType.getCheckedChipId();
+                            if (selectedTypeId == R.id.chip_type_all) {
+                                selectedActivityType = null;
+                            } else if (selectedTypeId == R.id.chip_type_sports) {
+                                selectedActivityType = "Sports";
+                            } else if (selectedTypeId == R.id.chip_type_social) {
+                                selectedActivityType = "Social";
+                            } else if (selectedTypeId == R.id.chip_type_outdoor) {
+                                selectedActivityType = "Outdoor";
+                            } else if (selectedTypeId == R.id.chip_type_food) {
+                                selectedActivityType = "Food";
+                            } else if (selectedTypeId == R.id.chip_type_travel) {
+                                selectedActivityType = "Travel";
+                            } else if (selectedTypeId == R.id.chip_type_photography) {
+                                selectedActivityType = "Photography";
+                            } else if (selectedTypeId == R.id.chip_type_music) {
+                                selectedActivityType = "Music";
+                            } else if (selectedTypeId == R.id.chip_type_art) {
+                                selectedActivityType = "Art";
+                            } else if (selectedTypeId == R.id.chip_type_gaming) {
+                                selectedActivityType = "Gaming";
+                            } else if (selectedTypeId == R.id.chip_type_fitness) {
+                                selectedActivityType = "Fitness";
+                            }
 
-                    new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                            .setTitle("Filter by Activity Type")
-                            .setSingleChoiceItems(
-                                    types,
-                                    checkedItem,
-                                    (dialog, which) -> {
-                                        selectedActivityType = which == 0 ? null : types[which];
-                                        String selected = types[which];
-                                        btnTypeFilter.setText(selected);
-                                        applyFiltersAndSearch();
-                                        dialog.dismiss();
-                                    })
-                            .show();
-                });
+                            applyFiltersAndSearch();
+                        })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

@@ -8,7 +8,9 @@
       "Bash(bash gradlew clean assembleDebug:*)",
       "Bash(bash gradlew assembleDebug:*)",
       "Bash(cat:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(adb logcat:*)",
+      "Bash(adb devices:*)"
     ],
     "deny": [],
     "ask": []

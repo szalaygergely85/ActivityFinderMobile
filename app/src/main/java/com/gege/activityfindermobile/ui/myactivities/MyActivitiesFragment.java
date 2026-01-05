@@ -46,6 +46,8 @@ public class MyActivitiesFragment extends Fragment {
 
     @Inject SharedPreferencesManager prefsManager;
 
+    @Inject com.gege.activityfindermobile.utils.CategoryManager categoryManager;
+
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
     private SwipeRefreshLayout swipeRefresh;
@@ -99,7 +101,8 @@ public class MyActivitiesFragment extends Fragment {
                             navigateToDetail(activity);
                         },
                         participantRepository,
-                        currentUserId);
+                        currentUserId,
+                        categoryManager);
         rvActivities.setAdapter(adapter);
 
         // Restore switch state from preferences

@@ -56,4 +56,22 @@
     <!-- Bottom Navigation Colors -->
     <color name="bottom_nav_unselected">#0c3b2e</color> <!-- Dark Green for unselected -->
     <color name="bottom_nav_selected">#ffba00</color> <!-- Golden Yellow for selected -->
+
+    <!-- New Modern Dark Theme Colors (matching HTML design) -->
+    <color name="primary_blue">#0084FF</color>
+    <color name="primary_blue_hover">#0072DB</color>
+    <color name="background_dark">#0B1116</color>
+    <color name="surface_dark">#161F29</color>
+    <color name="surface_lighter">#232D3A</color>
+    <color name="slate_750">#2C3540</color>
+    <color name="slate_800">#1E293B</color>
+    <color name="slate_700">#334155</color>
+    <color name="slate_600">#475569</color>
+    <color name="slate_500">#64748B</color>
+    <color name="slate_400">#94A3B8</color>
+    <color name="slate_300">#CBD5E1</color>
+    <color name="slate_100">#F1F5F9</color>
+    <color name="accent_orange">#F2994A</color>
+    <color name="accent_green">#27AE60</color>
+    <color name="accent_red">#EB5757</color>
 </resources>

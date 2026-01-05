@@ -4,255 +4,294 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/margin_medium"
-    android:layout_marginEnd="@dimen/margin_medium"
-    android:layout_marginTop="@dimen/margin_small"
-    android:layout_marginBottom="@dimen/margin_small"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="6dp"
-    app:strokeWidth="0dp"
-    app:cardBackgroundColor="@color/background_card">
+    android:layout_marginBottom="24dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/surface_dark"
+    app:strokeColor="@color/slate_800"
+    app:strokeWidth="1dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/padding_medium">
+        android:orientation="vertical">
 
-        <!-- Activity Title -->
-        <TextView
-            android:id="@+id/tv_activity_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/text_size_title"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:paddingEnd="8dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Image Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="224dp">
 
-        <!-- Trending Badge -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/badge_trending"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🔥 Trending"
-            android:textSize="@dimen/text_size_small"
-            android:visibility="gone"
-            app:chipBackgroundColor="@color/accent"
-            app:chipStrokeWidth="0dp"
-            app:chipMinHeight="24dp"
-            android:textColor="@color/white"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <!-- Activity Image -->
+            <ImageView
+                android:id="@+id/iv_activity_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@color/slate_700" />
 
-        <!-- Category Chip -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_category"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:chipBackgroundColor="@color/primary"
-            app:chipStrokeWidth="0dp"
-            app:chipMinHeight="32dp"
-            app:chipIconSize="18dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
-            app:layout_constraintStart_toStartOf="parent" />
+            <!-- Gradient Overlay -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/gradient_overlay" />
 
-        <!-- Status Chip (My Activity, Joined, Interested) -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
-            android:layout_marginStart="@dimen/margin_small"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:visibility="gone"
-            app:chipBackgroundColor="@color/primary"
-            app:chipStrokeWidth="0dp"
-            app:chipMinHeight="32dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
-            app:layout_constraintStart_toEndOf="@id/chip_category" />
-
-        <!-- Expired Badge -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_expired"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
-            android:layout_marginStart="@dimen/margin_small"
-            android:text="Expired"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:visibility="gone"
-            app:chipBackgroundColor="@color/error"
-            app:chipStrokeWidth="0dp"
-            app:chipMinHeight="32dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_activity_title"
-            app:layout_constraintStart_toEndOf="@id/chip_status" />
-
-        <!-- Description -->
-        <TextView
-            android:id="@+id/tv_description"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/text_secondary"
-            android:maxLines="2"
-            android:ellipsize="end"
-            app:layout_constraintTop_toBottomOf="@id/chip_category"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Date/Time Row -->
-        <LinearLayout
-            android:id="@+id/layout_datetime"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_medium"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/tv_description"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/tv_date"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:drawablePadding="4dp"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_secondary"
-                android:drawableStart="@drawable/ic_calendar"
-                android:drawableTint="@color/primary"
-                />
-
-            <TextView
-                android:id="@+id/tv_time"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:drawablePadding="4dp"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_secondary"
-                android:drawableStart="@drawable/ic_time"
-                android:drawableTint="@color/primary"
-                />
-
-        </LinearLayout>
-
-        <!-- Location & Distance Row -->
-        <LinearLayout
-            android:id="@+id/layout_location"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/layout_datetime"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/tv_location"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:drawablePadding="4dp"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_secondary"
-                android:drawableStart="@drawable/ic_location"
-                android:drawableTint="@color/primary"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/tv_distance"
+            <!-- Price Badge (Top Left) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_price_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/margin_small"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/primary"
+                android:layout_gravity="top|start"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#99000000"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp">
+
+                <TextView
+                    android:id="@+id/tv_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Free"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </FrameLayout>
+
+        <!-- Content Container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- First Row: Category (left) and Distance (right) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tv_activity_category"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="SPORTS"
+                    android:textSize="14sp"
+                    android:textColor="@color/accent_green"
+                    android:textStyle="bold"
+                    android:textAllCaps="true" />
+
+                <TextView
+                    android:id="@+id/tv_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2.5 km"
+                    android:textSize="14sp"
+                    android:textColor="@color/primary_blue"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/tv_activity_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sunset Hike at Griffith Park"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:visibility="gone" />
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="8dp"
+              />
+
+            <!-- Date and Time Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tv_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sat, Oct 23"
+                    android:textColor="@color/slate_400"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="•"
+                    android:textColor="@color/slate_400"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="22:14"
+                    android:textColor="@color/slate_400"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+
+            <!-- Location Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_location"
+                    app:tint="@color/slate_400" />
+
+                <TextView
+                    android:id="@+id/tv_location"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="Griffith Observatory"
+                    android:textSize="14sp"
+                    android:textColor="@color/slate_400"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/slate_800"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Bottom Row: Spots and Join Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Spots Info -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Avatar Stack (placeholder for programmatic avatars) -->
+                    <LinearLayout
+                        android:id="@+id/layout_avatar_stack"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="4dp"
+                        android:visibility="gone">
+                        <!-- Avatars will be added programmatically -->
+                    </LinearLayout>
+
+                    <!-- Spots Available -->
+                    <TextView
+                        android:id="@+id/tv_spots_display"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0/0 spots"
+                        android:textSize="14sp"
+                        android:textColor="@color/primary_blue"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- Join Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_join_activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="Join"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="@color/primary_blue"
+                    app:cornerRadius="12dp"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Divider -->
-        <View
-            android:id="@+id/divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_marginTop="@dimen/margin_medium"
-            android:background="@color/gray_light"
-            app:layout_constraintTop_toBottomOf="@id/layout_location"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+    </LinearLayout>
 
-        <!-- Bottom Row: Creator Info & Spots -->
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/iv_creator_avatar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="@dimen/margin_medium"
-            android:src="@drawable/ic_person"
-            app:civ_border_width="1dp"
-            app:civ_border_color="@color/gray_light"
-            app:layout_constraintTop_toBottomOf="@id/divider"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+    <!-- Hidden fields for compatibility -->
+    <TextView
+        android:id="@+id/tv_description"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/tv_creator_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_small"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="@id/iv_creator_avatar"
-            app:layout_constraintStart_toEndOf="@id/iv_creator_avatar"
-            app:layout_constraintEnd_toStartOf="@id/tv_spots_available" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip_category"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/tv_creator_rating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_small"
-            android:textSize="10sp"
-            android:textColor="@color/text_hint"
-            android:drawableStart="@drawable/ic_star"
-            android:drawablePadding="2dp"
-            android:drawableTint="@color/warning"
-            app:layout_constraintTop_toBottomOf="@id/tv_creator_name"
-            app:layout_constraintStart_toEndOf="@id/iv_creator_avatar"
-            app:layout_constraintBottom_toBottomOf="@id/iv_creator_avatar" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip_status"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
-        <!-- Spots Available -->
-        <TextView
-            android:id="@+id/tv_spots_available"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawablePadding="4dp"
-            android:textSize="@dimen/text_size_small"
-            android:textColor="@color/success"
-            android:textStyle="bold"
-            android:drawableStart="@drawable/ic_people"
-            android:drawableTint="@color/success"
-            app:layout_constraintTop_toTopOf="@id/iv_creator_avatar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/iv_creator_avatar" />
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip_expired"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <ImageView
+        android:id="@+id/iv_creator_avatar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_creator_name"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_creator_rating"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_spots_available"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
 </com.google.android.material.card.MaterialCardView>

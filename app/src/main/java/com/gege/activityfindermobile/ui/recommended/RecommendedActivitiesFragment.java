@@ -18,7 +18,9 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
+import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
+import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -32,6 +34,13 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class RecommendedActivitiesFragment extends Fragment {
 
     @Inject ActivityRepository activityRepository;
+
+    @Inject ParticipantRepository participantRepository;
+
+    @Inject SharedPreferencesManager prefsManager;
+
+    @Inject com.gege.activityfindermobile.utils.CategoryManager categoryManager;
+
     private ActivityAdapter activityAdapter;
     private RecyclerView recyclerViewActivities;
     private ProgressBar progressBar;
@@ -73,7 +82,13 @@ public class RecommendedActivitiesFragment extends Fragment {
 
     private void setupRecyclerView() {
         recyclerViewActivities.setLayoutManager(new LinearLayoutManager(getContext()));
-        activityAdapter = new ActivityAdapter(activity -> navigateToActivityDetail(activity));
+        Long currentUserId = prefsManager.getUserId();
+        activityAdapter =
+                new ActivityAdapter(
+                        activity -> navigateToActivityDetail(activity),
+                        participantRepository,
+                        currentUserId,
+                        categoryManager);
         recyclerViewActivities.setAdapter(activityAdapter);
     }
 
