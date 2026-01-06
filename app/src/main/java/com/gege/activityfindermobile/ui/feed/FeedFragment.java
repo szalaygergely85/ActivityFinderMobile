@@ -88,7 +88,7 @@ public class FeedFragment extends Fragment {
     private String currentCategoryFilter = null;
     private boolean showTrendingOnly = false;
     private List<Activity> allActivities = new ArrayList<>();
-    private Integer maxDistanceKm = null; // null = no distance filter
+    private Integer maxDistanceKm = 250; // Default 250 km max distance
     private String selectedActivityType = null; // null = all types
 
     // Permission launcher
@@ -665,9 +665,7 @@ public class FeedFragment extends Fragment {
         ChipGroup chipGroupType = dialogView.findViewById(R.id.chip_group_type);
 
         // Set current selections
-        if (maxDistanceKm == null) {
-            chipGroupDistance.check(R.id.chip_distance_all);
-        } else if (maxDistanceKm == 5) {
+        if (maxDistanceKm == 5) {
             chipGroupDistance.check(R.id.chip_distance_5);
         } else if (maxDistanceKm == 10) {
             chipGroupDistance.check(R.id.chip_distance_10);
@@ -677,6 +675,8 @@ public class FeedFragment extends Fragment {
             chipGroupDistance.check(R.id.chip_distance_50);
         } else if (maxDistanceKm == 100) {
             chipGroupDistance.check(R.id.chip_distance_100);
+        } else {
+            chipGroupDistance.check(R.id.chip_distance_250);
         }
 
         if (selectedActivityType == null) {
@@ -724,9 +724,7 @@ public class FeedFragment extends Fragment {
                         (dialog, which) -> {
                             // Get selected distance
                             int selectedDistanceId = chipGroupDistance.getCheckedChipId();
-                            if (selectedDistanceId == R.id.chip_distance_all) {
-                                maxDistanceKm = null;
-                            } else if (selectedDistanceId == R.id.chip_distance_5) {
+                            if (selectedDistanceId == R.id.chip_distance_5) {
                                 maxDistanceKm = 5;
                             } else if (selectedDistanceId == R.id.chip_distance_10) {
                                 maxDistanceKm = 10;
@@ -736,6 +734,8 @@ public class FeedFragment extends Fragment {
                                 maxDistanceKm = 50;
                             } else if (selectedDistanceId == R.id.chip_distance_100) {
                                 maxDistanceKm = 100;
+                            } else if (selectedDistanceId == R.id.chip_distance_250) {
+                                maxDistanceKm = 250;
                             }
 
                             // Get selected activity type
