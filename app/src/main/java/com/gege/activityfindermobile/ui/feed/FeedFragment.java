@@ -85,11 +85,10 @@ public class FeedFragment extends Fragment {
 
     // Search and filter variables
     private String currentSearchQuery = "";
-    private String currentCategoryFilter = null;
     private boolean showTrendingOnly = false;
     private List<Activity> allActivities = new ArrayList<>();
     private Integer maxDistanceKm = 250; // Default 250 km max distance
-    private String selectedActivityType = null; // null = all types
+    private String selectedActivityType = null; // null = all types (used by both category chips and general filter)
 
     // Permission launcher
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
@@ -508,7 +507,7 @@ public class FeedFragment extends Fragment {
                 (group, checkedIds) -> {
                     if (checkedIds.isEmpty()) {
                         // Reset all filters
-                        currentCategoryFilter = null;
+                        selectedActivityType = null;
                         showTrendingOnly = false;
                         useNearbyFilter = false;
                         applyFiltersAndSearch();
@@ -518,43 +517,43 @@ public class FeedFragment extends Fragment {
                     int checkedId = checkedIds.get(0);
 
                     if (checkedId == R.id.chip_all) {
-                        currentCategoryFilter = null;
+                        selectedActivityType = null;
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_trending) {
                         showTrendingOnly = true;
-                        currentCategoryFilter = null;
+                        selectedActivityType = null;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_upcoming) {
                         showTrendingOnly = false;
-                        currentCategoryFilter = null;
+                        selectedActivityType = null;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_sports) {
-                        currentCategoryFilter = "Sports";
+                        selectedActivityType = "Sports";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_music) {
-                        currentCategoryFilter = "Music";
+                        selectedActivityType = "Music";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_art) {
-                        currentCategoryFilter = "Art";
+                        selectedActivityType = "Art";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_social) {
-                        currentCategoryFilter = "Social";
+                        selectedActivityType = "Social";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_outdoor) {
-                        currentCategoryFilter = "Outdoor";
+                        selectedActivityType = "Outdoor";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_food) {
-                        currentCategoryFilter = "Food";
+                        selectedActivityType = "Food";
                         showTrendingOnly = false;
                         disableNearbyFilter();
                     } else if (checkedId == R.id.chip_nearby) {
-                        currentCategoryFilter = null;
+                        selectedActivityType = null;
                         showTrendingOnly = false;
                         enableNearbyFilter(nearbyRadiusKm);
                         return; // Don't apply filters yet - wait for location
@@ -566,17 +565,6 @@ public class FeedFragment extends Fragment {
 
     private void applyFiltersAndSearch() {
         List<Activity> filtered = new ArrayList<>(allActivities);
-
-        // Apply category filter
-        if (currentCategoryFilter != null && !currentCategoryFilter.isEmpty()) {
-            filtered =
-                    filtered.stream()
-                            .filter(
-                                    activity ->
-                                            currentCategoryFilter.equalsIgnoreCase(
-                                                    activity.getCategory()))
-                            .collect(Collectors.toList());
-        }
 
         // Apply trending filter
         if (showTrendingOnly) {
@@ -764,9 +752,45 @@ public class FeedFragment extends Fragment {
                                 selectedActivityType = "Fitness";
                             }
 
+                            // Sync the main category chips with the selected filter
+                            syncCategoryChips();
+
                             applyFiltersAndSearch();
                         })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void syncCategoryChips() {
+        // Update the main category chips to match the selectedActivityType
+        if (selectedActivityType == null) {
+            chipGroupFilters.check(R.id.chip_all);
+        } else {
+            switch (selectedActivityType) {
+                case "Sports":
+                    chipGroupFilters.check(R.id.chip_sports);
+                    break;
+                case "Music":
+                    chipGroupFilters.check(R.id.chip_music);
+                    break;
+                case "Art":
+                    chipGroupFilters.check(R.id.chip_art);
+                    break;
+                case "Social":
+                    chipGroupFilters.check(R.id.chip_social);
+                    break;
+                case "Outdoor":
+                    chipGroupFilters.check(R.id.chip_outdoor);
+                    break;
+                case "Food":
+                    chipGroupFilters.check(R.id.chip_food);
+                    break;
+                default:
+                    // For types not in main chips (Travel, Photography, Gaming, Fitness)
+                    // Keep current selection or default to All
+                    chipGroupFilters.clearCheck();
+                    break;
+            }
+        }
     }
 }
