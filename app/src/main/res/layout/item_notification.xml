@@ -4,25 +4,44 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/margin_small"
-    app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_elevation"
-    app:strokeWidth="0dp">
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    android:backgroundTint="@color/surface_dark"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/surface_border">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="@dimen/padding_medium">
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <!-- Unread Indicator -->
-        <View
-            android:id="@+id/indicator_unread"
-            android:layout_width="4dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/margin_medium"
-            android:background="@color/primary"
-            android:visibility="gone" />
+        <!-- Notification Icon/Avatar -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp">
+
+            <!-- Profile Picture or Icon Background -->
+            <View
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_notification_icon" />
+
+            <!-- Profile Picture or Icon -->
+            <ImageView
+                android:id="@+id/iv_notification_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_notifications"
+                app:tint="@color/slate_400" />
+
+        </FrameLayout>
 
         <!-- Content -->
         <LinearLayout
@@ -31,34 +50,58 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <!-- Title -->
-            <TextView
-                android:id="@+id/tv_notification_title"
-                android:layout_width="wrap_content"
+            <!-- Title and Time Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_large"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:id="@+id/tv_notification_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Sarah Jenkins" />
+
+                <TextView
+                    android:id="@+id/tv_notification_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/slate_400"
+                    tools:text="2h ago" />
+
+            </LinearLayout>
 
             <!-- Message -->
             <TextView
                 android:id="@+id/tv_notification_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/text_secondary" />
-
-            <!-- Time -->
-            <TextView
-                android:id="@+id/tv_notification_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_hint" />
+                android:textSize="14sp"
+                android:textColor="@color/slate_400"
+                android:maxLines="2"
+                android:ellipsize="end"
+                tools:text="Invited you to Downtown Jazz Night" />
 
         </LinearLayout>
+
+        <!-- Unread Indicator Dot (on the right) -->
+        <View
+            android:id="@+id/indicator_unread"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_circle"
+            android:visibility="gone" />
 
     </LinearLayout>
 

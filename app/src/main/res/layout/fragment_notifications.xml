@@ -5,68 +5,101 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/primary_light">
+    android:background="@color/background_dark">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primary_dark"
-        app:title="Notifications"
-        app:titleCentered="false"
-        app:titleTextColor="@color/white"
-        app:navigationIconTint="@color/white"
-        android:elevation="@dimen/card_elevation" />
-
-    <!-- Filter Chips -->
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="@dimen/padding_medium">
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipAll"
-            android:layout_width="wrap_content"
+        <!-- Title and Mark All Read -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="All"
-            android:checkable="true"
-            android:checked="true"
-            style="@style/Widget.Material3.Chip.Filter"
-            app:chipBackgroundColor="@color/chip_selected"
-            app:chipStrokeWidth="0dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipUnread"
-            android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Notifications"
+                android:textSize="30sp"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/markAllReadButton"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mark all as read"
+                android:textColor="@color/primary_blue"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
+
+        </LinearLayout>
+
+        <!-- Filter Chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_small"
-            android:text="Unread"
-            android:checkable="true"
-            style="@style/Widget.Material3.Chip.Filter"
-            app:chipBackgroundColor="@color/chip_unselected"
-            app:chipStrokeWidth="0dp" />
+            android:scrollbars="none">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="4dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/markAllReadButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mark all as read"
-            android:textSize="@dimen/text_size_small" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="All"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:checkable="true"
+                    android:checked="true"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    app:chipBackgroundColor="@color/primary_blue"
+                    app:chipStrokeWidth="0dp"
+                    app:chipMinHeight="36dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipUnread"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="12dp"
+                    android:text="Unread"
+                    android:textColor="@color/slate_300"
+                    android:textSize="14sp"
+                    android:textStyle="normal"
+                    android:checkable="true"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    app:chipBackgroundColor="@color/surface_dark"
+                    app:chipStrokeColor="@color/slate_700"
+                    app:chipStrokeWidth="1dp"
+                    app:chipMinHeight="36dp" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
 
     </LinearLayout>
-
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider" />
 
     <!-- Swipe Refresh Container -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -80,7 +113,10 @@
             android:id="@+id/notificationsRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="@dimen/padding_small"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="5"
             tools:listitem="@layout/item_notification" />
@@ -101,35 +137,43 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="@dimen/padding_large">
+            android:padding="24dp">
 
-            <!-- Empty Icon -->
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginBottom="@dimen/margin_medium"
-                android:src="@drawable/ic_notifications"
-                android:scaleType="centerInside"
-                app:tint="@color/text_hint" />
+            <!-- Empty Icon Container -->
+            <FrameLayout
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_marginBottom="24dp">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_notifications"
+                    android:scaleType="centerInside"
+                    app:tint="@color/slate_600" />
+
+            </FrameLayout>
 
             <!-- Empty Title -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No Notifications"
-                android:textSize="@dimen/text_size_large"
-                android:textColor="@color/text_primary"
+                android:text="No new notifications"
+                android:textSize="20sp"
+                android:textColor="@color/white"
                 android:textStyle="bold"
-                android:layout_marginBottom="@dimen/margin_small" />
+                android:layout_marginBottom="8dp" />
 
             <!-- Empty Description -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="You're all caught up! Check back later for updates."
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/text_secondary"
-                android:gravity="center" />
+                android:text="You're all caught up! Check back later\nfor updates on your local activities."
+                android:textSize="15sp"
+                android:textColor="@color/slate_400"
+                android:gravity="center"
+                android:maxWidth="260dp" />
 
         </LinearLayout>
 
