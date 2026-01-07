@@ -43,6 +43,12 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +58,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class ActivityDetailFragment extends Fragment {
+public class ActivityDetailFragment extends Fragment implements OnMapReadyCallback {
 
     @Inject ActivityRepository activityRepository;
 
@@ -69,6 +75,11 @@ public class ActivityDetailFragment extends Fragment {
     private Long activityId;
     private Long creatorId;
     private String activityTitle;
+    private ImageView ivActivityHero;
+    private com.google.android.material.floatingactionbutton.FloatingActionButton fabBack;
+    private GoogleMap googleMap;
+    private Double activityLatitude;
+    private Double activityLongitude;
     private MaterialButton btnExpressInterest;
     private MaterialButton btnReportActivity;
     private MaterialButton btnManage;
@@ -180,38 +191,32 @@ public class ActivityDetailFragment extends Fragment {
         ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
-
-            // Find the bottom action buttons container (it's a LinearLayout)
-            View expressInterestBtn = v.findViewById(R.id.btn_express_interest);
-            if (expressInterestBtn != null && expressInterestBtn.getParent() instanceof View) {
-                View bottomButtons = (View) expressInterestBtn.getParent();
-                bottomButtons.setPadding(
-                        bottomButtons.getPaddingLeft(),
-                        bottomButtons.getPaddingTop(),
-                        bottomButtons.getPaddingRight(),
-                        systemBars.bottom + bottomButtons.getPaddingBottom()
-                );
+            // Add top padding to the back button for status bar
+            com.google.android.material.floatingactionbutton.FloatingActionButton fabBackBtn = v.findViewById(R.id.fab_back);
+            if (fabBackBtn != null) {
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) fabBackBtn.getLayoutParams();
+                params.topMargin = systemBars.top + 16;
+                fabBackBtn.setLayoutParams(params);
             }
 
             return insets;
         });
 
-            MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
-            toolbar.setNavigationOnClickListener(v ->
-                    requireActivity()
-                            .getOnBackPressedDispatcher()
-                            .onBackPressed()
-            );
+        // Initialize hero image and back button
+        ivActivityHero = view.findViewById(R.id.iv_activity_hero);
+        fabBack = view.findViewById(R.id.fab_back);
+        fabBack.setOnClickListener(v ->
+                requireActivity()
+                        .getOnBackPressedDispatcher()
+                        .onBackPressed()
+        );
 
+        // Initialize map
+        SupportMapFragment mapFragment = (SupportMapFragment)
+                getChildFragmentManager().findFragmentById(R.id.map_container);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
         btnExpressInterest = view.findViewById(R.id.btn_express_interest);
         btnReportActivity = view.findViewById(R.id.btn_report_activity);
@@ -321,8 +326,7 @@ public class ActivityDetailFragment extends Fragment {
         TextView tvCreatorName = view.findViewById(R.id.tv_creator_name);
         TextView tvCreatorRating = view.findViewById(R.id.tv_creator_rating);
         Chip chipCategory = view.findViewById(R.id.chip_category);
-        Chip badgeTrending = view.findViewById(R.id.badge_trending);
-        Chip badgeExpired = view.findViewById(R.id.badge_expired);
+        View cardExpiredBadge = view.findViewById(R.id.card_expired_badge);
         MaterialButton btnReviewCreator = view.findViewById(R.id.btn_review_creator);
         ImageView ivArrowCreator = view.findViewById(R.id.iv_arrow_creator);
 
@@ -330,8 +334,15 @@ public class ActivityDetailFragment extends Fragment {
         String creatorAvatar = args.getString("creatorAvatar");
         ImageLoader.loadCircularProfileImage(requireContext(), creatorAvatar, ivCreatorAvatar);
 
+        // Load category image
+        String category = args.getString("category", "");
+        loadCategoryImage(category);
+
+        // Set category text
+        TextView tvActivityCategory = view.findViewById(R.id.tv_activity_category);
+        tvActivityCategory.setText(category != null ? category.toUpperCase() : "");
+
         tvTitle.setText(args.getString("title", ""));
-        tvDescription.setText(args.getString("description", ""));
         tvDate.setText(args.getString("date", ""));
         tvTime.setText(args.getString("time", ""));
         tvLocation.setText(args.getString("location", ""));
@@ -339,23 +350,51 @@ public class ActivityDetailFragment extends Fragment {
         int availableSpots = args.getInt("availableSpots", 0);
         int totalSpots = args.getInt("totalSpots", 0);
         int currentParticipants = totalSpots - availableSpots;
-        tvSpots.setText(currentParticipants + " / " + totalSpots + " joined");
+        tvSpots.setText(currentParticipants + " / " + totalSpots);
 
         tvCreatorName.setText(args.getString("creatorName", ""));
         double rating = args.getDouble("creatorRating", 0.0);
+
+        // Store location coordinates for map
+        activityLatitude = args.getDouble("latitude", 0.0);
+        activityLongitude = args.getDouble("longitude", 0.0);
+        if (activityLatitude == 0.0 && activityLongitude == 0.0) {
+            activityLatitude = null;
+            activityLongitude = null;
+        }
+
+        // Update map if ready
+        updateMapLocation();
         if (rating > 0) {
             tvCreatorRating.setText(String.format("%.1f", rating));
         } else {
             tvCreatorRating.setText("N/A");
         }
 
-        chipCategory.setText(args.getString("category", ""));
-        badgeTrending.setVisibility(args.getBoolean("trending", false) ? View.VISIBLE : View.GONE);
+        // Set full description
+        TextView tvDescriptionFull = view.findViewById(R.id.tv_description_full);
+        String description = args.getString("description", "");
+        tvDescriptionFull.setText(description);
+
+        // Set location address
+        TextView tvLocationAddress = view.findViewById(R.id.tv_location_address);
+        String location = args.getString("location", "");
+        tvLocationAddress.setText(location);
+
+        // Setup Get Directions button
+        TextView btnGetDirections = view.findViewById(R.id.btn_get_directions);
+        btnGetDirections.setOnClickListener(v -> openMapsForDirections(location));
+
+        // Hidden fields for compatibility
+        chipCategory.setText(category);
+        tvDescription.setText(description);
+
+        // Show/hide badges
 
         // Check if activity is expired
         String dateStr = args.getString("date", "");
         boolean isExpired = isActivityExpired(dateStr);
-        badgeExpired.setVisibility(isExpired ? View.VISIBLE : View.GONE);
+        cardExpiredBadge.setVisibility(isExpired ? View.VISIBLE : View.GONE);
 
         // Setup review button for creator
         String creatorName = args.getString("creatorName", "");
@@ -1159,6 +1198,13 @@ public class ActivityDetailFragment extends Fragment {
                             int availableSpots = activity.getAvailableSpots();
                             int currentParticipants = totalSpots - availableSpots;
                             tvSpots.setText(currentParticipants + " / " + totalSpots + " joined");
+
+                            // Store location coordinates for map
+                            activityLatitude = activity.getLatitude();
+                            activityLongitude = activity.getLongitude();
+
+                            // Update map if ready
+                            updateMapLocation();
                         }
                     }
 
@@ -1221,5 +1267,95 @@ public class ActivityDetailFragment extends Fragment {
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_activityDetailFragment_to_activityGalleryFragment, bundle);
+    }
+
+    /**
+     * Load category image based on category name (same as feed)
+     */
+    private void loadCategoryImage(String category) {
+        if (ivActivityHero == null) {
+            return;
+        }
+
+        if (category == null || category.isEmpty()) {
+            ivActivityHero.setImageResource(R.drawable.activity_default);
+            return;
+        }
+
+        // Convert category to lowercase and replace spaces with underscores
+        String imageResourceName = "activity_" + category.toLowerCase().replace(" ", "_");
+
+        // Get resource ID
+        int resourceId = getResources().getIdentifier(
+                imageResourceName,
+                "drawable",
+                requireContext().getPackageName()
+        );
+
+        // Set image or use default if not found
+        if (resourceId != 0) {
+            ivActivityHero.setImageResource(resourceId);
+        } else {
+            ivActivityHero.setImageResource(R.drawable.activity_default);
+        }
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap map) {
+        this.googleMap = map;
+
+        // Disable map interactions
+        googleMap.getUiSettings().setAllGesturesEnabled(false);
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
+
+        // Update map with activity location if available
+        updateMapLocation();
+    }
+
+    /**
+     * Update the map marker with the activity location
+     */
+    private void updateMapLocation() {
+        if (googleMap == null || activityLatitude == null || activityLongitude == null) {
+            return;
+        }
+
+        LatLng activityLocation = new LatLng(activityLatitude, activityLongitude);
+
+        // Clear previous markers
+        googleMap.clear();
+
+        // Add marker at activity location
+        googleMap.addMarker(new MarkerOptions()
+                .position(activityLocation)
+                .title(activityTitle));
+
+        // Move camera to location with appropriate zoom
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(activityLocation, 15f));
+    }
+
+    /**
+     * Open Google Maps or any maps app for directions to the location
+     */
+    private void openMapsForDirections(String location) {
+        if (location == null || location.isEmpty()) {
+            Toast.makeText(requireContext(), "Location not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create URI for Google Maps
+        android.net.Uri gmmIntentUri = android.net.Uri.parse("geo:0,0?q=" + android.net.Uri.encode(location));
+        android.content.Intent mapIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+
+        // Try to launch Google Maps
+        if (mapIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            // Fallback to browser if Google Maps is not installed
+            android.net.Uri webUri = android.net.Uri.parse("https://www.google.com/maps/search/?api=1&query=" + android.net.Uri.encode(location));
+            android.content.Intent webIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, webUri);
+            startActivity(webIntent);
+        }
     }
 }
