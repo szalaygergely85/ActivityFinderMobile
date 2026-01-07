@@ -4,12 +4,14 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.Notification;
 
@@ -62,6 +64,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvMessage, tvTime;
+        ImageView ivNotificationIcon;
         View indicatorUnread;
 
         ViewHolder(@NonNull View itemView) {
@@ -69,6 +72,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvTitle = itemView.findViewById(R.id.tv_notification_title);
             tvMessage = itemView.findViewById(R.id.tv_notification_message);
             tvTime = itemView.findViewById(R.id.tv_notification_time);
+            ivNotificationIcon = itemView.findViewById(R.id.iv_notification_icon);
             indicatorUnread = itemView.findViewById(R.id.indicator_unread);
 
             itemView.setOnClickListener(
@@ -87,14 +91,45 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvMessage.setText(notification.getMessage());
             tvTime.setText(formatTime(notification.getCreatedAt()));
 
+            // Set icon based on notification type
+            setNotificationIcon(context, notification);
+
             // Show indicator for unread notifications
             if (notification.getIsRead() != null && !notification.getIsRead()) {
                 indicatorUnread.setVisibility(View.VISIBLE);
-                itemView.setBackgroundColor(
-                        ContextCompat.getColor(context, R.color.notification_unread_bg));
             } else {
                 indicatorUnread.setVisibility(View.GONE);
-                itemView.setBackgroundColor(ContextCompat.getColor(context, R.color.white));
+            }
+        }
+
+        private void setNotificationIcon(Context context, Notification notification) {
+            String type = notification.getType();
+
+            // For user-related notifications (join requests, follows, etc.), show profile picture
+            // Note: When backend provides avatar URL field, use Glide to load it here
+            if (type != null && (type.equals("JOIN_REQUEST") || type.equals("FOLLOW")
+                    || type.equals("INVITE") || type.equals("PARTICIPANT_ACTION"))) {
+                // TODO: Load profile picture when backend provides avatarUrl field
+                // For now, show a person icon
+                ivNotificationIcon.setImageResource(R.drawable.ic_person);
+                ivNotificationIcon.setColorFilter(
+                        ContextCompat.getColor(context, R.color.slate_400));
+                ivNotificationIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+                // Example of how to load profile picture when avatar URL is available:
+                // if (notification.getAvatarUrl() != null && !notification.getAvatarUrl().isEmpty()) {
+                //     Glide.with(context)
+                //         .load(notification.getAvatarUrl())
+                //         .circleCrop()
+                //         .placeholder(R.drawable.ic_person)
+                //         .into(ivNotificationIcon);
+                // }
+            } else {
+                // For general notifications, show notification bell icon
+                ivNotificationIcon.setImageResource(R.drawable.ic_notifications);
+                ivNotificationIcon.setColorFilter(
+                        ContextCompat.getColor(context, R.color.slate_400));
+                ivNotificationIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
             }
         }
 
