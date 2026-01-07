@@ -354,7 +354,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     colorRes = R.color.category_fitness;
                     break;
                 default:
-                    colorRes = R.color.accent_green;
+                    colorRes = R.color.emerald;
                     break;
             }
 
