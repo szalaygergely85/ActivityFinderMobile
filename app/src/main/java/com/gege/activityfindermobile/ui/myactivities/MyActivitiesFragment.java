@@ -55,6 +55,7 @@ public class MyActivitiesFragment extends Fragment {
     private View layoutEmpty;
     private MaterialButton btnCreateFirst;
     private MaterialSwitch switchShowExpired;
+    private com.google.android.material.floatingactionbutton.FloatingActionButton fabCreate;
     private List<Activity> allActivities = new ArrayList<>();
 
     @Nullable
@@ -92,6 +93,7 @@ public class MyActivitiesFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         btnCreateFirst = view.findViewById(R.id.btn_create_first);
         switchShowExpired = view.findViewById(R.id.switch_show_expired);
+        fabCreate = view.findViewById(R.id.fab_create);
 
         // Setup adapter with ParticipantRepository for accurate counts and current user ID
         Long currentUserId = prefsManager.getUserId();
@@ -124,6 +126,13 @@ public class MyActivitiesFragment extends Fragment {
 
         // Create first activity button
         btnCreateFirst.setOnClickListener(
+                v -> {
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.action_nav_my_activities_to_createActivityFragment);
+                });
+
+        // FAB Create activity button
+        fabCreate.setOnClickListener(
                 v -> {
                     NavController navController = Navigation.findNavController(requireView());
                     navController.navigate(R.id.action_nav_my_activities_to_createActivityFragment);
@@ -207,25 +216,38 @@ public class MyActivitiesFragment extends Fragment {
         }
 
         boolean showExpired = switchShowExpired.isChecked();
-        List<Activity> filteredActivities;
+        List<Activity> filteredActivities = new ArrayList<>();
+        java.util.Date now = new java.util.Date();
 
-        if (showExpired) {
-            // Show all activities
-            filteredActivities = allActivities;
-        } else {
-            // Filter out expired activities
-            // Check for various possible status values: "EXPIRED", "CANCELLED", "COMPLETED"
-            filteredActivities = new ArrayList<>();
-            for (Activity activity : allActivities) {
-                String status = activity.getStatus();
-                // Keep activity if status is null or is "ACTIVE" or "OPEN"
-                if (status == null ||
-                    status.equalsIgnoreCase("ACTIVE") ||
-                    status.equalsIgnoreCase("OPEN") ||
-                    status.equalsIgnoreCase("SCHEDULED")) {
-                    filteredActivities.add(activity);
+        for (Activity activity : allActivities) {
+            String status = activity.getStatus();
+            String activityDateStr = activity.getActivityDate();
+
+            // Determine if activity is in the past
+            boolean isPast = false;
+            if (activityDateStr != null && !activityDateStr.isEmpty()) {
+                try {
+                    java.text.SimpleDateFormat sdf =
+                            new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                    java.util.Date activityDate = sdf.parse(activityDateStr);
+                    isPast = activityDate.before(now);
+                } catch (java.text.ParseException e) {
+                    // If parsing fails, assume not in past
+                    isPast = false;
                 }
-                // Skip if status is EXPIRED, CANCELLED, COMPLETED, CLOSED
+            }
+
+            boolean isExpired =
+                    isPast
+                            || (status != null
+                                    && (status.equalsIgnoreCase("EXPIRED")
+                                            || status.equalsIgnoreCase("CANCELLED")
+                                            || status.equalsIgnoreCase("COMPLETED")
+                                            || status.equalsIgnoreCase("CLOSED")));
+
+            // Show all if "include expired" is on, otherwise only show upcoming/active
+            if (showExpired || !isExpired) {
+                filteredActivities.add(activity);
             }
         }
 
