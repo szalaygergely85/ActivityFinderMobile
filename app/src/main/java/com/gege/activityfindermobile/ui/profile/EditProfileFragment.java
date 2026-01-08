@@ -14,9 +14,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,24 +30,14 @@ import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.PlaceTypes;
-import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FetchPlaceResponse;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -81,8 +68,8 @@ public class EditProfileFragment extends Fragment {
     private TextView tvPhotoCount;
     private View frameProfilePicture, layoutPhotosEmpty;
 
-    //private MaterialAutoCompleteTextView actvCity;
-   // private TextInputLayout tilCity;
+    // private MaterialAutoCompleteTextView actvCity;
+    // private TextInputLayout tilCity;
 
     private User currentUser;
     private List<String> selectedInterests = new ArrayList<>();
@@ -136,7 +123,7 @@ public class EditProfileFragment extends Fragment {
         initViews(view);
         setupBackButton(view);
         initPlacesClient();
-        //setupCityAutocomplete();
+        // setupCityAutocomplete();
         loadCurrentProfile();
     }
 
@@ -170,211 +157,210 @@ public class EditProfileFragment extends Fragment {
         tvPhotoCount = view.findViewById(R.id.tv_photo_count);
         layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
         /*
-        actvCity = view.findViewById(R.id.actv_city);
-        tilCity = view.findViewById(R.id.til_city);
-*/
+                actvCity = view.findViewById(R.id.actv_city);
+                tilCity = view.findViewById(R.id.til_city);
+        */
         btnSave.setOnClickListener(v -> saveProfile());
         btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
         frameProfilePicture.setOnClickListener(v -> openPhotoGalleryPicker());
     }
 
     private void setupBackButton(View view) {
-        view.findViewById(R.id.btn_back).setOnClickListener(v ->
-                requireActivity()
-                        .getOnBackPressedDispatcher()
-                        .onBackPressed()
-        );
+        view.findViewById(R.id.btn_back)
+                .setOnClickListener(
+                        v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
     }
+
     /*
-    private void setupCityAutocomplete() {
-        PlacesAutocompleteAdapter adapter = new PlacesAutocompleteAdapter(requireContext());
-        actvCity.setAdapter(adapter);
-        actvCity.setThreshold(2); // Minimum 2 characters before showing suggestions
+        private void setupCityAutocomplete() {
+            PlacesAutocompleteAdapter adapter = new PlacesAutocompleteAdapter(requireContext());
+            actvCity.setAdapter(adapter);
+            actvCity.setThreshold(2); // Minimum 2 characters before showing suggestions
 
-        actvCity.setOnItemClickListener(
-                (parent, view, position, id) -> {
-                    // Set flag to prevent text change listener from triggering
-                    isSelectingItem = true;
-                    String selectedCity = adapter.getItem(position);
-                    String placeId = adapter.getPlaceId(position);
-                    if (placeId != null) {
-                        fetchPlaceDetails(placeId, selectedCity);
-                    }
-                    // Dismiss dropdown and clear flag after a short delay
-                    actvCity.postDelayed(
-                            () -> {
-                                actvCity.dismissDropDown();
-                                isSelectingItem = false;
-                            },
-                            100);
-                });
-
-        actvCity.addTextChangedListener(
-                new android.text.TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(
-                            CharSequence s, int start, int count, int after) {}
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        // Skip if user is selecting an item
-                        if (isSelectingItem) {
-                            return;
+            actvCity.setOnItemClickListener(
+                    (parent, view, position, id) -> {
+                        // Set flag to prevent text change listener from triggering
+                        isSelectingItem = true;
+                        String selectedCity = adapter.getItem(position);
+                        String placeId = adapter.getPlaceId(position);
+                        if (placeId != null) {
+                            fetchPlaceDetails(placeId, selectedCity);
                         }
+                        // Dismiss dropdown and clear flag after a short delay
+                        actvCity.postDelayed(
+                                () -> {
+                                    actvCity.dismissDropDown();
+                                    isSelectingItem = false;
+                                },
+                                100);
+                    });
 
-                        // Remove any pending callbacks
-                        if (debounceRunnable != null) {
-                            debounceHandler.removeCallbacks(debounceRunnable);
-                        }
+            actvCity.addTextChangedListener(
+                    new android.text.TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(
+                                CharSequence s, int start, int count, int after) {}
 
-                        // Only search if at least 2 characters
-                        if (s.length() >= 2) {
-                            // Create new runnable for debounced API call
-                            debounceRunnable =
-                                    () -> {
-                                        adapter.fetchPredictions(s.toString());
-                                        actvCity.post(() -> actvCity.showDropDown());
-                                    };
-                            // Wait 800ms before making the API call
-                            debounceHandler.postDelayed(debounceRunnable, 800);
-                        } else {
-                            actvCity.dismissDropDown();
-                        }
-                    }
-
-                    @Override
-                    public void afterTextChanged(android.text.Editable s) {}
-                });
-    }
-
-
-    private void fetchPlaceDetails(String placeId, String cityName) {
-        List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
-        FetchPlaceRequest request =
-                FetchPlaceRequest.builder(placeId, placeFields)
-                        .setSessionToken(sessionToken)
-                        .build();
-
-        placesClient
-                .fetchPlace(request)
-                .addOnSuccessListener(
-                        (FetchPlaceResponse response) -> {
-                            Place place = response.getPlace();
-                            if (place.getLatLng() != null) {
-                                selectedPlaceId = placeId;
-                                selectedLatitude = place.getLatLng().latitude;
-                                selectedLongitude = place.getLatLng().longitude;
-                                android.util.Log.d(
-                                        "EditProfile",
-                                        "Selected city: "
-                                                + cityName
-                                                + " at ("
-                                                + selectedLatitude
-                                                + ", "
-                                                + selectedLongitude
-                                                + ")");
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                            // Skip if user is selecting an item
+                            if (isSelectingItem) {
+                                return;
                             }
-                            // Regenerate token after successful place details fetch
-                            sessionToken = AutocompleteSessionToken.newInstance();
-                        })
-                .addOnFailureListener(
-                        (exception) -> {
-                            android.util.Log.e(
-                                    "EditProfile",
-                                    "Error fetching place details: " + exception.getMessage());
-                            // Still regenerate token
-                            sessionToken = AutocompleteSessionToken.newInstance();
-                        });
-    }
 
-    private class PlacesAutocompleteAdapter extends android.widget.ArrayAdapter<String> {
-        private final List<String> filteredCities = new ArrayList<>();
-        private final List<String> filteredPlaceIds = new ArrayList<>();
+                            // Remove any pending callbacks
+                            if (debounceRunnable != null) {
+                                debounceHandler.removeCallbacks(debounceRunnable);
+                            }
 
-        public PlacesAutocompleteAdapter(android.content.Context context) {
-            super(context, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+                            // Only search if at least 2 characters
+                            if (s.length() >= 2) {
+                                // Create new runnable for debounced API call
+                                debounceRunnable =
+                                        () -> {
+                                            adapter.fetchPredictions(s.toString());
+                                            actvCity.post(() -> actvCity.showDropDown());
+                                        };
+                                // Wait 800ms before making the API call
+                                debounceHandler.postDelayed(debounceRunnable, 800);
+                            } else {
+                                actvCity.dismissDropDown();
+                            }
+                        }
+
+                        @Override
+                        public void afterTextChanged(android.text.Editable s) {}
+                    });
         }
 
-        public void fetchPredictions(String query) {
-            filteredCities.clear();
-            filteredPlaceIds.clear();
 
-            if (placesClient != null) {
-                fetchFromGooglePlaces(query);
-            } else {
-                notifyDataSetChanged();
+        private void fetchPlaceDetails(String placeId, String cityName) {
+            List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
+            FetchPlaceRequest request =
+                    FetchPlaceRequest.builder(placeId, placeFields)
+                            .setSessionToken(sessionToken)
+                            .build();
+
+            placesClient
+                    .fetchPlace(request)
+                    .addOnSuccessListener(
+                            (FetchPlaceResponse response) -> {
+                                Place place = response.getPlace();
+                                if (place.getLatLng() != null) {
+                                    selectedPlaceId = placeId;
+                                    selectedLatitude = place.getLatLng().latitude;
+                                    selectedLongitude = place.getLatLng().longitude;
+                                    android.util.Log.d(
+                                            "EditProfile",
+                                            "Selected city: "
+                                                    + cityName
+                                                    + " at ("
+                                                    + selectedLatitude
+                                                    + ", "
+                                                    + selectedLongitude
+                                                    + ")");
+                                }
+                                // Regenerate token after successful place details fetch
+                                sessionToken = AutocompleteSessionToken.newInstance();
+                            })
+                    .addOnFailureListener(
+                            (exception) -> {
+                                android.util.Log.e(
+                                        "EditProfile",
+                                        "Error fetching place details: " + exception.getMessage());
+                                // Still regenerate token
+                                sessionToken = AutocompleteSessionToken.newInstance();
+                            });
+        }
+
+        private class PlacesAutocompleteAdapter extends android.widget.ArrayAdapter<String> {
+            private final List<String> filteredCities = new ArrayList<>();
+            private final List<String> filteredPlaceIds = new ArrayList<>();
+
+            public PlacesAutocompleteAdapter(android.content.Context context) {
+                super(context, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+            }
+
+            public void fetchPredictions(String query) {
+                filteredCities.clear();
+                filteredPlaceIds.clear();
+
+                if (placesClient != null) {
+                    fetchFromGooglePlaces(query);
+                } else {
+                    notifyDataSetChanged();
+                }
+            }
+
+            public String getPlaceId(int position) {
+                if (position < filteredPlaceIds.size()) {
+                    return filteredPlaceIds.get(position);
+                }
+                return null;
+            }
+
+            private void fetchFromGooglePlaces(String query) {
+                try {
+                    // Create autocomplete request for cities only
+                    FindAutocompletePredictionsRequest request =
+                            FindAutocompletePredictionsRequest.builder()
+                                    .setSessionToken(sessionToken)
+                                    .setCountries("HU")
+                                    .setTypesFilter(List.of(PlaceTypes.CITIES))
+                                    .setQuery(query)
+                                    .build();
+
+                    placesClient
+                            .findAutocompletePredictions(request)
+                            .addOnSuccessListener(
+                                    (FindAutocompletePredictionsResponse response) -> {
+                                        filteredCities.clear();
+                                        filteredPlaceIds.clear();
+                                        response.getAutocompletePredictions()
+                                                .forEach(
+                                                        prediction -> {
+                                                            String description =
+                                                                    prediction
+                                                                            .getFullText(null)
+                                                                            .toString();
+                                                            if (description != null
+                                                                    && !description.isEmpty()) {
+                                                                filteredCities.add(description);
+                                                                filteredPlaceIds.add(
+                                                                        prediction.getPlaceId());
+                                                            }
+                                                        });
+                                        notifyDataSetChanged();
+                                    })
+                            .addOnFailureListener(
+                                    exception -> {
+                                        android.util.Log.e(
+                                                "PlacesAdapter",
+                                                "Error fetching predictions: " + exception.getMessage(),
+                                                exception);
+                                        notifyDataSetChanged();
+                                    });
+                } catch (Exception e) {
+                    android.util.Log.e(
+                            "PlacesAdapter", "Exception in Places API: " + e.getMessage(), e);
+                    notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public int getCount() {
+                return filteredCities.size();
+            }
+
+            @Override
+            public String getItem(int position) {
+                if (position < filteredCities.size()) {
+                    return filteredCities.get(position);
+                }
+                return null;
             }
         }
-
-        public String getPlaceId(int position) {
-            if (position < filteredPlaceIds.size()) {
-                return filteredPlaceIds.get(position);
-            }
-            return null;
-        }
-
-        private void fetchFromGooglePlaces(String query) {
-            try {
-                // Create autocomplete request for cities only
-                FindAutocompletePredictionsRequest request =
-                        FindAutocompletePredictionsRequest.builder()
-                                .setSessionToken(sessionToken)
-                                .setCountries("HU")
-                                .setTypesFilter(List.of(PlaceTypes.CITIES))
-                                .setQuery(query)
-                                .build();
-
-                placesClient
-                        .findAutocompletePredictions(request)
-                        .addOnSuccessListener(
-                                (FindAutocompletePredictionsResponse response) -> {
-                                    filteredCities.clear();
-                                    filteredPlaceIds.clear();
-                                    response.getAutocompletePredictions()
-                                            .forEach(
-                                                    prediction -> {
-                                                        String description =
-                                                                prediction
-                                                                        .getFullText(null)
-                                                                        .toString();
-                                                        if (description != null
-                                                                && !description.isEmpty()) {
-                                                            filteredCities.add(description);
-                                                            filteredPlaceIds.add(
-                                                                    prediction.getPlaceId());
-                                                        }
-                                                    });
-                                    notifyDataSetChanged();
-                                })
-                        .addOnFailureListener(
-                                exception -> {
-                                    android.util.Log.e(
-                                            "PlacesAdapter",
-                                            "Error fetching predictions: " + exception.getMessage(),
-                                            exception);
-                                    notifyDataSetChanged();
-                                });
-            } catch (Exception e) {
-                android.util.Log.e(
-                        "PlacesAdapter", "Exception in Places API: " + e.getMessage(), e);
-                notifyDataSetChanged();
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return filteredCities.size();
-        }
-
-        @Override
-        public String getItem(int position) {
-            if (position < filteredCities.size()) {
-                return filteredCities.get(position);
-            }
-            return null;
-        }
-    }
-*/
+    */
     private void loadCurrentProfile() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
@@ -457,7 +443,8 @@ public class EditProfileFragment extends Fragment {
             Chip chip =
                     (Chip)
                             getLayoutInflater()
-                                    .inflate(R.layout.chip_interest_item, chipGroupInterests, false);
+                                    .inflate(
+                                            R.layout.chip_interest_item, chipGroupInterests, false);
             chip.setText(interest);
             chip.setCheckable(true);
             chip.setChecked(selectedInterests.contains(interest));
@@ -482,7 +469,7 @@ public class EditProfileFragment extends Fragment {
         String fullName =
                 etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
         String bio = etBio.getText() != null ? etBio.getText().toString().trim() : "";
-        //String city = actvCity.getText() != null ? actvCity.getText().toString().trim() : "";
+        // String city = actvCity.getText() != null ? actvCity.getText().toString().trim() : "";
 
         if (fullName.isEmpty()) {
             etFullName.setError("Name cannot be empty");
@@ -502,8 +489,7 @@ public class EditProfileFragment extends Fragment {
         updateProfileData(userId, fullName, bio, null);
     }
 
-    private void updateProfileData(
-            Long userId, String fullName, String bio, String imageUrl) {
+    private void updateProfileData(Long userId, String fullName, String bio, String imageUrl) {
         // Create update request
         UserProfileUpdateRequest request = new UserProfileUpdateRequest();
         request.setFullName(fullName);

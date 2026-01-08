@@ -72,21 +72,18 @@ public class ParticipationsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
+                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
+                    if (appBar != null) {
+                        appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
 
-            return insets;
-        });
+                    return insets;
+                });
 
         rvParticipations = view.findViewById(R.id.rv_participations);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
@@ -269,12 +266,9 @@ public class ParticipationsFragment extends Fragment {
         bundle.putDouble(
                 "creatorRating",
                 activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+        bundle.putDouble("latitude", activity.getLatitude() != null ? activity.getLatitude() : 0.0);
         bundle.putDouble(
-                "latitude",
-                activity.getLatitude() != null ? activity.getLatitude() : 0.0);
-        bundle.putDouble(
-                "longitude",
-                activity.getLongitude() != null ? activity.getLongitude() : 0.0);
+                "longitude", activity.getLongitude() != null ? activity.getLongitude() : 0.0);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_participations_to_activityDetailFragment, bundle);

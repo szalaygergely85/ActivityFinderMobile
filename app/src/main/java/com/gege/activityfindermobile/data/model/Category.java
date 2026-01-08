@@ -2,8 +2,6 @@ package com.gege.activityfindermobile.data.model;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.time.LocalDateTime;
-
 public class Category {
 
     @SerializedName("id")
@@ -28,7 +26,8 @@ public class Category {
     private Integer activityCount;
 
     @SerializedName("createdAt")
-    private String createdAt; // Using String for simplicity (LocalDateTime needs custom deserializer)
+    private String
+            createdAt; // Using String for simplicity (LocalDateTime needs custom deserializer)
 
     // Default constructor
     public Category() {}

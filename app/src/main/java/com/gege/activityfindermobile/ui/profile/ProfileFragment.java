@@ -48,12 +48,7 @@ public class ProfileFragment extends Fragment {
     @Inject UserRepository userRepository;
 
     private CircleImageView ivProfileAvatar;
-    private TextView tvName,
-            tvEmail,
-            tvBio,
-            tvRatingValue,
-            tvActivitiesCount,
-            tvPhotoCount;
+    private TextView tvName, tvEmail, tvBio, tvRatingValue, tvActivitiesCount, tvPhotoCount;
     private Chip chipBadge;
     private ChipGroup chipGroupInterests;
     private MaterialButton btnLogout, btnEditProfile;
@@ -77,21 +72,18 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
+                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
+                    if (appBar != null) {
+                        appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
 
-            return insets;
-        });
+                    return insets;
+                });
 
         initViews(view);
         setupListeners();
@@ -249,20 +241,20 @@ public class ProfileFragment extends Fragment {
     }
 
     /*
-    private void displayUserLocation() {
-        if (currentUser != null
-                && currentUser.getCity() != null
-                && !currentUser.getCity().isEmpty()) {
-            String locationText = "📍 " + currentUser.getCity();
+        private void displayUserLocation() {
+            if (currentUser != null
+                    && currentUser.getCity() != null
+                    && !currentUser.getCity().isEmpty()) {
+                String locationText = "📍 " + currentUser.getCity();
 
-            tvUserLocation.setText(locationText);
-            tvUserLocation.setVisibility(View.VISIBLE);
-        } else {
-            tvUserLocation.setText("No city set");
-            tvUserLocation.setVisibility(View.VISIBLE);
+                tvUserLocation.setText(locationText);
+                tvUserLocation.setVisibility(View.VISIBLE);
+            } else {
+                tvUserLocation.setText("No city set");
+                tvUserLocation.setVisibility(View.VISIBLE);
+            }
         }
-    }
-*/
+    */
     private void showLogoutDialog() {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Logout")

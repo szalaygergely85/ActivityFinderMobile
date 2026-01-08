@@ -88,7 +88,8 @@ public class FeedFragment extends Fragment {
     private boolean showTrendingOnly = false;
     private List<Activity> allActivities = new ArrayList<>();
     private Integer maxDistanceKm = 250; // Default 250 km max distance
-    private String selectedActivityType = null; // null = all types (used by both category chips and general filter)
+    private String selectedActivityType =
+            null; // null = all types (used by both category chips and general filter)
 
     // Permission launcher
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
@@ -132,21 +133,18 @@ public class FeedFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
+                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
+                    if (appBar != null) {
+                        appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
 
-            return insets;
-        });
+                    return insets;
+                });
 
         rvActivities = view.findViewById(R.id.rv_activities);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
@@ -183,8 +181,11 @@ public class FeedFragment extends Fragment {
                                 (android.view.inputmethod.InputMethodManager)
                                         requireContext()
                                                 .getSystemService(
-                                                        android.content.Context.INPUT_METHOD_SERVICE);
-                        imm.showSoftInput(etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                                                        android.content.Context
+                                                                .INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(
+                                etSearch,
+                                android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
                     } else {
                         searchCard.setVisibility(View.GONE);
                         etSearch.clearFocus();
@@ -193,7 +194,8 @@ public class FeedFragment extends Fragment {
                                 (android.view.inputmethod.InputMethodManager)
                                         requireContext()
                                                 .getSystemService(
-                                                        android.content.Context.INPUT_METHOD_SERVICE);
+                                                        android.content.Context
+                                                                .INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                     }
                 });
@@ -403,9 +405,14 @@ public class FeedFragment extends Fragment {
             swipeRefresh.setVisibility(View.VISIBLE);
             rvActivities.setVisibility(View.VISIBLE);
             layoutEmpty.setVisibility(View.GONE);
-            android.util.Log.d("FeedFragment", "showContent() called - RV visibility: " + rvActivities.getVisibility() +
-                    ", RV child count: " + rvActivities.getChildCount() +
-                    ", Adapter item count: " + (adapter != null ? adapter.getItemCount() : "null adapter"));
+            android.util.Log.d(
+                    "FeedFragment",
+                    "showContent() called - RV visibility: "
+                            + rvActivities.getVisibility()
+                            + ", RV child count: "
+                            + rvActivities.getChildCount()
+                            + ", Adapter item count: "
+                            + (adapter != null ? adapter.getItemCount() : "null adapter"));
         }
     }
 
@@ -468,12 +475,9 @@ public class FeedFragment extends Fragment {
         bundle.putDouble(
                 "creatorRating",
                 activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+        bundle.putDouble("latitude", activity.getLatitude() != null ? activity.getLatitude() : 0.0);
         bundle.putDouble(
-                "latitude",
-                activity.getLatitude() != null ? activity.getLatitude() : 0.0);
-        bundle.putDouble(
-                "longitude",
-                activity.getLongitude() != null ? activity.getLongitude() : 0.0);
+                "longitude", activity.getLongitude() != null ? activity.getLongitude() : 0.0);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_feed_to_activityDetailFragment, bundle);
@@ -641,7 +645,8 @@ public class FeedFragment extends Fragment {
 
         // Update adapter
         adapter.setActivities(filtered);
-        android.util.Log.d("FeedFragment", "applyFiltersAndSearch: filtered size = " + filtered.size());
+        android.util.Log.d(
+                "FeedFragment", "applyFiltersAndSearch: filtered size = " + filtered.size());
 
         if (filtered.isEmpty()) {
             showEmptyView();
@@ -651,8 +656,7 @@ public class FeedFragment extends Fragment {
     }
 
     private void showGeneralFilterDialog() {
-        View dialogView =
-                getLayoutInflater().inflate(R.layout.dialog_general_filter, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_general_filter, null);
 
         // Get dialog views
         ChipGroup chipGroupDistance = dialogView.findViewById(R.id.chip_group_distance);

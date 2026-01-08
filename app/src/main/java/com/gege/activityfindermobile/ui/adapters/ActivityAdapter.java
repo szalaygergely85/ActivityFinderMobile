@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,9 +18,9 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.utils.CategoryManager;
+import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.chip.Chip;
-import android.widget.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,11 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
     public void setActivities(List<Activity> activities) {
         this.activities = activities;
-        android.util.Log.d("ActivityAdapter", "setActivities called with " + (activities != null ? activities.size() : 0) + " items");
+        android.util.Log.d(
+                "ActivityAdapter",
+                "setActivities called with "
+                        + (activities != null ? activities.size() : 0)
+                        + " items");
         notifyDataSetChanged();
     }
 
@@ -88,7 +93,12 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Activity activity = activities.get(position);
-        android.util.Log.d("ActivityAdapter", "onBindViewHolder called for position " + position + " with activity: " + (activity != null ? activity.getTitle() : "null"));
+        android.util.Log.d(
+                "ActivityAdapter",
+                "onBindViewHolder called for position "
+                        + position
+                        + " with activity: "
+                        + (activity != null ? activity.getTitle() : "null"));
         holder.bind(activity);
     }
 
@@ -103,7 +113,11 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         ImageView ivActivityImage;
         ImageView ivCreatorAvatar;
         TextView tvTitle, tvDescription, tvDate, tvTime, tvLocation, tvDistance;
-        TextView tvCreatorName, tvCreatorRating, tvSpotsAvailable, tvSpotsDisplay, tvActivityCategory;
+        TextView tvCreatorName,
+                tvCreatorRating,
+                tvSpotsAvailable,
+                tvSpotsDisplay,
+                tvActivityCategory;
         Chip chipCategory, chipStatus, chipExpired;
 
         ViewHolder(@NonNull View itemView) {
@@ -136,7 +150,9 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         void bind(Activity activity) {
             Context context = itemView.getContext();
             android.util.Log.d("ActivityAdapter", "bind() started for: " + activity.getTitle());
-            android.util.Log.d("ActivityAdapter", "ItemView height: " + itemView.getHeight() + ", width: " + itemView.getWidth());
+            android.util.Log.d(
+                    "ActivityAdapter",
+                    "ItemView height: " + itemView.getHeight() + ", width: " + itemView.getWidth());
 
             // Load category background image
             loadCategoryImage(activity.getCategory(), context);
@@ -188,7 +204,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
             if (participantRepository != null && activity.getId() != null) {
                 // Fetch actual participants and count only accepted ones
-                loadAcceptedParticipantsCount(activity.getId(), totalSpots, tvSpotsAvailable, tvSpotsDisplay);
+                loadAcceptedParticipantsCount(
+                        activity.getId(), totalSpots, tvSpotsAvailable, tvSpotsDisplay);
             } else {
                 // Fallback to server count
                 int currentParticipants = activity.getParticipantsCount();
@@ -284,7 +301,10 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         }
 
         private void loadAcceptedParticipantsCount(
-                Long activityId, int totalSpots, TextView tvSpotsAvailable, TextView tvSpotsDisplay) {
+                Long activityId,
+                int totalSpots,
+                TextView tvSpotsAvailable,
+                TextView tvSpotsDisplay) {
             participantRepository.getActivityParticipants(
                     activityId,
                     new ApiCallback<List<Participant>>() {
@@ -421,38 +441,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         }
 
         private boolean isActivityExpired(Activity activity) {
-            if (activity.getDate() == null) {
-                return false;
-            }
-
-            try {
-                // Parse the date string (assuming format like "Nov 15, 2025")
-                java.text.SimpleDateFormat sdf =
-                        new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
-                java.util.Date activityDate = sdf.parse(activity.getDate());
-                java.util.Date today = new java.util.Date();
-
-                // Reset time to start of day for both dates to compare just the date portion
-                java.util.Calendar calActivity = java.util.Calendar.getInstance();
-                calActivity.setTime(activityDate);
-                calActivity.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                calActivity.set(java.util.Calendar.MINUTE, 0);
-                calActivity.set(java.util.Calendar.SECOND, 0);
-                calActivity.set(java.util.Calendar.MILLISECOND, 0);
-
-                java.util.Calendar calToday = java.util.Calendar.getInstance();
-                calToday.setTime(today);
-                calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                calToday.set(java.util.Calendar.MINUTE, 0);
-                calToday.set(java.util.Calendar.SECOND, 0);
-                calToday.set(java.util.Calendar.MILLISECOND, 0);
-
-                // Activity is expired if the date is before today (not including today)
-                return calActivity.before(calToday);
-            } catch (java.text.ParseException e) {
-                // If date parsing fails, assume not expired
-                return false;
-            }
+            return DateUtil.isDisplayDateExpired(activity.getDate());
         }
 
         private void loadCategoryImage(String category, Context context) {
@@ -467,12 +456,18 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             String imageResourceName;
             if (categoryManager != null) {
                 imageResourceName = categoryManager.getImageResourceName(category);
-                android.util.Log.d("ActivityAdapter", "CategoryManager returned: " + imageResourceName + " for category: " + category);
+                android.util.Log.d(
+                        "ActivityAdapter",
+                        "CategoryManager returned: "
+                                + imageResourceName
+                                + " for category: "
+                                + category);
             } else {
                 // Fallback to convention-based naming
-                imageResourceName =
-                        "activity_" + category.toLowerCase().replaceAll("\\s+", "_");
-                android.util.Log.d("ActivityAdapter", "CategoryManager null, using fallback: " + imageResourceName);
+                imageResourceName = "activity_" + category.toLowerCase().replaceAll("\\s+", "_");
+                android.util.Log.d(
+                        "ActivityAdapter",
+                        "CategoryManager null, using fallback: " + imageResourceName);
             }
 
             // Get resource ID from resource name
@@ -480,13 +475,16 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     context.getResources()
                             .getIdentifier(imageResourceName, "drawable", context.getPackageName());
 
-            android.util.Log.d("ActivityAdapter", "Resource ID for " + imageResourceName + ": " + resourceId);
+            android.util.Log.d(
+                    "ActivityAdapter", "Resource ID for " + imageResourceName + ": " + resourceId);
 
             // Set image or use default if not found
             if (resourceId != 0) {
                 ivActivityImage.setImageResource(resourceId);
             } else {
-                android.util.Log.w("ActivityAdapter", "Resource not found: " + imageResourceName + ", using default");
+                android.util.Log.w(
+                        "ActivityAdapter",
+                        "Resource not found: " + imageResourceName + ", using default");
                 ivActivityImage.setImageResource(R.drawable.activity_default);
             }
         }

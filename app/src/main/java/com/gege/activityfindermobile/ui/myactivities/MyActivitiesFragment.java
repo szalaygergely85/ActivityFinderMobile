@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +22,9 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
+import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.gege.activityfindermobile.utils.UiUtil;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -31,7 +32,6 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -71,21 +71,18 @@ public class MyActivitiesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
+                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
+                    if (appBar != null) {
+                        appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
 
-            return insets;
-        });
+                    return insets;
+                });
 
         rvActivities = view.findViewById(R.id.rv_activities);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
@@ -145,7 +142,7 @@ public class MyActivitiesFragment extends Fragment {
     private void loadMyActivities() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "User not logged in");
             showEmptyView();
             return;
         }
@@ -174,11 +171,8 @@ public class MyActivitiesFragment extends Fragment {
                     public void onError(String errorMessage) {
                         setLoading(false);
                         swipeRefresh.setRefreshing(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to load activities: " + errorMessage,
-                                        Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(
+                                requireContext(), "Failed to load activities: " + errorMessage);
 
                         // Show empty view on error
                         allActivities = new ArrayList<>();
@@ -217,25 +211,13 @@ public class MyActivitiesFragment extends Fragment {
 
         boolean showExpired = switchShowExpired.isChecked();
         List<Activity> filteredActivities = new ArrayList<>();
-        java.util.Date now = new java.util.Date();
 
         for (Activity activity : allActivities) {
             String status = activity.getStatus();
             String activityDateStr = activity.getActivityDate();
 
-            // Determine if activity is in the past
-            boolean isPast = false;
-            if (activityDateStr != null && !activityDateStr.isEmpty()) {
-                try {
-                    java.text.SimpleDateFormat sdf =
-                            new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                    java.util.Date activityDate = sdf.parse(activityDateStr);
-                    isPast = activityDate.before(now);
-                } catch (java.text.ParseException e) {
-                    // If parsing fails, assume not in past
-                    isPast = false;
-                }
-            }
+            // Determine if activity is in the past using DateUtil
+            boolean isPast = DateUtil.isPast(activityDateStr);
 
             boolean isExpired =
                     isPast
@@ -280,18 +262,13 @@ public class MyActivitiesFragment extends Fragment {
         bundle.putString(
                 "creatorName",
                 activity.getCreatorName() != null ? activity.getCreatorName() : "You");
-        bundle.putLong(
-                "creatorId",
-                activity.getCreatorId() != null ? activity.getCreatorId() : 0L);
+        bundle.putLong("creatorId", activity.getCreatorId() != null ? activity.getCreatorId() : 0L);
         bundle.putDouble(
                 "creatorRating",
                 activity.getCreatorRating() != null ? activity.getCreatorRating() : 0.0);
+        bundle.putDouble("latitude", activity.getLatitude() != null ? activity.getLatitude() : 0.0);
         bundle.putDouble(
-                "latitude",
-                activity.getLatitude() != null ? activity.getLatitude() : 0.0);
-        bundle.putDouble(
-                "longitude",
-                activity.getLongitude() != null ? activity.getLongitude() : 0.0);
+                "longitude", activity.getLongitude() != null ? activity.getLongitude() : 0.0);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_my_activities_to_activityDetailFragment, bundle);

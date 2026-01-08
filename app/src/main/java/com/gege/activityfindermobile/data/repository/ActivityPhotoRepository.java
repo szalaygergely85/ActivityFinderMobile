@@ -32,9 +32,7 @@ public class ActivityPhotoRepository {
         this.activityPhotoApiService = activityPhotoApiService;
     }
 
-    /**
-     * Check if current user has access to activity gallery
-     */
+    /** Check if current user has access to activity gallery */
     public void checkGalleryAccess(Long activityId, ApiCallback<ActivityGalleryAccess> callback) {
         activityPhotoApiService
                 .checkGalleryAccess(activityId)
@@ -56,8 +54,7 @@ public class ActivityPhotoRepository {
                             }
 
                             @Override
-                            public void onFailure(
-                                    Call<ActivityGalleryAccess> call, Throwable t) {
+                            public void onFailure(Call<ActivityGalleryAccess> call, Throwable t) {
                                 String errorMsg = "Network error: " + t.getMessage();
                                 Log.e(TAG, errorMsg, t);
                                 callback.onError(errorMsg);
@@ -65,9 +62,7 @@ public class ActivityPhotoRepository {
                         });
     }
 
-    /**
-     * Upload multiple photos to activity gallery
-     */
+    /** Upload multiple photos to activity gallery */
     public void uploadPhotos(
             Long activityId, List<File> imageFiles, ApiCallback<List<ActivityPhoto>> callback) {
         if (imageFiles == null || imageFiles.isEmpty()) {
@@ -79,10 +74,10 @@ public class ActivityPhotoRepository {
         List<MultipartBody.Part> parts = new ArrayList<>();
         for (File imageFile : imageFiles) {
             if (imageFile.exists()) {
-                RequestBody requestFile =
-                        RequestBody.create(MediaType.parse("image/*"), imageFile);
+                RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
                 MultipartBody.Part body =
-                        MultipartBody.Part.createFormData("files", imageFile.getName(), requestFile);
+                        MultipartBody.Part.createFormData(
+                                "files", imageFile.getName(), requestFile);
                 parts.add(body);
             }
         }
@@ -122,9 +117,7 @@ public class ActivityPhotoRepository {
                         });
     }
 
-    /**
-     * Get all photos for an activity
-     */
+    /** Get all photos for an activity */
     public void getActivityPhotos(Long activityId, ApiCallback<List<ActivityPhoto>> callback) {
         activityPhotoApiService
                 .getActivityPhotos(activityId)
@@ -159,9 +152,7 @@ public class ActivityPhotoRepository {
                         });
     }
 
-    /**
-     * Delete a photo from the gallery
-     */
+    /** Delete a photo from the gallery */
     public void deletePhoto(Long activityId, Long photoId, ApiCallbackVoid callback) {
         activityPhotoApiService
                 .deletePhoto(activityId, photoId)
@@ -188,9 +179,7 @@ public class ActivityPhotoRepository {
                         });
     }
 
-    /**
-     * Get photo count for an activity
-     */
+    /** Get photo count for an activity */
     public void getPhotoCount(Long activityId, ApiCallback<Long> callback) {
         activityPhotoApiService
                 .getPhotoCount(activityId)

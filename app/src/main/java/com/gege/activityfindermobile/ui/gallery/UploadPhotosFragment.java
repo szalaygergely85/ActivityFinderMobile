@@ -117,11 +117,13 @@ public class UploadPhotosFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        adapter = new SelectedPhotoAdapter(position -> {
-            selectedPhotoUris.remove(position);
-            adapter.removePhoto(position);
-            updateUI();
-        });
+        adapter =
+                new SelectedPhotoAdapter(
+                        position -> {
+                            selectedPhotoUris.remove(position);
+                            adapter.removePhoto(position);
+                            updateUI();
+                        });
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 3);
         rvSelectedPhotos.setLayoutManager(gridLayoutManager);
@@ -135,9 +137,10 @@ public class UploadPhotosFragment extends Fragment {
     private void handleSelectedPhotos(List<Uri> uris) {
         if (uris.size() > MAX_PHOTOS) {
             Toast.makeText(
-                    requireContext(),
-                    "Maximum " + MAX_PHOTOS + " photos allowed",
-                    Toast.LENGTH_SHORT).show();
+                            requireContext(),
+                            "Maximum " + MAX_PHOTOS + " photos allowed",
+                            Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
 
@@ -165,7 +168,8 @@ public class UploadPhotosFragment extends Fragment {
 
     private void updateUploadInfo(int count) {
         if (count < MIN_PHOTOS) {
-            tvUploadInfo.setText("Select " + MIN_PHOTOS + "-" + MAX_PHOTOS + " photos from this event");
+            tvUploadInfo.setText(
+                    "Select " + MIN_PHOTOS + "-" + MAX_PHOTOS + " photos from this event");
         } else if (count > MAX_PHOTOS) {
             tvUploadInfo.setText("Too many photos! Maximum is " + MAX_PHOTOS);
         } else {
@@ -176,9 +180,10 @@ public class UploadPhotosFragment extends Fragment {
     private void uploadPhotos() {
         if (selectedPhotoUris.isEmpty() || selectedPhotoUris.size() < MIN_PHOTOS) {
             Toast.makeText(
-                    requireContext(),
-                    "Please select at least " + MIN_PHOTOS + " photos",
-                    Toast.LENGTH_SHORT).show();
+                            requireContext(),
+                            "Please select at least " + MIN_PHOTOS + " photos",
+                            Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
 
@@ -199,25 +204,33 @@ public class UploadPhotosFragment extends Fragment {
             return;
         }
 
-        activityPhotoRepository.uploadPhotos(activityId, imageFiles, new ApiCallback<List<ActivityPhoto>>() {
-            @Override
-            public void onSuccess(List<ActivityPhoto> photos) {
-                setLoading(false);
-                Toast.makeText(
-                        requireContext(),
-                        photos.size() + " photos uploaded successfully!",
-                        Toast.LENGTH_SHORT).show();
+        activityPhotoRepository.uploadPhotos(
+                activityId,
+                imageFiles,
+                new ApiCallback<List<ActivityPhoto>>() {
+                    @Override
+                    public void onSuccess(List<ActivityPhoto> photos) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        photos.size() + " photos uploaded successfully!",
+                                        Toast.LENGTH_SHORT)
+                                .show();
 
-                // Navigate back to gallery
-                requireActivity().onBackPressed();
-            }
+                        // Navigate back to gallery
+                        requireActivity().onBackPressed();
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                setLoading(false);
-                Toast.makeText(requireContext(), "Upload failed: " + errorMessage, Toast.LENGTH_LONG).show();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Upload failed: " + errorMessage,
+                                        Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     private File getFileFromUri(Uri uri) {
@@ -230,7 +243,10 @@ public class UploadPhotosFragment extends Fragment {
                 extension = "jpg";
             }
 
-            File file = new File(requireContext().getCacheDir(), "upload_" + System.currentTimeMillis() + "." + extension);
+            File file =
+                    new File(
+                            requireContext().getCacheDir(),
+                            "upload_" + System.currentTimeMillis() + "." + extension);
             InputStream inputStream = contentResolver.openInputStream(uri);
             FileOutputStream outputStream = new FileOutputStream(file);
 
