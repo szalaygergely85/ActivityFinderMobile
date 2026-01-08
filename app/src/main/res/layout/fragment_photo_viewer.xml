@@ -11,62 +11,120 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Close Button -->
-    <ImageButton
-        android:id="@+id/btn_close"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="top|start"
-        android:layout_margin="16dp"
-        android:background="@drawable/bg_button_close"
-        android:contentDescription="@string/app_name"
-        android:scaleType="centerInside"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        app:tint="@android:color/white" />
-
-    <!-- Photo Counter -->
-    <TextView
-        android:id="@+id/tv_photo_counter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_margin="16dp"
-        android:text="1/6"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <!-- Bottom Action Buttons Container (Edit mode) -->
+    <!-- Top App Bar with Gradient Background -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_gravity="top"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="16dp"
-        android:background="@drawable/bg_buttons_bottom_gradient"
-        android:visibility="gone"
-        android:id="@+id/layout_edit_buttons">
+        android:gravity="center_vertical"
+        android:paddingTop="48dp"
+        android:paddingBottom="16dp"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/bg_top_gradient">
 
-        <!-- Set as Profile Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_set_as_profile_fullscreen"
+        <!-- Close Button -->
+        <ImageButton
+            android:id="@+id/btn_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_button_overlay"
+            android:contentDescription="Close"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_close"
+            app:tint="@android:color/white" />
+
+        <!-- Photo Counter Badge -->
+        <TextView
+            android:id="@+id/tv_photo_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⭐ Set as Profile"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="1/6"
             android:textColor="@android:color/white"
-            android:layout_marginEnd="12dp"
-            android:backgroundTint="#2196F3"
-            app:cornerRadius="24dp" />
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:letterSpacing="0.05"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
+            android:background="@drawable/bg_counter_badge" />
 
-        <!-- Delete Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_delete_photo_fullscreen"
+        <!-- Edit Text Button -->
+        <TextView
+            android:id="@+id/btn_edit"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🗑️ Delete"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="Edit"
             android:textColor="@android:color/white"
-            android:backgroundTint="#E53935"
-            app:cornerRadius="24dp" />
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+    </LinearLayout>
+
+    <!-- Bottom Action Bar with Gradient (Edit mode) -->
+    <LinearLayout
+        android:id="@+id/layout_edit_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:paddingTop="24dp"
+        android:paddingBottom="32dp"
+        android:paddingHorizontal="24dp"
+        android:background="@drawable/bg_bottom_gradient"
+        android:visibility="gone">
+
+        <!-- Action Buttons Group -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="4dp">
+
+            <!-- Set as Profile Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_set_as_profile_fullscreen"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="12dp"
+                android:text="Set Profile"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:icon="@drawable/ic_star"
+                app:iconGravity="textStart"
+                app:iconSize="20dp"
+                app:iconTint="@android:color/white"
+                android:backgroundTint="@color/primary_blue"
+                app:cornerRadius="999dp"
+                android:elevation="8dp" />
+
+            <!-- Delete Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_photo_fullscreen"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:icon="@drawable/ic_delete"
+                app:iconGravity="textStart"
+                app:iconSize="24dp"
+                app:iconPadding="0dp"
+                app:iconTint="@android:color/white"
+                android:backgroundTint="#ff3b30"
+                app:cornerRadius="999dp"
+                android:elevation="8dp" />
+
+        </LinearLayout>
+
     </LinearLayout>
 </FrameLayout>

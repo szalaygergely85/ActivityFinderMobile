@@ -42,6 +42,7 @@ public class PhotoViewerFragment extends Fragment {
     private ViewPager2 viewPagerPhotos;
     private ImageButton btnClose;
     private TextView tvPhotoCounter;
+    private TextView btnEdit;
     private MaterialButton btnSetAsProfile;
     private MaterialButton btnDeletePhoto;
     private LinearLayout layoutEditButtons;
@@ -103,23 +104,42 @@ public class PhotoViewerFragment extends Fragment {
         viewPagerPhotos = view.findViewById(R.id.view_pager_photos);
         btnClose = view.findViewById(R.id.btn_close);
         tvPhotoCounter = view.findViewById(R.id.tv_photo_counter);
+        btnEdit = view.findViewById(R.id.btn_edit);
         btnSetAsProfile = view.findViewById(R.id.btn_set_as_profile_fullscreen);
         btnDeletePhoto = view.findViewById(R.id.btn_delete_photo_fullscreen);
         layoutEditButtons = view.findViewById(R.id.layout_edit_buttons);
 
         btnClose.setOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Show edit buttons based on mode
+        // Set up edit button click listener
+        btnEdit.setOnClickListener(
+                v -> {
+                    isEditMode = !isEditMode;
+                    updateEditModeVisibility();
+                });
+
+        // Set up action button listeners
+        btnSetAsProfile.setOnClickListener(v -> setCurrentPhotoAsProfile());
+        btnDeletePhoto.setOnClickListener(v -> deleteCurrentPhoto());
+
+        // Show/hide edit button and action buttons based on mode
         if (isActivityGallery) {
-            // For activity gallery, only show delete button if user owns the photo
+            // For activity gallery, hide edit button
+            btnEdit.setVisibility(View.GONE);
+            // Show delete button if user owns the photo
             layoutEditButtons.setVisibility(View.VISIBLE);
             btnSetAsProfile.setVisibility(View.GONE);
             btnDeletePhoto.setOnClickListener(v -> deleteCurrentActivityPhoto());
-        } else if (isEditMode) {
-            // For user photos in edit mode
+        } else {
+            // For user photos, show edit button
+            btnEdit.setVisibility(View.VISIBLE);
+            updateEditModeVisibility();
+        }
+    }
+
+    private void updateEditModeVisibility() {
+        if (isEditMode) {
             layoutEditButtons.setVisibility(View.VISIBLE);
-            btnSetAsProfile.setOnClickListener(v -> setCurrentPhotoAsProfile());
-            btnDeletePhoto.setOnClickListener(v -> deleteCurrentPhoto());
         } else {
             layoutEditButtons.setVisibility(View.GONE);
         }
