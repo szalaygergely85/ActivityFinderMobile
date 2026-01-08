@@ -79,7 +79,7 @@ public class EditProfileFragment extends Fragment {
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvMyPhotos;
     private TextView tvPhotoCount;
-    private View layoutPhotosEmpty;
+    private View frameProfilePicture, layoutPhotosEmpty;
 
     //private MaterialAutoCompleteTextView actvCity;
    // private TextInputLayout tilCity;
@@ -133,24 +133,8 @@ public class EditProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
-
-            return insets;
-        });
-
         initViews(view);
-        setupToolbar(view);
+        setupBackButton(view);
         initPlacesClient();
         //setupCityAutocomplete();
         loadCurrentProfile();
@@ -175,6 +159,7 @@ public class EditProfileFragment extends Fragment {
 
     private void initViews(View view) {
         ivProfilePicture = view.findViewById(R.id.iv_profile_picture);
+        frameProfilePicture = view.findViewById(R.id.frame_profile_picture);
         etFullName = view.findViewById(R.id.et_full_name);
         etBio = view.findViewById(R.id.et_bio);
         chipGroupInterests = view.findViewById(R.id.chip_group_interests);
@@ -190,11 +175,11 @@ public class EditProfileFragment extends Fragment {
 */
         btnSave.setOnClickListener(v -> saveProfile());
         btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
+        frameProfilePicture.setOnClickListener(v -> openPhotoGalleryPicker());
     }
 
-    private void setupToolbar(View view) {
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v ->
+    private void setupBackButton(View view) {
+        view.findViewById(R.id.btn_back).setOnClickListener(v ->
                 requireActivity()
                         .getOnBackPressedDispatcher()
                         .onBackPressed()
@@ -469,7 +454,10 @@ public class EditProfileFragment extends Fragment {
         chipGroupInterests.removeAllViews();
 
         for (String interest : AVAILABLE_INTERESTS) {
-            Chip chip = new Chip(requireContext());
+            Chip chip =
+                    (Chip)
+                            getLayoutInflater()
+                                    .inflate(R.layout.chip_interest_item, chipGroupInterests, false);
             chip.setText(interest);
             chip.setCheckable(true);
             chip.setChecked(selectedInterests.contains(interest));
@@ -661,19 +649,17 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void displayPhotos(List<UserPhoto> photos) {
-        if (photos != null && !photos.isEmpty()) {
-            tvPhotoCount.setText(photos.size() + "/6");
-            btnUploadPhoto.setEnabled(photos.size() < 6);
-            setupPhotoAdapter(photos);
-            layoutPhotosEmpty.setVisibility(View.GONE);
-        } else {
-            layoutPhotosEmpty.setVisibility(View.VISIBLE);
-            tvPhotoCount.setText("0/6");
-            btnUploadPhoto.setEnabled(true);
-        }
+        int photoCount = photos != null ? photos.size() : 0;
+        tvPhotoCount.setText(photoCount + "/6");
+        btnUploadPhoto.setEnabled(photoCount < 6);
+
+        setupPhotoAdapter(photos);
     }
 
     private void setupPhotoAdapter(List<UserPhoto> photos) {
+        int photoCount = photos != null ? photos.size() : 0;
+        boolean showAddButton = photoCount < 6; // Show add button if less than 6 photos
+
         photoGalleryAdapter =
                 new PhotoGalleryAdapter(
                         photos,
@@ -692,8 +678,14 @@ public class EditProfileFragment extends Fragment {
                             public void onPhotoClick(UserPhoto photo) {
                                 openPhotoViewer(photos, photos.indexOf(photo));
                             }
+
+                            @Override
+                            public void onAddPhotoClick() {
+                                openPhotoGalleryPicker();
+                            }
                         });
         photoGalleryAdapter.setEditMode(true);
+        photoGalleryAdapter.setShowAddButton(showAddButton);
         rvMyPhotos.setAdapter(photoGalleryAdapter);
     }
 

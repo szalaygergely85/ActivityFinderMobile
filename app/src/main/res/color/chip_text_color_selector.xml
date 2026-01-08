@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Checked state -->
-    <item android:state_checked="true" android:color="#FFFFFF" />
+    <item android:state_checked="true" android:color="@color/white" />
     <!-- Unchecked state -->
-    <item android:color="@color/slate_400" />
+    <item android:color="@color/slate_300" />
 </selector>

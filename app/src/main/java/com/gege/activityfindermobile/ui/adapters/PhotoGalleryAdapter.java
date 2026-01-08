@@ -17,11 +17,15 @@ import com.gege.activityfindermobile.utils.ImageLoader;
 
 import java.util.List;
 
-public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapter.ViewHolder> {
+public class PhotoGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_PHOTO = 0;
+    private static final int TYPE_ADD_BUTTON = 1;
 
     private List<UserPhoto> photos;
     private OnPhotoActionListener listener;
     private boolean isEditMode = false;
+    private boolean showAddButton = false;
 
     public interface OnPhotoActionListener {
         void onSetAsProfile(UserPhoto photo);
@@ -29,6 +33,8 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
         void onDeletePhoto(UserPhoto photo);
 
         void onPhotoClick(UserPhoto photo);
+
+        void onAddPhotoClick();
     }
 
     public PhotoGalleryAdapter(List<UserPhoto> photos, OnPhotoActionListener listener) {
@@ -46,38 +52,69 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
         notifyDataSetChanged();
     }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view =
-                LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_photo_gallery, parent, false);
-        return new ViewHolder(view);
+    public void setShowAddButton(boolean showAddButton) {
+        this.showAddButton = showAddButton;
+        notifyDataSetChanged();
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        UserPhoto photo = photos.get(position);
-        holder.bind(photo, isEditMode);
+    public int getItemViewType(int position) {
+        int photoCount = photos != null ? photos.size() : 0;
+        // If showing add button and this is the last position, it's the add button
+        if (showAddButton && position == photoCount) {
+            return TYPE_ADD_BUTTON;
+        }
+        return TYPE_PHOTO;
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == TYPE_ADD_BUTTON) {
+            View view =
+                    LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_photo_add_button, parent, false);
+            return new AddButtonViewHolder(view);
+        } else {
+            View view =
+                    LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_photo_gallery, parent, false);
+            return new PhotoViewHolder(view);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof PhotoViewHolder) {
+            UserPhoto photo = photos.get(position);
+            ((PhotoViewHolder) holder).bind(photo, isEditMode);
+        } else if (holder instanceof AddButtonViewHolder) {
+            ((AddButtonViewHolder) holder).bind();
+        }
     }
 
     @Override
     public int getItemCount() {
-        return photos != null ? photos.size() : 0;
+        int photoCount = photos != null ? photos.size() : 0;
+        return showAddButton ? photoCount + 1 : photoCount;
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class PhotoViewHolder extends RecyclerView.ViewHolder {
         private ImageView ivPhoto;
-        private TextView tvProfileBadge;
+        private View tvProfileBadge;
         private ImageButton btnSetAsProfile;
         private ImageButton btnDeletePhoto;
+        private View bottomOverlay;
+        private View layoutActions;
 
-        ViewHolder(@NonNull View itemView) {
+        PhotoViewHolder(@NonNull View itemView) {
             super(itemView);
             ivPhoto = itemView.findViewById(R.id.iv_photo);
             tvProfileBadge = itemView.findViewById(R.id.tv_profile_badge);
             btnSetAsProfile = itemView.findViewById(R.id.btn_set_as_profile);
             btnDeletePhoto = itemView.findViewById(R.id.btn_delete_photo);
+            bottomOverlay = itemView.findViewById(R.id.bottom_overlay);
+            layoutActions = itemView.findViewById(R.id.layout_actions);
         }
 
         void bind(UserPhoto photo, boolean editMode) {
@@ -89,23 +126,20 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
             // Show/hide profile badge - only in edit mode
             if (editMode && photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
                 tvProfileBadge.setVisibility(View.VISIBLE);
-                tvProfileBadge.setText("⭐ Profile");
             } else {
                 tvProfileBadge.setVisibility(View.GONE);
             }
 
-            // Show/hide buttons based on edit mode
+            // Show/hide bottom overlay and buttons based on edit mode
             if (editMode) {
-                btnSetAsProfile.setVisibility(View.VISIBLE);
-                btnDeletePhoto.setVisibility(View.VISIBLE);
+                bottomOverlay.setVisibility(View.VISIBLE);
+                layoutActions.setVisibility(View.VISIBLE);
 
                 // Set as profile button - only show if not already profile picture
                 if (photo.getIsProfilePicture() != null && photo.getIsProfilePicture()) {
-                    btnSetAsProfile.setEnabled(false);
-                    btnSetAsProfile.setAlpha(0.5f);
+                    btnSetAsProfile.setVisibility(View.GONE);
                 } else {
-                    btnSetAsProfile.setEnabled(true);
-                    btnSetAsProfile.setAlpha(1f);
+                    btnSetAsProfile.setVisibility(View.VISIBLE);
                     btnSetAsProfile.setOnClickListener(
                             v -> {
                                 if (listener != null) {
@@ -122,8 +156,8 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
                             }
                         });
             } else {
-                btnSetAsProfile.setVisibility(View.GONE);
-                btnDeletePhoto.setVisibility(View.GONE);
+                bottomOverlay.setVisibility(View.GONE);
+                layoutActions.setVisibility(View.GONE);
             }
 
             // Photo click listener for viewing
@@ -131,6 +165,21 @@ public class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoGalleryAdapte
                     v -> {
                         if (listener != null) {
                             listener.onPhotoClick(photo);
+                        }
+                    });
+        }
+    }
+
+    class AddButtonViewHolder extends RecyclerView.ViewHolder {
+        AddButtonViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+
+        void bind() {
+            itemView.setOnClickListener(
+                    v -> {
+                        if (listener != null) {
+                            listener.onAddPhotoClick();
                         }
                     });
         }
