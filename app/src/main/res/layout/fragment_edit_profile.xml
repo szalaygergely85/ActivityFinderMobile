@@ -336,6 +336,7 @@
         android:id="@+id/layout_photos_empty"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:orientation="vertical"
         android:visibility="gone" />
 
     <!-- Hidden add photo button for backward compatibility -->
@@ -350,6 +351,7 @@
         android:id="@+id/layout_photos_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:orientation="vertical"
         android:visibility="gone" />
 
 </FrameLayout>
