@@ -37,7 +37,7 @@ import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
 import com.gege.activityfindermobile.utils.LocationManager;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
@@ -161,7 +161,7 @@ public class FeedFragment extends Fragment {
         btnSearch = view.findViewById(R.id.btn_search);
         btnFilter = view.findViewById(R.id.btn_filter);
         chipGroupFilters = view.findViewById(R.id.chip_group_filters);
-        ExtendedFloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
+        FloatingActionButton fabCreate = view.findViewById(R.id.fab_create);
 
         // Initialize location manager
         locationManager = new LocationManager(requireContext());
