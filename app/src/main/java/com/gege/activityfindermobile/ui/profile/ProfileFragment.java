@@ -210,18 +210,23 @@ public class ProfileFragment extends Fragment {
         List<String> interests = user.getInterests();
         if (interests != null && !interests.isEmpty()) {
             for (String interest : interests) {
-                Chip chip = new Chip(requireContext());
+                Chip chip =
+                        (Chip)
+                                getLayoutInflater()
+                                        .inflate(
+                                                R.layout.chip_display_item,
+                                                chipGroupInterests,
+                                                false);
                 chip.setText(interest);
-                chip.setChipBackgroundColorResource(R.color.primary_light);
-                chip.setClickable(false);
                 chipGroupInterests.addView(chip);
             }
         } else {
             // Show "No interests" message
-            Chip chip = new Chip(requireContext());
+            Chip chip =
+                    (Chip)
+                            getLayoutInflater()
+                                    .inflate(R.layout.chip_display_item, chipGroupInterests, false);
             chip.setText("No interests added");
-            chip.setChipBackgroundColorResource(R.color.gray_light);
-            chip.setClickable(false);
             chipGroupInterests.addView(chip);
         }
 
@@ -305,6 +310,11 @@ public class ProfileFragment extends Fragment {
                             public void onPhotoClick(UserPhoto photo) {
                                 // Open full-screen photo viewer
                                 openPhotoViewer(photos, photos.indexOf(photo));
+                            }
+
+                            @Override
+                            public void onAddPhotoClick() {
+                                // Not available in profile view
                             }
                         });
         photoGalleryAdapter.setEditMode(false);

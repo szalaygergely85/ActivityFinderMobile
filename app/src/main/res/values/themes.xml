@@ -67,4 +67,12 @@
         <item name="android:textColor">@color/primary_light</item>
         <item name="android:textColorHint">@color/primary_light</item>
     </style>
+
+    <!-- Custom Interest Chip Style -->
+    <style name="CustomInterestChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_background_color</item>
+        <item name="android:textColor">@color/chip_text_color_selector</item>
+        <item name="chipStrokeColor">@color/chip_stroke_color</item>
+        <item name="chipStrokeWidth">1dp</item>
+    </style>
 </resources>

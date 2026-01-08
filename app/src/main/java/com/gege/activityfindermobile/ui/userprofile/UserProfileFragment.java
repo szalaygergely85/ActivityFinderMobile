@@ -191,21 +191,25 @@ public class UserProfileFragment extends Fragment {
         if (interests != null && !interests.isEmpty()) {
             chipGroupInterests.removeAllViews();
             for (String interest : interests) {
-                Chip chip = new Chip(requireContext());
+                Chip chip =
+                        (Chip)
+                                getLayoutInflater()
+                                        .inflate(
+                                                R.layout.chip_display_item,
+                                                chipGroupInterests,
+                                                false);
                 chip.setText(interest);
-                chip.setChipBackgroundColorResource(R.color.primary_light);
-                chip.setClickable(false);
                 chipGroupInterests.addView(chip);
             }
             cardInterests.setVisibility(View.VISIBLE);
         } else {
             // Show placeholder chip
             chipGroupInterests.removeAllViews();
-            Chip chip = new Chip(requireContext());
+            Chip chip =
+                    (Chip)
+                            getLayoutInflater()
+                                    .inflate(R.layout.chip_display_item, chipGroupInterests, false);
             chip.setText("No interests added yet");
-            chip.setChipBackgroundColorResource(R.color.gray_light);
-            chip.setTextColor(getResources().getColor(R.color.text_hint, null));
-            chip.setClickable(false);
             chipGroupInterests.addView(chip);
             cardInterests.setVisibility(View.VISIBLE);
         }
@@ -248,6 +252,11 @@ public class UserProfileFragment extends Fragment {
                                                 R.id
                                                         .action_userProfileFragment_to_photoViewerFragment,
                                                 bundle);
+                            }
+
+                            @Override
+                            public void onAddPhotoClick() {
+                                // Not available in this view
                             }
                         });
         photoGalleryAdapter.setEditMode(false);

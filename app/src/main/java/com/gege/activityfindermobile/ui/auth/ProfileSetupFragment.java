@@ -463,6 +463,11 @@ public class ProfileSetupFragment extends Fragment {
                             public void onPhotoClick(UserPhoto photo) {
                                 openPhotoViewer(photos, photos.indexOf(photo));
                             }
+
+                            @Override
+                            public void onAddPhotoClick() {
+                                // Not available in this view
+                            }
                         });
         photoGalleryAdapter.setEditMode(true);
         rvMyPhotos.setAdapter(photoGalleryAdapter);

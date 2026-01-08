@@ -254,83 +254,73 @@
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_sports"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sports"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Sports" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_social"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Social"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Social" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_outdoor"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Outdoor"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Outdoor" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_food"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Food"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Food" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_travel"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Travel"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Travel" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_photography"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Photography"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Photography" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_music"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Music"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Music" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_art"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Art"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Art" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_gaming"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Gaming"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Gaming" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_fitness"
-                        style="@style/Widget.Material3.Chip.Filter"
+                        style="@style/CustomInterestChip"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Fitness"
-                        app:chipBackgroundColor="@color/white" />
+                        android:text="Fitness" />
 
                 </com.google.android.material.chip.ChipGroup>
 

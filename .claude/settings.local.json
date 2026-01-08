@@ -10,7 +10,8 @@
       "Bash(cat:*)",
       "Bash(tree:*)",
       "Bash(adb logcat:*)",
-      "Bash(adb devices:*)"
+      "Bash(adb devices:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

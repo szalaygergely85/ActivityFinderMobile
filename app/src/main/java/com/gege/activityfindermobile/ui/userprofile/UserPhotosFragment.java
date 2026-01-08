@@ -90,6 +90,11 @@ public class UserPhotosFragment extends Fragment {
                             public void onPhotoClick(UserPhoto photo) {
                                 // Optional: open full-screen view
                             }
+
+                            @Override
+                            public void onAddPhotoClick() {
+                                // Not available in this view
+                            }
                         });
 
         // Setup grid layout

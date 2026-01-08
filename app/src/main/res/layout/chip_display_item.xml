@@ -2,16 +2,12 @@
 <com.google.android.material.chip.Chip
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/chip_interest"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
     android:checkable="false"
     android:clickable="false"
     android:textColor="@color/slate_300"
     app:chipBackgroundColor="@color/surface_dark"
     app:chipCornerRadius="16dp"
     app:chipStrokeColor="@color/slate_500"
-    app:chipStrokeWidth="1dp"
-    app:textStartPadding="8dp"
-    app:textEndPadding="8dp" />
+    app:chipStrokeWidth="1dp" />

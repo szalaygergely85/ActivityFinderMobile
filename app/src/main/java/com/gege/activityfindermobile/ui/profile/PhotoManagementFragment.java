@@ -116,6 +116,11 @@ public class PhotoManagementFragment extends Fragment {
                             public void onPhotoClick(UserPhoto photo) {
                                 // Open fullscreen view (optional)
                             }
+
+                            @Override
+                            public void onAddPhotoClick() {
+                                // Not available in this view
+                            }
                         });
 
         // Setup grid layout
