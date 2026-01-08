@@ -10,9 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,9 +20,9 @@ import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.model.UserPhoto;
 import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
+import com.gege.activityfindermobile.ui.report.ReportDialog;
 import com.gege.activityfindermobile.utils.ImageLoader;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -44,13 +41,16 @@ public class UserProfileFragment extends Fragment {
     @Inject UserRepository userRepository;
 
     private Long userId;
-    private TextView tvFullName, tvBadge, tvRating, tvCompletedActivities, tvBio, tvPhotoCount;
+    private TextView tvFullName, tvRating, tvCompletedActivities, tvBio, tvPhotoCount;
+    private Chip chipBadge;
     private CircleImageView ivProfileImage;
     private ChipGroup chipGroupInterests;
     private CircularProgressIndicator progressLoading;
     private View cardBio, cardInterests, cardPhotos, layoutPhotosEmpty;
     private RecyclerView rvUserPhotos;
     private PhotoGalleryAdapter photoGalleryAdapter;
+    private MaterialButton btnReport;
+    private android.widget.ImageButton btnBack;
 
     @Nullable
     @Override
@@ -65,25 +65,11 @@ public class UserProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                view,
-                (v, insets) -> {
-                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
-                    if (appBar != null) {
-                        appBar.setPadding(0, systemBars.top, 0, 0);
-                    }
-
-                    return insets;
-                });
-
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
-
+        // Initialize views
+        btnBack = view.findViewById(R.id.btn_back);
         ivProfileImage = view.findViewById(R.id.iv_profile_image);
         tvFullName = view.findViewById(R.id.tv_full_name);
-        tvBadge = view.findViewById(R.id.tv_badge);
+        chipBadge = view.findViewById(R.id.chip_badge);
         tvRating = view.findViewById(R.id.tv_rating);
         tvCompletedActivities = view.findViewById(R.id.tv_completed_activities);
         tvBio = view.findViewById(R.id.tv_bio);
@@ -95,6 +81,13 @@ public class UserProfileFragment extends Fragment {
         rvUserPhotos = view.findViewById(R.id.rv_user_photos);
         layoutPhotosEmpty = view.findViewById(R.id.layout_photos_empty);
         tvPhotoCount = view.findViewById(R.id.tv_photo_count);
+        btnReport = view.findViewById(R.id.btn_report);
+
+        // Set up back button
+        btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+
+        // Set up report button
+        btnReport.setOnClickListener(v -> showReportDialog());
 
         // Get userId from arguments
         if (getArguments() != null) {
@@ -154,8 +147,10 @@ public class UserProfileFragment extends Fragment {
 
         // Set badge
         if (user.getBadge() != null && !user.getBadge().isEmpty()) {
-            tvBadge.setText(user.getBadge());
-            tvBadge.setVisibility(View.VISIBLE);
+            chipBadge.setText(user.getBadge());
+            chipBadge.setVisibility(View.VISIBLE);
+        } else {
+            chipBadge.setVisibility(View.GONE);
         }
 
         // Set rating
@@ -260,5 +255,12 @@ public class UserProfileFragment extends Fragment {
         rvUserPhotos.setAdapter(photoGalleryAdapter);
         tvPhotoCount.setText(photos.size() + "/6");
         layoutPhotosEmpty.setVisibility(View.GONE);
+    }
+
+    private void showReportDialog() {
+        if (userId != null) {
+            ReportDialog dialog = ReportDialog.newInstanceForUser(userId);
+            dialog.show(getChildFragmentManager(), "ReportDialog");
+        }
     }
 }
