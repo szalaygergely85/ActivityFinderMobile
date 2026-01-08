@@ -9,10 +9,7 @@
 
     <!-- Background Colors -->
     <color name="background">#F8F9FB</color> <!-- Subtle Gray-Blue -->
-    <color name="background_secondary">#EFF1F5</color> <!-- Light Gray -->
-    <color name="background_card">#FFFFFF</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="black">#FF000000</color>
 
     <!-- Text Colors - High Contrast -->
     <color name="text_primary">#FF000000</color> <!-- Black -->
@@ -28,9 +25,6 @@
     <color name="error">#DC2626</color> <!-- Clean Red -->
 
     <!-- Gradient Colors - Subtle Professional -->
-    <color name="gradient_start">#0c3b2e</color> <!-- Dark Teal -->
-    <color name="gradient_mid">#6d9773</color> <!-- Sage Green -->
-    <color name="gradient_end">#bb8a52</color> <!-- Warm Tan -->
 
     <!-- Category Colors - Muted Professional Palette -->
     <color name="category_sports">#2563EB</color> <!-- Deep Blue -->
@@ -45,36 +39,24 @@
     <color name="category_fitness">#0D9488</color> <!-- Deep Teal -->
 
     <!-- Chip/Filter Colors -->
-    <color name="chip_selected">#6d9773</color>
     <color name="chip_unselected">#F1F5F9</color>
-    <color name="chip_text_selected">#FFFFFF</color>
-    <color name="chip_text_unselected">#475569</color>
 
     <!-- Notification Colors -->
-    <color name="notification_unread_bg">#F0F9FF</color> <!-- Very Light Blue -->
 
     <!-- Bottom Navigation Colors -->
-    <color name="bottom_nav_unselected">#0c3b2e</color> <!-- Dark Green for unselected -->
-    <color name="bottom_nav_selected">#ffba00</color> <!-- Golden Yellow for selected -->
 
     <!-- New Modern Dark Theme Colors (matching HTML design) -->
     <color name="primary_blue">#0084FF</color>
-    <color name="primary_blue_hover">#0072DB</color>
     <color name="background_dark">#0B1116</color>
     <color name="surface_dark">#161F29</color>
     <color name="surface_border">#26FFFFFF</color>
-    <color name="surface_lighter">#232D3A</color>
-    <color name="slate_750">#2C3540</color>
     <color name="slate_800">#1E293B</color>
     <color name="slate_700">#334155</color>
     <color name="slate_600">#475569</color>
     <color name="slate_500">#64748B</color>
     <color name="slate_400">#94A3B8</color>
     <color name="slate_300">#CBD5E1</color>
-    <color name="slate_100">#F1F5F9</color>
-    <color name="accent_orange">#F2994A</color>
     <color name="emerald">#27AE60</color>
     <color name="emerald_500">#1010b981</color>
-    <color name="accent_red">#EB5757</color>
     <color name="white_5">#0DFFFFFF</color>
 </resources>
