@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Selected state: Dark Teal -->
+    <!-- Selected state: Primary Blue -->
     <item android:color="@color/primary_blue" android:state_checked="true" />
-    <!-- Unselected state: Golden Yellow -->
-    <item android:color="@color/slate_400" />
+
+    <!-- Unselected state: Slate 500 -->
+    <item android:color="@color/slate_500" />
 </selector>
