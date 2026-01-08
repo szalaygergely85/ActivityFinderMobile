@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -36,7 +37,6 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         ActivityDetailFragment
     }
 
-
     public interface OnParticipantClickListener {
         void onParticipantClick(Participant participant);
     }
@@ -58,9 +58,10 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         this.owner = owner;
     }
 
-    public boolean isParticpantTabFragment(){
+    public boolean isParticpantTabFragment() {
         return owner == Owner.ParticipantsTabFragment;
     }
+
     public void setParticipants(List<Participant> participants) {
         this.participants = participants;
         notifyDataSetChanged();
@@ -219,9 +220,11 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             boolean isActivityExpired = isActivityExpired(activityDate);
             boolean isCurrentUser =
                     currentUserId != null && currentUserId.equals(participant.getUserId());
-            boolean isParticipantTabFragment = owner == ParticipantAdapter.Owner.ParticipantsTabFragment;
+            boolean isParticipantTabFragment =
+                    owner == ParticipantAdapter.Owner.ParticipantsTabFragment;
 
-            if (("JOINED".equals(status) || "ACCEPTED".equals(status)) && isParticipantTabFragment
+            if (("JOINED".equals(status) || "ACCEPTED".equals(status))
+                    && isParticipantTabFragment
                     && isActivityExpired
                     && !isCurrentUser) {
                 btnReview.setVisibility(View.VISIBLE);
@@ -250,16 +253,22 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             }
 
             // Show remove button only for activity creator and not for themselves
-            boolean isCreator = creatorId != null && currentUserId != null && creatorId.equals(currentUserId);
-            boolean isCurrentUserParticipant = currentUserId != null && currentUserId.equals(participant.getUserId());
+            boolean isCreator =
+                    creatorId != null && currentUserId != null && creatorId.equals(currentUserId);
+            boolean isCurrentUserParticipant =
+                    currentUserId != null && currentUserId.equals(participant.getUserId());
 
-            if (isCreator && !isCurrentUserParticipant && ("ACCEPTED".equals(status) || "JOINED".equals(status)) && isParticipantTabFragment) {
+            if (isCreator
+                    && !isCurrentUserParticipant
+                    && ("ACCEPTED".equals(status) || "JOINED".equals(status))
+                    && isParticipantTabFragment) {
                 btnRemove.setVisibility(View.VISIBLE);
-                btnRemove.setOnClickListener(v -> {
-                    if (removeListener != null) {
-                        removeListener.onRemoveClick(participant);
-                    }
-                });
+                btnRemove.setOnClickListener(
+                        v -> {
+                            if (removeListener != null) {
+                                removeListener.onRemoveClick(participant);
+                            }
+                        });
             } else {
                 btnRemove.setVisibility(View.GONE);
             }
@@ -271,38 +280,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         }
 
         private boolean isActivityExpired(String dateStr) {
-            if (dateStr == null || dateStr.isEmpty()) {
-                return false;
-            }
-
-            try {
-                // Parse the date string (assuming format like "Nov 15, 2025")
-                java.text.SimpleDateFormat sdf =
-                        new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
-                java.util.Date activityDate = sdf.parse(dateStr);
-                java.util.Date today = new java.util.Date();
-
-                // Reset time to start of day for both dates to compare just the date portion
-                java.util.Calendar calActivity = java.util.Calendar.getInstance();
-                calActivity.setTime(activityDate);
-                calActivity.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                calActivity.set(java.util.Calendar.MINUTE, 0);
-                calActivity.set(java.util.Calendar.SECOND, 0);
-                calActivity.set(java.util.Calendar.MILLISECOND, 0);
-
-                java.util.Calendar calToday = java.util.Calendar.getInstance();
-                calToday.setTime(today);
-                calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                calToday.set(java.util.Calendar.MINUTE, 0);
-                calToday.set(java.util.Calendar.SECOND, 0);
-                calToday.set(java.util.Calendar.MILLISECOND, 0);
-
-                // Activity is expired if the date is before today (not including today)
-                return calActivity.before(calToday);
-            } catch (java.text.ParseException e) {
-                // If date parsing fails, assume not expired
-                return false;
-            }
+            return DateUtil.isDisplayDateExpired(dateStr);
         }
     }
 }

@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,21 +33,21 @@ import com.gege.activityfindermobile.data.repository.ReviewRepository;
 import com.gege.activityfindermobile.ui.adapters.CommentAdapter;
 import com.gege.activityfindermobile.ui.adapters.ParticipantAdapter;
 import com.gege.activityfindermobile.ui.review.ReviewDialog;
+import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
+import com.gege.activityfindermobile.utils.UiUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +129,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         setVisibilities(isExpired, currentUserId);
     }
 
-    private void setVisibilities(boolean isExpired, Long currentUserId){
+    private void setVisibilities(boolean isExpired, Long currentUserId) {
 
         if (currentUserId != null && currentUserId.equals(creatorId)) {
             Log.d("ActivityDetailFragment", "User IS the creator - showing edit/delete buttons");
@@ -179,41 +178,39 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
             // Check if user has already joined this activity
             checkUserParticipationStatus();
         }
-
-
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    // Add top padding to the back button for status bar
+                    com.google.android.material.floatingactionbutton.FloatingActionButton
+                            fabBackBtn = v.findViewById(R.id.fab_back);
+                    if (fabBackBtn != null) {
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams) fabBackBtn.getLayoutParams();
+                        params.topMargin = systemBars.top + 16;
+                        fabBackBtn.setLayoutParams(params);
+                    }
 
-            // Add top padding to the back button for status bar
-            com.google.android.material.floatingactionbutton.FloatingActionButton fabBackBtn = v.findViewById(R.id.fab_back);
-            if (fabBackBtn != null) {
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) fabBackBtn.getLayoutParams();
-                params.topMargin = systemBars.top + 16;
-                fabBackBtn.setLayoutParams(params);
-            }
-
-            return insets;
-        });
+                    return insets;
+                });
 
         // Initialize hero image and back button
         ivActivityHero = view.findViewById(R.id.iv_activity_hero);
         fabBack = view.findViewById(R.id.fab_back);
-        fabBack.setOnClickListener(v ->
-                requireActivity()
-                        .getOnBackPressedDispatcher()
-                        .onBackPressed()
-        );
+        fabBack.setOnClickListener(
+                v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
 
         // Initialize map
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getChildFragmentManager().findFragmentById(R.id.map_container);
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_container);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -244,7 +241,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                 new ParticipantAdapter(
                         participant -> {
                             navigateToUserProfile(participant.getUserId());
-                        }, ParticipantAdapter.Owner.ActivityDetailFragment);
+                        },
+                        ParticipantAdapter.Owner.ActivityDetailFragment);
         participantAdapter.setReviewListener(
                 (participant, activityIdParam) -> {
                     showReviewDialog(participant, activityIdParam);
@@ -512,13 +510,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private void expressInterest() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "Please login to join activities", Toast.LENGTH_SHORT)
-                    .show();
+            UiUtil.showToast(requireContext(), "Please login to join activities");
             return;
         }
 
         if (activityId == null || activityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid activity");
             return;
         }
 
@@ -541,35 +538,23 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                         // Check the status returned from server
                         String status = participant.getStatus();
                         if ("ACCEPTED".equals(status)) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "You've been accepted! You can now join the activity.",
-                                            Toast.LENGTH_SHORT)
-                                    .show();
+                            UiUtil.showToast(
+                                    requireContext(),
+                                    "You've been accepted! You can now join the activity.");
                             updateButtonToAcceptedState();
                             // Don't add to participant list yet - only after JOINED
                         } else if ("JOINED".equals(status)) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Successfully joined the activity!",
-                                            Toast.LENGTH_SHORT)
-                                    .show();
+                            UiUtil.showToast(requireContext(), "Successfully joined the activity!");
                             updateButtonToJoinedState();
                             // Reload participants to show yourself in the list
                             loadParticipants();
                         } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Join request sent! Waiting for approval.",
-                                            Toast.LENGTH_SHORT)
-                                    .show();
+                            UiUtil.showToast(
+                                    requireContext(), "Join request sent! Waiting for approval.");
                             updateButtonToPendingState();
                         } else {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Request submitted! Status: " + status,
-                                            Toast.LENGTH_SHORT)
-                                    .show();
+                            UiUtil.showToast(
+                                    requireContext(), "Request submitted! Status: " + status);
                             updateButtonToPendingState();
                         }
 
@@ -589,31 +574,24 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                                 || errorMessage.contains("already a participant")
                                 || errorMessage.contains("duplicate")
                                 || errorMessage.contains("already exists")) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "You've already requested to join this activity!",
-                                            Toast.LENGTH_LONG)
-                                    .show();
+                            UiUtil.showLongToast(
+                                    requireContext(),
+                                    "You've already requested to join this activity!");
                             // Re-check status to update button correctly
                             checkUserParticipationStatus();
                         } else if (errorMessage.contains("maximum")
                                 || errorMessage.contains("attempt")
                                 || errorMessage.contains("limit")
                                 || errorMessage.contains("exceeded")) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "You've reached the maximum application attempts (3)"
-                                                    + " for this activity.",
-                                            Toast.LENGTH_LONG)
-                                    .show();
+                            UiUtil.showLongToast(
+                                    requireContext(),
+                                    "You've reached the maximum application attempts (3)"
+                                            + " for this activity.");
                             // Show max attempts state
                             showMaxAttemptsReachedState();
                         } else {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Failed to join: " + errorMessage,
-                                            Toast.LENGTH_LONG)
-                                    .show();
+                            UiUtil.showLongToast(
+                                    requireContext(), "Failed to join: " + errorMessage);
                         }
                     }
                 });
@@ -809,7 +787,6 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         bundle.putLong("currentUserId", prefsManager.getUserId());
         bundle.putLong("creatorId", creatorId);
 
-
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(
                 R.id.action_activityDetailFragment_to_manageActivityFragment, bundle);
@@ -844,12 +821,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private void deleteActivity() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "User not logged in");
             return;
         }
 
         if (activityId == null || activityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid activity");
             return;
         }
 
@@ -863,11 +840,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                     @Override
                     public void onSuccess() {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Activity deleted successfully",
-                                        Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(requireContext(), "Activity deleted successfully");
 
                         // Navigate back to previous screen
                         requireActivity().onBackPressed();
@@ -876,19 +849,15 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to delete activity: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to delete activity: " + errorMessage);
                     }
                 });
     }
 
     private void navigateToUserProfile(Long userId) {
         if (userId == null || userId == 0L) {
-            Toast.makeText(requireContext(), "User profile not available", Toast.LENGTH_SHORT)
-                    .show();
+            UiUtil.showToast(requireContext(), "User profile not available");
             return;
         }
 
@@ -902,12 +871,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private void cancelRequest() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "User not logged in");
             return;
         }
 
         if (activityId == null || activityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid activity");
             return;
         }
 
@@ -927,12 +896,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private void leaveActivity() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "User not logged in");
             return;
         }
 
         if (activityId == null || activityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid activity");
             return;
         }
 
@@ -959,11 +928,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                     @Override
                     public void onSuccess() {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "You have withdrawn from this activity.",
-                                        Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(
+                                requireContext(), "You have withdrawn from this activity.");
 
                         // Hide comment section when leaving
                         hideCommentSection();
@@ -978,11 +944,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to leave activity: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to leave activity: " + errorMessage);
                     }
                 });
     }
@@ -1005,19 +968,18 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                 etComment.getText() != null ? etComment.getText().toString().trim() : "";
 
         if (commentText.isEmpty()) {
-            Toast.makeText(requireContext(), "Please write a message", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Please write a message");
             return;
         }
 
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "Please login to send messages", Toast.LENGTH_SHORT)
-                    .show();
+            UiUtil.showToast(requireContext(), "Please login to send messages");
             return;
         }
 
         if (activityId == null || activityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid activity");
             return;
         }
 
@@ -1040,8 +1002,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                         etComment.setText("");
 
                         // Show success message
-                        Toast.makeText(requireContext(), "Message sent!", Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(requireContext(), "Message sent!");
 
                         // Reload comments
                         loadComments();
@@ -1053,11 +1014,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                         etComment.setEnabled(true);
                         tilComment.setEnabled(true);
 
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to send message: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to send message: " + errorMessage);
                     }
                 });
     }
@@ -1092,38 +1050,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     }
 
     private boolean isActivityExpired(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) {
-            return false;
-        }
-
-        try {
-            // Parse the date string (assuming format like "Nov 15, 2025")
-            java.text.SimpleDateFormat sdf =
-                    new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US);
-            java.util.Date activityDate = sdf.parse(dateStr);
-            java.util.Date today = new java.util.Date();
-
-            // Reset time to start of day for both dates to compare just the date portion
-            java.util.Calendar calActivity = java.util.Calendar.getInstance();
-            calActivity.setTime(activityDate);
-            calActivity.set(java.util.Calendar.HOUR_OF_DAY, 0);
-            calActivity.set(java.util.Calendar.MINUTE, 0);
-            calActivity.set(java.util.Calendar.SECOND, 0);
-            calActivity.set(java.util.Calendar.MILLISECOND, 0);
-
-            java.util.Calendar calToday = java.util.Calendar.getInstance();
-            calToday.setTime(today);
-            calToday.set(java.util.Calendar.HOUR_OF_DAY, 0);
-            calToday.set(java.util.Calendar.MINUTE, 0);
-            calToday.set(java.util.Calendar.SECOND, 0);
-            calToday.set(java.util.Calendar.MILLISECOND, 0);
-
-            // Activity is expired if the date is before today (not including today)
-            return calActivity.before(calToday);
-        } catch (java.text.ParseException e) {
-            // If date parsing fails, assume not expired
-            return false;
-        }
+        return DateUtil.isDisplayDateExpired(dateStr);
     }
 
     private void showReviewDialog(Participant participant, Long activityIdParam) {
@@ -1172,25 +1099,16 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                             tvLocation.setText(activity.getLocation());
 
                             // Format and set date and time
-                            try {
-                                java.text.SimpleDateFormat isoFormat =
-                                        new java.text.SimpleDateFormat(
-                                                "yyyy-MM-dd'T'HH:mm:ss",
-                                                java.util.Locale.getDefault());
-                                java.util.Date dateTime =
-                                        isoFormat.parse(activity.getActivityDate());
+                            String displayDate =
+                                    DateUtil.formatToDisplayDate(activity.getActivityDate());
+                            String displayTime =
+                                    DateUtil.formatToDisplayTime(activity.getActivityDate());
 
-                                java.text.SimpleDateFormat dateFormat =
-                                        new java.text.SimpleDateFormat(
-                                                "MMM dd, yyyy", java.util.Locale.getDefault());
-                                tvDate.setText(dateFormat.format(dateTime));
-
-                                java.text.SimpleDateFormat timeFormat =
-                                        new java.text.SimpleDateFormat(
-                                                "hh:mm a", java.util.Locale.getDefault());
-                                tvTime.setText(timeFormat.format(dateTime));
-                            } catch (Exception e) {
-                                Log.e("ActivityDetailFragment", "Error parsing activity date", e);
+                            if (displayDate != null) {
+                                tvDate.setText(displayDate);
+                            }
+                            if (displayTime != null) {
+                                tvTime.setText(displayTime);
                             }
 
                             // Update spots count
@@ -1219,59 +1137,66 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     }
 
     /**
-     * Check if current user has access to the activity gallery
-     * Gallery is only accessible to participants who joined, after the event has ended
+     * Check if current user has access to the activity gallery Gallery is only accessible to
+     * participants who joined, after the event has ended
      */
     private void checkGalleryAccess() {
-        activityPhotoRepository.checkGalleryAccess(activityId, new ApiCallback<ActivityGalleryAccess>() {
-            @Override
-            public void onSuccess(ActivityGalleryAccess access) {
-                if (access.getHasAccess()) {
-                    // User has access - show gallery card
-                    cardGallery.setVisibility(View.VISIBLE);
+        activityPhotoRepository.checkGalleryAccess(
+                activityId,
+                new ApiCallback<ActivityGalleryAccess>() {
+                    @Override
+                    public void onSuccess(ActivityGalleryAccess access) {
+                        if (access.getHasAccess()) {
+                            // User has access - show gallery card
+                            cardGallery.setVisibility(View.VISIBLE);
 
-                    // Update photo count badge
-                    int photoCount = access.getPhotoCount() != null ? access.getPhotoCount() : 0;
-                    String countText = photoCount == 1 ? "1 photo" : photoCount + " photos";
-                    tvPhotoCountBadge.setText(countText);
+                            // Update photo count badge
+                            int photoCount =
+                                    access.getPhotoCount() != null ? access.getPhotoCount() : 0;
+                            String countText = photoCount == 1 ? "1 photo" : photoCount + " photos";
+                            tvPhotoCountBadge.setText(countText);
 
-                    // Update status message
-                    if (access.getCanUpload()) {
-                        tvGalleryStatus.setText("Share memories from this event");
-                    } else {
-                        tvGalleryStatus.setText("Gallery is full (" + access.getMaxPhotos() + " photos max)");
+                            // Update status message
+                            if (access.getCanUpload()) {
+                                tvGalleryStatus.setText("Share memories from this event");
+                            } else {
+                                tvGalleryStatus.setText(
+                                        "Gallery is full ("
+                                                + access.getMaxPhotos()
+                                                + " photos max)");
+                            }
+                        } else {
+                            // User doesn't have access - hide gallery card
+                            cardGallery.setVisibility(View.GONE);
+                            Log.d(
+                                    "ActivityDetailFragment",
+                                    "Gallery access denied: " + access.getReason());
+                        }
                     }
-                } else {
-                    // User doesn't have access - hide gallery card
-                    cardGallery.setVisibility(View.GONE);
-                    Log.d("ActivityDetailFragment", "Gallery access denied: " + access.getReason());
-                }
-            }
 
-            @Override
-            public void onError(String errorMessage) {
-                // Hide gallery card on error
-                cardGallery.setVisibility(View.GONE);
-                Log.e("ActivityDetailFragment", "Failed to check gallery access: " + errorMessage);
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Hide gallery card on error
+                        cardGallery.setVisibility(View.GONE);
+                        Log.e(
+                                "ActivityDetailFragment",
+                                "Failed to check gallery access: " + errorMessage);
+                    }
+                });
     }
 
-    /**
-     * Navigate to the activity gallery
-     */
+    /** Navigate to the activity gallery */
     private void navigateToGallery() {
         Bundle bundle = new Bundle();
         bundle.putLong("activityId", activityId);
         bundle.putString("activityTitle", activityTitle);
 
         NavController navController = Navigation.findNavController(requireView());
-        navController.navigate(R.id.action_activityDetailFragment_to_activityGalleryFragment, bundle);
+        navController.navigate(
+                R.id.action_activityDetailFragment_to_activityGalleryFragment, bundle);
     }
 
-    /**
-     * Load category image based on category name (same as feed)
-     */
+    /** Load category image based on category name (same as feed) */
     private void loadCategoryImage(String category) {
         if (ivActivityHero == null) {
             return;
@@ -1286,11 +1211,10 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         String imageResourceName = "activity_" + category.toLowerCase().replace(" ", "_");
 
         // Get resource ID
-        int resourceId = getResources().getIdentifier(
-                imageResourceName,
-                "drawable",
-                requireContext().getPackageName()
-        );
+        int resourceId =
+                getResources()
+                        .getIdentifier(
+                                imageResourceName, "drawable", requireContext().getPackageName());
 
         // Set image or use default if not found
         if (resourceId != 0) {
@@ -1312,9 +1236,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         updateMapLocation();
     }
 
-    /**
-     * Update the map marker with the activity location
-     */
+    /** Update the map marker with the activity location */
     private void updateMapLocation() {
         if (googleMap == null || activityLatitude == null || activityLongitude == null) {
             return;
@@ -1326,26 +1248,24 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         googleMap.clear();
 
         // Add marker at activity location
-        googleMap.addMarker(new MarkerOptions()
-                .position(activityLocation)
-                .title(activityTitle));
+        googleMap.addMarker(new MarkerOptions().position(activityLocation).title(activityTitle));
 
         // Move camera to location with appropriate zoom
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(activityLocation, 15f));
     }
 
-    /**
-     * Open Google Maps or any maps app for directions to the location
-     */
+    /** Open Google Maps or any maps app for directions to the location */
     private void openMapsForDirections(String location) {
         if (location == null || location.isEmpty()) {
-            Toast.makeText(requireContext(), "Location not available", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Location not available");
             return;
         }
 
         // Create URI for Google Maps
-        android.net.Uri gmmIntentUri = android.net.Uri.parse("geo:0,0?q=" + android.net.Uri.encode(location));
-        android.content.Intent mapIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, gmmIntentUri);
+        android.net.Uri gmmIntentUri =
+                android.net.Uri.parse("geo:0,0?q=" + android.net.Uri.encode(location));
+        android.content.Intent mapIntent =
+                new android.content.Intent(android.content.Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
 
         // Try to launch Google Maps
@@ -1353,8 +1273,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
             startActivity(mapIntent);
         } else {
             // Fallback to browser if Google Maps is not installed
-            android.net.Uri webUri = android.net.Uri.parse("https://www.google.com/maps/search/?api=1&query=" + android.net.Uri.encode(location));
-            android.content.Intent webIntent = new android.content.Intent(android.content.Intent.ACTION_VIEW, webUri);
+            android.net.Uri webUri =
+                    android.net.Uri.parse(
+                            "https://www.google.com/maps/search/?api=1&query="
+                                    + android.net.Uri.encode(location));
+            android.content.Intent webIntent =
+                    new android.content.Intent(android.content.Intent.ACTION_VIEW, webUri);
             startActivity(webIntent);
         }
     }

@@ -24,8 +24,7 @@ public interface ActivityPhotoApiService {
     @Multipart
     @POST("/api/activities/{activityId}/gallery/upload")
     Call<List<ActivityPhoto>> uploadPhotos(
-            @Path("activityId") Long activityId,
-            @Part List<MultipartBody.Part> files);
+            @Path("activityId") Long activityId, @Part List<MultipartBody.Part> files);
 
     // Get all photos for an activity
     @GET("/api/activities/{activityId}/gallery")
@@ -33,9 +32,7 @@ public interface ActivityPhotoApiService {
 
     // Delete a photo
     @DELETE("/api/activities/{activityId}/gallery/{photoId}")
-    Call<Void> deletePhoto(
-            @Path("activityId") Long activityId,
-            @Path("photoId") Long photoId);
+    Call<Void> deletePhoto(@Path("activityId") Long activityId, @Path("photoId") Long photoId);
 
     // Get photo count for an activity
     @GET("/api/activities/{activityId}/gallery/count")

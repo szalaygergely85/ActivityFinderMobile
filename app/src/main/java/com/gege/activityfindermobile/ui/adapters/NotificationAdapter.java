@@ -11,16 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.Notification;
+import com.gege.activityfindermobile.utils.DateUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
 
@@ -107,8 +103,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             // For user-related notifications (join requests, follows, etc.), show profile picture
             // Note: When backend provides avatar URL field, use Glide to load it here
-            if (type != null && (type.equals("JOIN_REQUEST") || type.equals("FOLLOW")
-                    || type.equals("INVITE") || type.equals("PARTICIPANT_ACTION"))) {
+            if (type != null
+                    && (type.equals("JOIN_REQUEST")
+                            || type.equals("FOLLOW")
+                            || type.equals("INVITE")
+                            || type.equals("PARTICIPANT_ACTION"))) {
                 // TODO: Load profile picture when backend provides avatarUrl field
                 // For now, show a person icon
                 ivNotificationIcon.setImageResource(R.drawable.ic_person);
@@ -117,7 +116,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 ivNotificationIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
                 // Example of how to load profile picture when avatar URL is available:
-                // if (notification.getAvatarUrl() != null && !notification.getAvatarUrl().isEmpty()) {
+                // if (notification.getAvatarUrl() != null &&
+                // !notification.getAvatarUrl().isEmpty()) {
                 //     Glide.with(context)
                 //         .load(notification.getAvatarUrl())
                 //         .circleCrop()
@@ -134,48 +134,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
 
         private String formatTime(String timestamp) {
-            if (timestamp == null || timestamp.isEmpty()) {
-                return "";
-            }
-
-            try {
-                // Parse ISO 8601 timestamp from backend
-                SimpleDateFormat isoFormat =
-                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
-                Date date = isoFormat.parse(timestamp);
-
-                if (date == null) {
-                    return timestamp;
-                }
-
-                // Calculate time difference
-                long now = System.currentTimeMillis();
-                long diff = now - date.getTime();
-
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(diff);
-                long minutes = TimeUnit.MILLISECONDS.toMinutes(diff);
-                long hours = TimeUnit.MILLISECONDS.toHours(diff);
-                long days = TimeUnit.MILLISECONDS.toDays(diff);
-
-                // Format as relative time
-                if (seconds < 60) {
-                    return "Just now";
-                } else if (minutes < 60) {
-                    return minutes + "m ago";
-                } else if (hours < 24) {
-                    return hours + "h ago";
-                } else if (days < 7) {
-                    return days + "d ago";
-                } else {
-                    // For older notifications, show the actual date
-                    SimpleDateFormat displayFormat =
-                            new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-                    return displayFormat.format(date);
-                }
-            } catch (Exception e) {
-                // If parsing fails, return the original timestamp
-                return timestamp;
-            }
+            String relativeTime = DateUtil.getRelativeTimeString(timestamp);
+            return relativeTime != null && !relativeTime.isEmpty() ? relativeTime : timestamp;
         }
     }
 }

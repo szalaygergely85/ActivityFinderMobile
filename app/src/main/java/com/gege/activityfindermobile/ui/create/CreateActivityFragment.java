@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,9 +23,10 @@ import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
+import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.MapPickerActivity;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
-import com.google.android.material.appbar.AppBarLayout;
+import com.gege.activityfindermobile.utils.UiUtil;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
@@ -35,6 +35,7 @@ import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -42,11 +43,9 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -106,21 +105,18 @@ public class CreateActivityFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
+                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
+                    if (appBar != null) {
+                        appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
 
-            return insets;
-        });
+                    return insets;
+                });
 
         initViews(view);
         initPlacesClient();
@@ -383,8 +379,9 @@ public class CreateActivityFragment extends Fragment {
                             selectedDate.set(Calendar.MONTH, month);
                             selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                            SimpleDateFormat dateFormat =
-                                    new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                            java.text.SimpleDateFormat dateFormat =
+                                    new java.text.SimpleDateFormat(
+                                            "MMM dd, yyyy", java.util.Locale.getDefault());
                             etDate.setText(dateFormat.format(selectedDate.getTime()));
                         },
                         selectedDate.get(Calendar.YEAR),
@@ -402,8 +399,9 @@ public class CreateActivityFragment extends Fragment {
                             selectedTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                             selectedTime.set(Calendar.MINUTE, minute);
 
-                            SimpleDateFormat timeFormat =
-                                    new SimpleDateFormat("hh:mm a", Locale.getDefault());
+                            java.text.SimpleDateFormat timeFormat =
+                                    new java.text.SimpleDateFormat(
+                                            "hh:mm a", java.util.Locale.getDefault());
                             etTime.setText(timeFormat.format(selectedTime.getTime()));
                         },
                         selectedTime.get(Calendar.HOUR_OF_DAY),
@@ -506,14 +504,14 @@ public class CreateActivityFragment extends Fragment {
         // Get user ID
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "User not logged in");
             return;
         }
 
         // Combine date and time into ISO 8601 format for backend
         String activityDateTime = combineDateAndTime();
         if (activityDateTime == null) {
-            Toast.makeText(requireContext(), "Invalid date/time", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid date/time");
             return;
         }
 
@@ -540,11 +538,7 @@ public class CreateActivityFragment extends Fragment {
                     @Override
                     public void onSuccess(Activity activity) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Activity created successfully!",
-                                        Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(requireContext(), "Activity created successfully!");
 
                         // Navigate back to feed
                         NavController navController = Navigation.findNavController(requireView());
@@ -554,11 +548,8 @@ public class CreateActivityFragment extends Fragment {
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to create activity: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to create activity: " + errorMessage);
                     }
                 });
     }
@@ -581,18 +572,12 @@ public class CreateActivityFragment extends Fragment {
 
             // Check if date is in the future
             if (combined.getTimeInMillis() <= System.currentTimeMillis()) {
-                Toast.makeText(
-                                requireContext(),
-                                "Activity date must be in the future",
-                                Toast.LENGTH_SHORT)
-                        .show();
+                UiUtil.showToast(requireContext(), "Activity date must be in the future");
                 return null;
             }
 
             // Format as ISO 8601: yyyy-MM-dd'T'HH:mm:ss
-            SimpleDateFormat isoFormat =
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-            String formatted = isoFormat.format(combined.getTime());
+            String formatted = DateUtil.formatIsoDate(combined.getTime());
 
             // Debug log
             android.util.Log.d("CreateActivity", "Formatted date: " + formatted);
@@ -648,25 +633,29 @@ public class CreateActivityFragment extends Fragment {
 
                         // Parse and set date and time
                         try {
-                            SimpleDateFormat isoFormat =
-                                    new SimpleDateFormat(
-                                            "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-                            java.util.Date dateTime = isoFormat.parse(activity.getActivityDate());
+                            java.util.Date dateTime =
+                                    DateUtil.parseIsoDate(activity.getActivityDate());
 
-                            // Set date
-                            Calendar cal = Calendar.getInstance();
-                            cal.setTime(dateTime);
-                            selectedDate.setTime(dateTime);
+                            if (dateTime != null) {
+                                // Set date
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(dateTime);
+                                selectedDate.setTime(dateTime);
 
-                            SimpleDateFormat dateFormat =
-                                    new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-                            etDate.setText(dateFormat.format(dateTime));
+                                String displayDate =
+                                        DateUtil.formatToDisplayDate(activity.getActivityDate());
+                                if (displayDate != null) {
+                                    etDate.setText(displayDate);
+                                }
 
-                            // Set time
-                            selectedTime.setTime(dateTime);
-                            SimpleDateFormat timeFormat =
-                                    new SimpleDateFormat("hh:mm a", Locale.getDefault());
-                            etTime.setText(timeFormat.format(dateTime));
+                                // Set time
+                                selectedTime.setTime(dateTime);
+                                String displayTime =
+                                        DateUtil.formatToDisplayTime(activity.getActivityDate());
+                                if (displayTime != null) {
+                                    etTime.setText(displayTime);
+                                }
+                            }
                         } catch (Exception e) {
                             android.util.Log.e("CreateActivity", "Error parsing activity date", e);
                         }
@@ -675,11 +664,8 @@ public class CreateActivityFragment extends Fragment {
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to load activity: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to load activity: " + errorMessage);
                         NavController navController = Navigation.findNavController(requireView());
                         navController.navigateUp();
                     }
@@ -697,19 +683,19 @@ public class CreateActivityFragment extends Fragment {
         // Get user ID
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "User not logged in");
             return;
         }
 
         if (editActivityId == null || editActivityId == 0L) {
-            Toast.makeText(requireContext(), "Invalid activity", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid activity");
             return;
         }
 
         // Combine date and time into ISO 8601 format for backend
         String activityDateTime = combineDateAndTime();
         if (activityDateTime == null) {
-            Toast.makeText(requireContext(), "Invalid date/time", Toast.LENGTH_SHORT).show();
+            UiUtil.showToast(requireContext(), "Invalid date/time");
             return;
         }
 
@@ -738,11 +724,7 @@ public class CreateActivityFragment extends Fragment {
                     public void onSuccess(
                             com.gege.activityfindermobile.data.model.Activity activity) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Activity updated successfully!",
-                                        Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(requireContext(), "Activity updated successfully!");
 
                         // Navigate back to activity detail or feed
                         NavController navController = Navigation.findNavController(requireView());
@@ -752,11 +734,8 @@ public class CreateActivityFragment extends Fragment {
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to update activity: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to update activity: " + errorMessage);
                     }
                 });
     }

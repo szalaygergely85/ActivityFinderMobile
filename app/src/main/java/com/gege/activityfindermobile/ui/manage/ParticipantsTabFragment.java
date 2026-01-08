@@ -32,8 +32,7 @@ public class ParticipantsTabFragment extends Fragment {
 
     @Inject ParticipantRepository participantRepository;
 
-    @Inject
-    SharedPreferencesManager prefsManager;
+    @Inject SharedPreferencesManager prefsManager;
     private Long activityId;
     private Long creatorId;
     private RecyclerView rvParticipants;

@@ -146,24 +146,31 @@ public class PhotoViewerFragment extends Fragment {
     }
 
     private void loadActivityPhotos() {
-        activityPhotoRepository.getActivityPhotos(activityId, new ApiCallback<List<ActivityPhoto>>() {
-            @Override
-            public void onSuccess(List<ActivityPhoto> photos) {
-                activityPhotos = photos;
-                if (activityPhotos != null && !activityPhotos.isEmpty()) {
-                    setupActivityPhotoViewPager();
-                } else {
-                    Toast.makeText(requireContext(), "No photos found", Toast.LENGTH_SHORT).show();
-                    requireActivity().onBackPressed();
-                }
-            }
+        activityPhotoRepository.getActivityPhotos(
+                activityId,
+                new ApiCallback<List<ActivityPhoto>>() {
+                    @Override
+                    public void onSuccess(List<ActivityPhoto> photos) {
+                        activityPhotos = photos;
+                        if (activityPhotos != null && !activityPhotos.isEmpty()) {
+                            setupActivityPhotoViewPager();
+                        } else {
+                            Toast.makeText(requireContext(), "No photos found", Toast.LENGTH_SHORT)
+                                    .show();
+                            requireActivity().onBackPressed();
+                        }
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(requireContext(), "Failed to load photos: " + errorMessage, Toast.LENGTH_SHORT).show();
-                requireActivity().onBackPressed();
-            }
-        });
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(
+                                        requireContext(),
+                                        "Failed to load photos: " + errorMessage,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        requireActivity().onBackPressed();
+                    }
+                });
     }
 
     private void setupActivityPhotoViewPager() {
@@ -219,7 +226,9 @@ public class PhotoViewerFragment extends Fragment {
     }
 
     private void updateDeleteButtonVisibility() {
-        if (!isActivityGallery || activityPhotos.isEmpty() || currentPosition >= activityPhotos.size()) {
+        if (!isActivityGallery
+                || activityPhotos.isEmpty()
+                || currentPosition >= activityPhotos.size()) {
             btnDeletePhoto.setVisibility(View.GONE);
             return;
         }
@@ -325,7 +334,11 @@ public class PhotoViewerFragment extends Fragment {
 
         // Verify user owns this photo
         if (currentUserId == null || !currentUserId.equals(currentPhoto.getUserId())) {
-            Toast.makeText(requireContext(), "You can only delete your own photos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                            requireContext(),
+                            "You can only delete your own photos",
+                            Toast.LENGTH_SHORT)
+                    .show();
             return;
         }
 

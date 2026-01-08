@@ -18,7 +18,8 @@ import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ActivityGalleryAdapter extends RecyclerView.Adapter<ActivityGalleryAdapter.PhotoViewHolder> {
+public class ActivityGalleryAdapter
+        extends RecyclerView.Adapter<ActivityGalleryAdapter.PhotoViewHolder> {
 
     private List<ActivityPhoto> photos;
     private final OnPhotoClickListener listener;
@@ -26,6 +27,7 @@ public class ActivityGalleryAdapter extends RecyclerView.Adapter<ActivityGallery
 
     public interface OnPhotoClickListener {
         void onPhotoClick(ActivityPhoto photo, int position);
+
         void onPhotoLongClick(ActivityPhoto photo);
     }
 
@@ -43,8 +45,9 @@ public class ActivityGalleryAdapter extends RecyclerView.Adapter<ActivityGallery
     @NonNull
     @Override
     public PhotoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_activity_gallery_photo, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_activity_gallery_photo, parent, false);
         return new PhotoViewHolder(view);
     }
 
@@ -79,7 +82,8 @@ public class ActivityGalleryAdapter extends RecyclerView.Adapter<ActivityGallery
 
             // Load user avatar and name
             if (photo.getUserAvatar() != null && !photo.getUserAvatar().isEmpty()) {
-                ImageLoader.loadCircularProfileImage(itemView.getContext(), photo.getUserAvatar(), ivUserAvatar);
+                ImageLoader.loadCircularProfileImage(
+                        itemView.getContext(), photo.getUserAvatar(), ivUserAvatar);
             } else {
                 ivUserAvatar.setImageResource(R.drawable.ic_person);
             }
@@ -87,21 +91,24 @@ public class ActivityGalleryAdapter extends RecyclerView.Adapter<ActivityGallery
             tvUserName.setText(photo.getUserName() != null ? photo.getUserName() : "Unknown");
 
             // Click listener - open fullscreen
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onPhotoClick(photo, getAdapterPosition());
-                }
-            });
+            itemView.setOnClickListener(
+                    v -> {
+                        if (listener != null) {
+                            listener.onPhotoClick(photo, getAdapterPosition());
+                        }
+                    });
 
             // Long click - show delete option if user owns the photo
-            itemView.setOnLongClickListener(v -> {
-                if (listener != null && currentUserId != null &&
-                    currentUserId.equals(photo.getUserId())) {
-                    listener.onPhotoLongClick(photo);
-                    return true;
-                }
-                return false;
-            });
+            itemView.setOnLongClickListener(
+                    v -> {
+                        if (listener != null
+                                && currentUserId != null
+                                && currentUserId.equals(photo.getUserId())) {
+                            listener.onPhotoLongClick(photo);
+                            return true;
+                        }
+                        return false;
+                    });
         }
     }
 

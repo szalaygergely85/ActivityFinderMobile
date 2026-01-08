@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +18,7 @@ import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.gege.activityfindermobile.utils.UiUtil;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
@@ -159,22 +159,17 @@ public class RegisterFragment extends Fragment {
 
                         // Check if response data is valid
                         if (loginResponse == null || loginResponse.getUserId() == null) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Registration failed: Invalid response data",
-                                            Toast.LENGTH_LONG)
-                                    .show();
+                            UiUtil.showLongToast(
+                                    requireContext(), "Registration failed: Invalid response data");
                             return;
                         }
 
                         // Check if token is present
                         if (loginResponse.getAccessToken() == null
                                 || loginResponse.getAccessToken().isEmpty()) {
-                            Toast.makeText(
-                                            requireContext(),
-                                            "Registration failed: No authentication token received",
-                                            Toast.LENGTH_LONG)
-                                    .show();
+                            UiUtil.showLongToast(
+                                    requireContext(),
+                                    "Registration failed: No authentication token received");
                             return;
                         }
 
@@ -186,11 +181,7 @@ public class RegisterFragment extends Fragment {
                         // Save user session with JWT tokens (access + refresh)
                         prefsManager.saveUserSession(userId, token, refreshToken);
 
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Welcome, " + fullName + "!",
-                                        Toast.LENGTH_SHORT)
-                                .show();
+                        UiUtil.showToast(requireContext(), "Welcome, " + fullName + "!");
 
                         // Navigate to profile setup
                         NavController navController = Navigation.findNavController(requireView());
@@ -201,11 +192,8 @@ public class RegisterFragment extends Fragment {
                     @Override
                     public void onError(String errorMessage) {
                         setLoading(false);
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Registration failed: " + errorMessage,
-                                        Toast.LENGTH_LONG)
-                                .show();
+                        UiUtil.showLongToast(
+                                requireContext(), "Registration failed: " + errorMessage);
                     }
                 });
     }

@@ -51,37 +51,42 @@ public class CategoryManager {
         loadCategoriesFromCache();
     }
 
-    /**
-     * Fetch categories from backend and cache them locally
-     */
+    /** Fetch categories from backend and cache them locally */
     public void refreshCategories() {
-        categoryApiService.getAllCategories().enqueue(new Callback<List<Category>>() {
-            @Override
-            public void onResponse(
-                    @NonNull Call<List<Category>> call,
-                    @NonNull Response<List<Category>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Category> categories = response.body();
-                    cacheCategories(categories);
-                    updateCategoryImageMap(categories);
-                    Log.d(TAG, "Categories refreshed successfully: " + categories.size());
-                } else {
-                    Log.e(TAG, "Failed to refresh categories: " + response.code());
-                }
-            }
+        categoryApiService
+                .getAllCategories()
+                .enqueue(
+                        new Callback<List<Category>>() {
+                            @Override
+                            public void onResponse(
+                                    @NonNull Call<List<Category>> call,
+                                    @NonNull Response<List<Category>> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    List<Category> categories = response.body();
+                                    cacheCategories(categories);
+                                    updateCategoryImageMap(categories);
+                                    Log.d(
+                                            TAG,
+                                            "Categories refreshed successfully: "
+                                                    + categories.size());
+                                } else {
+                                    Log.e(TAG, "Failed to refresh categories: " + response.code());
+                                }
+                            }
 
-            @Override
-            public void onFailure(@NonNull Call<List<Category>> call, @NonNull Throwable t) {
-                Log.e(TAG, "Error refreshing categories", t);
-            }
-        });
+                            @Override
+                            public void onFailure(
+                                    @NonNull Call<List<Category>> call, @NonNull Throwable t) {
+                                Log.e(TAG, "Error refreshing categories", t);
+                            }
+                        });
     }
 
     /**
      * Get image resource name for a category
+     *
      * @param categoryName The category name (e.g., "Sports", "Music")
-     * @return The image resource name (e.g., "activity_sports") or "activity_default" if not
-     *     found
+     * @return The image resource name (e.g., "activity_sports") or "activity_default" if not found
      */
     public String getImageResourceName(String categoryName) {
         if (categoryName == null || categoryName.isEmpty()) {
@@ -103,9 +108,7 @@ public class CategoryManager {
         return imageResourceName;
     }
 
-    /**
-     * Get all cached categories
-     */
+    /** Get all cached categories */
     public List<Category> getCachedCategories() {
         String json = sharedPreferences.getString(KEY_CATEGORIES, null);
         if (json != null) {
@@ -115,17 +118,13 @@ public class CategoryManager {
         return new ArrayList<>();
     }
 
-    /**
-     * Check if cache needs refresh
-     */
+    /** Check if cache needs refresh */
     private boolean shouldRefreshCache() {
         long lastUpdated = sharedPreferences.getLong(KEY_LAST_UPDATED, 0);
         return System.currentTimeMillis() - lastUpdated > CACHE_VALIDITY_MS;
     }
 
-    /**
-     * Load categories from SharedPreferences cache
-     */
+    /** Load categories from SharedPreferences cache */
     private void loadCategoriesFromCache() {
         List<Category> categories = getCachedCategories();
         updateCategoryImageMap(categories);
@@ -136,9 +135,7 @@ public class CategoryManager {
         }
     }
 
-    /**
-     * Cache categories to SharedPreferences
-     */
+    /** Cache categories to SharedPreferences */
     private void cacheCategories(List<Category> categories) {
         String json = gson.toJson(categories);
         sharedPreferences
@@ -148,9 +145,7 @@ public class CategoryManager {
                 .apply();
     }
 
-    /**
-     * Update the in-memory category image map
-     */
+    /** Update the in-memory category image map */
     private void updateCategoryImageMap(List<Category> categories) {
         categoryImageMap.clear();
         for (Category category : categories) {

@@ -57,27 +57,23 @@ public class ManageActivityFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            AppBarLayout appBar = v.findViewById(R.id.app_bar);
-            if (appBar != null) {
-                appBar.setPadding(
-                        0,
-                        systemBars.top,
-                        0,
-                        0
-                );
-            }
+                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
+                    if (appBar != null) {
+                        appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
 
-            return insets;
-        });
+                    return insets;
+                });
 
         // Get activity ID from arguments
         if (getArguments() != null) {
             activityId = getArguments().getLong("activityId", 0L);
             creatorId = getArguments().getLong("creatorId", 0L);
-
         }
 
         MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
@@ -162,7 +158,7 @@ public class ManageActivityFragment extends Fragment {
         private final Long activityId;
         private final Long creatorId;
 
-        public ManagePagerAdapter(@NonNull Fragment fragment, Long activityId,Long creatorId) {
+        public ManagePagerAdapter(@NonNull Fragment fragment, Long activityId, Long creatorId) {
             super(fragment);
             this.activityId = activityId;
             this.creatorId = creatorId;

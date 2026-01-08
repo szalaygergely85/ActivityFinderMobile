@@ -15,7 +15,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectedPhotoAdapter extends RecyclerView.Adapter<SelectedPhotoAdapter.PhotoViewHolder> {
+public class SelectedPhotoAdapter
+        extends RecyclerView.Adapter<SelectedPhotoAdapter.PhotoViewHolder> {
 
     private List<Uri> photoUris;
     private final OnPhotoRemovedListener listener;
@@ -45,8 +46,9 @@ public class SelectedPhotoAdapter extends RecyclerView.Adapter<SelectedPhotoAdap
     @NonNull
     @Override
     public PhotoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_selected_photo, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_selected_photo, parent, false);
         return new PhotoViewHolder(view);
     }
 
@@ -76,12 +78,13 @@ public class SelectedPhotoAdapter extends RecyclerView.Adapter<SelectedPhotoAdap
             ivPhoto.setImageURI(photoUri);
 
             // Remove button click
-            btnRemove.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onPhotoRemoved(position);
-                }
-            });
+            btnRemove.setOnClickListener(
+                    v -> {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION && listener != null) {
+                            listener.onPhotoRemoved(position);
+                        }
+                    });
         }
     }
 }
