@@ -289,6 +289,7 @@
                         android:textStyle="bold"
                         app:chipBackgroundColor="@color/chip_background_color"
                         app:checkedIconVisible="false"
+                        android:checked="true"
                         app:chipStrokeWidth="0dp" />
 
                     <com.google.android.material.chip.Chip

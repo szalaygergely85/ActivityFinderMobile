@@ -780,16 +780,17 @@
 
                 <!-- Header -->
                 <TextView
+                    android:id="@+id/tv_comments"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Comments"
+                    android:text="@string/comments"
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_comments"
+                    android:id="@+id/mvc_comments"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/surface_dark"
@@ -880,7 +881,7 @@
                     android:textColor="@color/white"
                     android:paddingVertical="16dp"
                     app:cornerRadius="12dp"
-                    app:backgroundTint="@color/primary"
+                    app:backgroundTint="@color/primary_blue"
                     app:icon="@drawable/ic_check_circle"
                     app:iconTint="@color/white"
                     android:visibility="visible" />
@@ -912,7 +913,7 @@
                     android:textColor="@color/white"
                     android:paddingVertical="16dp"
                     app:cornerRadius="12dp"
-                    app:backgroundTint="@color/primary"
+                    app:backgroundTint="@color/primary_blue"
                     app:icon="@drawable/ic_edit"
                     app:iconTint="@color/white"
                     android:visibility="gone" />

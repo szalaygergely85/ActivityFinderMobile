@@ -44,6 +44,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
@@ -97,7 +98,10 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private TextInputEditText etComment;
     private RecyclerView rvComments;
     private TextView tvNoComments;
+    private TextView tvComments;
     private CommentAdapter commentAdapter;
+
+    private MaterialCardView mcvComments;
 
     @Nullable
     @Override
@@ -232,6 +236,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         etComment = view.findViewById(R.id.et_comment);
         rvComments = view.findViewById(R.id.rv_comments);
         tvNoComments = view.findViewById(R.id.tv_no_comments);
+        tvComments = view.findViewById(R.id.tv_comments);
+        mcvComments = view.findViewById(R.id.mvc_comments);
 
         // Setup creator card review button
         MaterialButton btnReviewCreator = view.findViewById(R.id.btn_review_creator);
@@ -961,6 +967,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         tilComment.setVisibility(View.GONE);
         rvComments.setVisibility(View.GONE);
         tvNoComments.setVisibility(View.GONE);
+        tvComments.setVisibility(View.GONE);
+        mcvComments.setVisibility(View.GONE);
     }
 
     private void sendComment() {
