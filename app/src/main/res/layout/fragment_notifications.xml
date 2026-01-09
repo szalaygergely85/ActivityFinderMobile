@@ -64,18 +64,27 @@
                 android:orientation="horizontal"
                 android:paddingVertical="4dp">
 
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chip_group_filters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleLine="true"
+                    app:chipSpacing="10dp"
+                    app:singleSelection="true">
+
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipAll"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:text="All"
-                    android:textColor="@color/white"
+                    android:textColor="@color/chip_text_color_selector"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:checkable="true"
                     android:checked="true"
                     style="@style/Widget.Material3.Chip.Filter"
-                    app:chipBackgroundColor="@color/primary_blue"
+                    app:chipBackgroundColor="@color/chip_background_color"
                     app:chipStrokeWidth="0dp"
                     app:chipMinHeight="36dp" />
 
@@ -85,16 +94,16 @@
                     android:layout_height="36dp"
                     android:layout_marginStart="12dp"
                     android:text="Unread"
-                    android:textColor="@color/slate_300"
+                    android:textColor="@color/chip_text_color_selector"
                     android:textSize="14sp"
                     android:textStyle="normal"
                     android:checkable="true"
                     style="@style/Widget.Material3.Chip.Filter"
-                    app:chipBackgroundColor="@color/surface_dark"
+                    app:chipBackgroundColor="@color/chip_background_color"
                     app:chipStrokeColor="@color/slate_700"
                     app:chipStrokeWidth="1dp"
                     app:chipMinHeight="36dp" />
-
+                </com.google.android.material.chip.ChipGroup>
             </LinearLayout>
 
         </HorizontalScrollView>

@@ -145,7 +145,7 @@ public class CreateActivityFragment extends Fragment {
 
     private void initPlacesClient() {
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), getString(R.string.google_maps_key));
+            Places.initializeWithNewPlacesApiEnabled(requireContext(), getString(R.string.google_maps_key));
         }
         placesClient = Places.createClient(requireContext());
         sessionToken = AutocompleteSessionToken.newInstance();
@@ -281,7 +281,7 @@ public class CreateActivityFragment extends Fragment {
     }
 
     private void fetchPlaceDetails(String placeId, String locationName) {
-        List<Place.Field> placeFields = List.of(Place.Field.LAT_LNG);
+        List<Place.Field> placeFields = List.of(Place.Field.LOCATION);
         FetchPlaceRequest request =
                 FetchPlaceRequest.builder(placeId, placeFields)
                         .setSessionToken(sessionToken)
@@ -292,10 +292,10 @@ public class CreateActivityFragment extends Fragment {
                 .addOnSuccessListener(
                         (FetchPlaceResponse response) -> {
                             Place place = response.getPlace();
-                            if (place.getLatLng() != null) {
+                            if (place.getLocation() != null) {
                                 selectedPlaceId = placeId;
-                                selectedLatitude = place.getLatLng().latitude;
-                                selectedLongitude = place.getLatLng().longitude;
+                                selectedLatitude = place.getLocation().latitude;
+                                selectedLongitude = place.getLocation().longitude;
                                 selectedLocationName = locationName;
                                 android.util.Log.d(
                                         "CreateActivity",
