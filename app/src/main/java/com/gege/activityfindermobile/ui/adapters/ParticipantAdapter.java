@@ -138,6 +138,8 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         MaterialButton btnRemove;
         View cardParticipant;
 
+        View divParticipant;
+
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             cardParticipant = itemView.findViewById(R.id.card_participant);
@@ -147,6 +149,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             chipStatus = itemView.findViewById(R.id.chip_status);
             btnReview = itemView.findViewById(R.id.btn_review);
             btnRemove = itemView.findViewById(R.id.btn_remove);
+            divParticipant = itemView.findViewById(R.id.div_participant);
         }
 
         void bind(
@@ -228,6 +231,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                     && isActivityExpired
                     && !isCurrentUser) {
                 btnReview.setVisibility(View.VISIBLE);
+                divParticipant.setVisibility(View.VISIBLE);
                 btnReview.setOnClickListener(
                         v -> {
                             Log.d(
@@ -249,6 +253,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                             }
                         });
             } else {
+                divParticipant.setVisibility(View.GONE);
                 btnReview.setVisibility(View.GONE);
             }
 
@@ -263,6 +268,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                     && ("ACCEPTED".equals(status) || "JOINED".equals(status))
                     && isParticipantTabFragment) {
                 btnRemove.setVisibility(View.VISIBLE);
+                divParticipant.setVisibility(View.VISIBLE);
                 btnRemove.setOnClickListener(
                         v -> {
                             if (removeListener != null) {

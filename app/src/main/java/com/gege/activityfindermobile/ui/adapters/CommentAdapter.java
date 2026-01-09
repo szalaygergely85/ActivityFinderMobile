@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.ActivityMessage;
+import com.gege.activityfindermobile.utils.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +65,17 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         }
 
         void bind(ActivityMessage comment) {
+            // Load user avatar
+            ImageLoader.loadCircularProfileImage(
+                    itemView.getContext(), comment.getUserAvatar(), ivUserAvatar);
+
+            // Set user name
             tvUserName.setText(comment.getUserName());
+
+            // Set comment text
             tvCommentText.setText(comment.getMessageText());
+
+            // Set timestamp
             tvCommentTime.setText(comment.getCreatedAt());
         }
     }

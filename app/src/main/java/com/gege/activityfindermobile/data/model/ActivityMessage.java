@@ -16,6 +16,9 @@ public class ActivityMessage {
     @SerializedName("userName")
     private String userName;
 
+    @SerializedName(value = "userProfilePicture", alternate = {"userAvatar"})
+    private String userAvatar;
+
     @SerializedName("messageText")
     private String messageText;
 
@@ -57,6 +60,14 @@ public class ActivityMessage {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getUserAvatar() {
+        return userAvatar;
+    }
+
+    public void setUserAvatar(String userAvatar) {
+        this.userAvatar = userAvatar;
     }
 
     public String getMessageText() {
