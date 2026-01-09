@@ -5,107 +5,166 @@
     android:id="@+id/card_participant"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="4dp"
+    android:layout_marginVertical="8dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    android:backgroundTint="@color/surface_dark"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/surface_border">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="@dimen/padding_medium"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/iv_user_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_person"
-            app:civ_border_width="1dp"
-            app:civ_border_color="@color/gray_light" />
-
+        <!-- Top Section: User Info + Status Badge -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="@dimen/margin_medium"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="8dp">
 
-            <TextView
-                android:id="@+id/tv_user_name"
-                android:layout_width="wrap_content"
+            <!-- User Info Section -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tv_user_rating"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawablePadding="4dp"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_hint"
-                app:drawableStartCompat="@drawable/ic_star"
-                app:drawableTint="@color/warning" />
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/iv_user_avatar"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:src="@drawable/ic_person"
+                    app:civ_border_width="2dp"
+                    app:civ_border_color="@color/primary" />
 
-        </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="end">
+                    <TextView
+                        android:id="@+id/tv_user_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.01"
+                        tools:text="Alex Johnson" />
 
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="4dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_star"
+                            app:tint="@color/warning" />
+
+                        <TextView
+                            android:id="@+id/tv_user_rating"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:textSize="14sp"
+                            android:textColor="@color/slate_500"
+                            tools:text="4.8 Rating" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Status Chip -->
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
-                app:chipMinHeight="24dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                app:chipMinHeight="28dp"
                 app:chipBackgroundColor="@color/success"
-                app:chipStrokeWidth="0dp"
-                android:textColor="@color/white" />
+                app:chipStrokeWidth="1dp"
+                app:chipStrokeColor="@color/success"
+                app:chipCornerRadius="14dp"
+                android:textColor="@color/white"
+                android:textAllCaps="true"
+                tools:text="ATTENDING" />
 
-            <LinearLayout
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/div_participant"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#1AFFFFFF"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Action Buttons Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_review"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+                android:text="Review"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:minWidth="0dp"
+                android:textColor="@color/primary_blue"
+                app:icon="@drawable/ic_star"
+                app:iconSize="20dp"
+                app:iconTint="@color/warning"
+                app:iconPadding="6dp"
+                app:cornerRadius="20dp"
+                app:strokeColor="@color/primary_blue"
+                app:strokeWidth="1dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_review"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Review"
-                    android:textSize="11sp"
-                    android:paddingHorizontal="8dp"
-                    android:minWidth="0dp"
-                    app:icon="@drawable/ic_star"
-                    app:iconTint="@color/warning"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_remove"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Remove"
-                    android:textSize="11sp"
-                    android:paddingHorizontal="8dp"
-                    android:minWidth="0dp"
-                    app:icon="@drawable/ic_delete"
-                    app:iconTint="@color/error"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-            </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_remove"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Remove"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:minWidth="0dp"
+                android:textColor="@color/error"
+                app:icon="@drawable/ic_delete"
+                app:iconSize="20dp"
+                app:iconTint="@color/error"
+                app:iconPadding="6dp"
+                app:cornerRadius="20dp"
+                app:strokeColor="@color/error"
+                app:strokeWidth="1dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
         </LinearLayout>
 
