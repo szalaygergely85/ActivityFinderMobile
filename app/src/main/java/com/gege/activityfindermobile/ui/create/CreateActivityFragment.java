@@ -42,6 +42,12 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,7 +58,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class CreateActivityFragment extends Fragment {
+public class CreateActivityFragment extends Fragment implements OnMapReadyCallback {
 
     @Inject ActivityRepository activityRepository;
 
@@ -70,6 +76,10 @@ public class CreateActivityFragment extends Fragment {
     private AutoCompleteTextView etCategory;
     private MaterialButton btnCreate;
     private CircularProgressIndicator progressLoading;
+
+    // Map variables
+    private MapView mapViewPreview;
+    private GoogleMap googleMap;
 
     private Calendar selectedDate = Calendar.getInstance();
     private Calendar selectedTime = Calendar.getInstance();
@@ -120,6 +130,7 @@ public class CreateActivityFragment extends Fragment {
 
         initViews(view);
         initPlacesClient();
+        initMapView(savedInstanceState);
         setupCategoryDropdown();
         setupLocationAutocomplete();
         setupListeners();
@@ -135,11 +146,62 @@ public class CreateActivityFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        if (mapViewPreview != null) {
+            mapViewPreview.onStart();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mapViewPreview != null) {
+            mapViewPreview.onResume();
+        }
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
+        if (mapViewPreview != null) {
+            mapViewPreview.onPause();
+        }
         // Clean up debounce handler
         if (debounceRunnable != null) {
             debounceHandler.removeCallbacks(debounceRunnable);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mapViewPreview != null) {
+            mapViewPreview.onStop();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mapViewPreview != null) {
+            mapViewPreview.onDestroy();
+        }
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mapViewPreview != null) {
+            mapViewPreview.onLowMemory();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mapViewPreview != null) {
+            mapViewPreview.onSaveInstanceState(outState);
         }
     }
 
@@ -149,6 +211,49 @@ public class CreateActivityFragment extends Fragment {
         }
         placesClient = Places.createClient(requireContext());
         sessionToken = AutocompleteSessionToken.newInstance();
+    }
+
+    private void initMapView(Bundle savedInstanceState) {
+        mapViewPreview = getView().findViewById(R.id.map_view_preview);
+        if (mapViewPreview != null) {
+            mapViewPreview.onCreate(savedInstanceState);
+            mapViewPreview.getMapAsync(this);
+        }
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap map) {
+        googleMap = map;
+
+        // Set default location (Budapest, Hungary) with lower zoom
+        LatLng defaultLocation = new LatLng(47.4979, 19.0402);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f));
+
+        // Disable map interactions to use it as preview only
+        googleMap.getUiSettings().setAllGesturesEnabled(false);
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
+
+        // Update map if location is already selected
+        if (selectedLatitude != 0.0 && selectedLongitude != 0.0) {
+            updateMapLocation(selectedLatitude, selectedLongitude, selectedLocationName);
+        }
+    }
+
+    private void updateMapLocation(double latitude, double longitude, String locationName) {
+        if (googleMap != null) {
+            LatLng location = new LatLng(latitude, longitude);
+
+            // Clear existing markers
+            googleMap.clear();
+
+            // Add marker at the location
+            googleMap.addMarker(new MarkerOptions()
+                    .position(location)
+                    .title(locationName));
+
+            // Animate camera to the location
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 14f));
+        }
     }
 
     private void initViews(View view) {
@@ -297,6 +402,10 @@ public class CreateActivityFragment extends Fragment {
                                 selectedLatitude = place.getLocation().latitude;
                                 selectedLongitude = place.getLocation().longitude;
                                 selectedLocationName = locationName;
+
+                                // Update map preview
+                                updateMapLocation(selectedLatitude, selectedLongitude, locationName);
+
                                 android.util.Log.d(
                                         "CreateActivity",
                                         "Selected location: "
@@ -356,6 +465,9 @@ public class CreateActivityFragment extends Fragment {
                 isSelectingItem = true;
                 actvLocation.setText(selectedLocationName);
                 isSelectingItem = false;
+
+                // Update map preview
+                updateMapLocation(selectedLatitude, selectedLongitude, selectedLocationName);
 
                 android.util.Log.d(
                         "CreateActivity",
@@ -629,6 +741,12 @@ public class CreateActivityFragment extends Fragment {
                         }
                         if (activity.getLongitude() != null) {
                             selectedLongitude = activity.getLongitude();
+                        }
+                        selectedLocationName = activity.getLocation();
+
+                        // Update map preview with loaded location
+                        if (selectedLatitude != 0.0 && selectedLongitude != 0.0) {
+                            updateMapLocation(selectedLatitude, selectedLongitude, selectedLocationName);
                         }
 
                         // Parse and set date and time
