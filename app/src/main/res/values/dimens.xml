@@ -21,5 +21,9 @@
 
     <!-- Button -->
 
+    <!-- Chip -->
+    <dimen name="chip_corner_radius">20dp</dimen>
+    <dimen name="chip_min_height">40dp</dimen>
+
     <!-- Icon -->
 </resources>

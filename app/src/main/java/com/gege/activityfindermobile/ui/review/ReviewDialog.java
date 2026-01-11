@@ -2,11 +2,10 @@ package com.gege.activityfindermobile.ui.review;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.widget.RatingBar;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.gege.activityfindermobile.R;
@@ -15,6 +14,7 @@ import com.gege.activityfindermobile.data.dto.ReviewRequest;
 import com.gege.activityfindermobile.data.model.Review;
 import com.gege.activityfindermobile.data.repository.ReviewRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -36,7 +36,8 @@ public class ReviewDialog extends DialogFragment {
     private String userName;
     private Long activityId;
 
-    private RatingBar ratingBar;
+    private ImageView star1, star2, star3, star4, star5;
+    private int selectedRating = 0;
     private TextInputEditText commentInput;
 
     private OnReviewSubmittedListener listener;
@@ -68,27 +69,62 @@ public class ReviewDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         android.view.LayoutInflater inflater = requireActivity().getLayoutInflater();
         android.view.View view = inflater.inflate(R.layout.dialog_review, null);
 
-        ratingBar = view.findViewById(R.id.ratingBar);
+        // Find star ImageViews
+        star1 = view.findViewById(R.id.star1);
+        star2 = view.findViewById(R.id.star2);
+        star3 = view.findViewById(R.id.star3);
+        star4 = view.findViewById(R.id.star4);
+        star5 = view.findViewById(R.id.star5);
+
         commentInput = view.findViewById(R.id.commentInput);
         MaterialButton cancelButton = view.findViewById(R.id.cancelButton);
         MaterialButton submitButton = view.findViewById(R.id.submitButton);
+        ImageView closeButton = view.findViewById(R.id.closeButton);
 
-        // Set title with user name
-        builder.setTitle("Review " + userName);
+        // Setup star click listeners
+        setupStarListeners();
 
+        closeButton.setOnClickListener(v -> dismiss());
         cancelButton.setOnClickListener(v -> dismiss());
         submitButton.setOnClickListener(v -> submitReview());
 
-        builder.setView(view);
-        return builder.create();
+        dialog.setContentView(view);
+        return dialog;
+    }
+
+    private void setupStarListeners() {
+        star1.setOnClickListener(v -> setRating(1));
+        star2.setOnClickListener(v -> setRating(2));
+        star3.setOnClickListener(v -> setRating(3));
+        star4.setOnClickListener(v -> setRating(4));
+        star5.setOnClickListener(v -> setRating(5));
+    }
+
+    private void setRating(int rating) {
+        selectedRating = rating;
+        updateStarDisplay();
+    }
+
+    private void updateStarDisplay() {
+        // Update star images based on selected rating
+        star1.setImageResource(
+                selectedRating >= 1 ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+        star2.setImageResource(
+                selectedRating >= 2 ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+        star3.setImageResource(
+                selectedRating >= 3 ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+        star4.setImageResource(
+                selectedRating >= 4 ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+        star5.setImageResource(
+                selectedRating >= 5 ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
     }
 
     private void submitReview() {
-        int rating = (int) ratingBar.getRating();
+        int rating = selectedRating;
         String comment = commentInput.getText().toString().trim();
 
         if (rating == 0) {

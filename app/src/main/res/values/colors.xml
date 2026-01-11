@@ -40,6 +40,8 @@
 
     <!-- Chip/Filter Colors -->
     <color name="chip_unselected">#F1F5F9</color>
+    <color name="chip_dark_unselected">#223649</color>
+    <color name="chip_border">#0DFFFFFF</color>
 
     <!-- Notification Colors -->
 

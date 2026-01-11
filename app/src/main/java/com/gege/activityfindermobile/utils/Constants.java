@@ -13,6 +13,10 @@ public class Constants {
     public static final String KEY_REFRESH_TOKEN = "refreshToken";
     public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
 
+    // Filter constants
+    public static final int[] DISTANCE_FILTER_OPTIONS = {5, 10, 25, 50, 250}; // km
+    public static final int DEFAULT_MAX_DISTANCE = 250; // km
+
     // Private constructor to prevent instantiation
     private Constants() {
         throw new AssertionError("Cannot instantiate Constants class");
