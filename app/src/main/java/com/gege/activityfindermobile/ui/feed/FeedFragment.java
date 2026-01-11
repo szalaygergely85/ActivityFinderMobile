@@ -51,13 +51,17 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class FeedFragment extends Fragment {
 
-    @Inject ActivityRepository activityRepository;
+    @Inject
+    ActivityRepository activityRepository;
 
-    @Inject ParticipantRepository participantRepository;
+    @Inject
+    ParticipantRepository participantRepository;
 
-    @Inject com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager;
+    @Inject
+    com.gege.activityfindermobile.utils.SharedPreferencesManager prefsManager;
 
-    @Inject com.gege.activityfindermobile.utils.CategoryManager categoryManager;
+    @Inject
+    com.gege.activityfindermobile.utils.CategoryManager categoryManager;
 
     private RecyclerView rvActivities;
     private ActivityAdapter adapter;
@@ -87,9 +91,10 @@ public class FeedFragment extends Fragment {
     private String currentSearchQuery = "";
     private boolean showTrendingOnly = false;
     private List<Activity> allActivities = new ArrayList<>();
-    private Integer maxDistanceKm = 250; // Default 250 km max distance
-    private String selectedActivityType =
-            null; // null = all types (used by both category chips and general filter)
+    private Integer maxDistanceKm = com.gege.activityfindermobile.utils.Constants.DEFAULT_MAX_DISTANCE; // Default max
+                                                                                                        // distance from
+                                                                                                        // constants
+    private String selectedActivityType = null; // null = all types (used by both category chips and general filter)
 
     // Permission launcher
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
@@ -99,25 +104,22 @@ public class FeedFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         // Setup permission launcher
-        locationPermissionLauncher =
-                registerForActivityResult(
-                        new ActivityResultContracts.RequestMultiplePermissions(),
-                        result -> {
-                            Boolean fineLocationGranted =
-                                    result.get(Manifest.permission.ACCESS_FINE_LOCATION);
-                            Boolean coarseLocationGranted =
-                                    result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    Boolean fineLocationGranted = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+                    Boolean coarseLocationGranted = result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
 
-                            if ((fineLocationGranted != null && fineLocationGranted)
-                                    || (coarseLocationGranted != null && coarseLocationGranted)) {
-                                // Permission granted, acquire location
-                                acquireUserLocation();
-                            } else {
-                                // Permission denied
-                                setLoading(false);
-                                showEmptyViewForLocationPermission();
-                            }
-                        });
+                    if ((fineLocationGranted != null && fineLocationGranted)
+                            || (coarseLocationGranted != null && coarseLocationGranted)) {
+                        // Permission granted, acquire location
+                        acquireUserLocation();
+                    } else {
+                        // Permission denied
+                        setLoading(false);
+                        showEmptyViewForLocationPermission();
+                    }
+                });
     }
 
     @Nullable
@@ -177,12 +179,9 @@ public class FeedFragment extends Fragment {
                         searchCard.setVisibility(View.VISIBLE);
                         etSearch.requestFocus();
                         // Show keyboard
-                        android.view.inputmethod.InputMethodManager imm =
-                                (android.view.inputmethod.InputMethodManager)
-                                        requireContext()
-                                                .getSystemService(
-                                                        android.content.Context
-                                                                .INPUT_METHOD_SERVICE);
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
+                                .getSystemService(
+                                        android.content.Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(
                                 etSearch,
                                 android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
@@ -190,12 +189,9 @@ public class FeedFragment extends Fragment {
                         searchCard.setVisibility(View.GONE);
                         etSearch.clearFocus();
                         // Hide keyboard
-                        android.view.inputmethod.InputMethodManager imm =
-                                (android.view.inputmethod.InputMethodManager)
-                                        requireContext()
-                                                .getSystemService(
-                                                        android.content.Context
-                                                                .INPUT_METHOD_SERVICE);
+                        android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) requireContext()
+                                .getSystemService(
+                                        android.content.Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
                     }
                 });
@@ -209,16 +205,16 @@ public class FeedFragment extends Fragment {
         // Setup filter chips
         setupFilterChips();
 
-        // Setup adapter with ParticipantRepository for accurate counts and current user ID
+        // Setup adapter with ParticipantRepository for accurate counts and current user
+        // ID
         Long currentUserId = prefsManager.getUserId();
-        adapter =
-                new ActivityAdapter(
-                        activity -> {
-                            navigateToDetail(activity);
-                        },
-                        participantRepository,
-                        currentUserId,
-                        categoryManager);
+        adapter = new ActivityAdapter(
+                activity -> {
+                    navigateToDetail(activity);
+                },
+                participantRepository,
+                currentUserId,
+                categoryManager);
         rvActivities.setAdapter(adapter);
 
         // Swipe refresh
@@ -267,18 +263,18 @@ public class FeedFragment extends Fragment {
                             applyFiltersAndSearch();
                             showContent();
                             Toast.makeText(
-                                            requireContext(),
-                                            "Found " + activities.size() + " activities nearby",
-                                            Toast.LENGTH_SHORT)
+                                    requireContext(),
+                                    "Found " + activities.size() + " activities nearby",
+                                    Toast.LENGTH_SHORT)
                                     .show();
                         } else {
                             allActivities = new ArrayList<>();
                             adapter.setActivities(new ArrayList<>());
                             showEmptyView();
                             Toast.makeText(
-                                            requireContext(),
-                                            "No activities nearby within " + nearbyRadiusKm + "km",
-                                            Toast.LENGTH_SHORT)
+                                    requireContext(),
+                                    "No activities nearby within " + nearbyRadiusKm + "km",
+                                    Toast.LENGTH_SHORT)
                                     .show();
                         }
                     }
@@ -288,9 +284,9 @@ public class FeedFragment extends Fragment {
                         setLoading(false);
                         swipeRefresh.setRefreshing(false);
                         Toast.makeText(
-                                        requireContext(),
-                                        "Failed to load nearby activities: " + errorMessage,
-                                        Toast.LENGTH_SHORT)
+                                requireContext(),
+                                "Failed to load nearby activities: " + errorMessage,
+                                Toast.LENGTH_SHORT)
                                 .show();
 
                         adapter.setActivities(new ArrayList<>());
@@ -300,8 +296,10 @@ public class FeedFragment extends Fragment {
     }
 
     /**
-     * Enable nearby activities filter and request user location. Gets current device location
-     * (requires location permission) to search for nearby activities. Note: User profile city is
+     * Enable nearby activities filter and request user location. Gets current
+     * device location
+     * (requires location permission) to search for nearby activities. Note: User
+     * profile city is
      * stored separately for display purposes only.
      *
      * @param radiusKm Radius in kilometers for nearby search
@@ -319,9 +317,9 @@ public class FeedFragment extends Fragment {
                         userLatitude = latitude;
                         userLongitude = longitude;
                         Toast.makeText(
-                                        requireContext(),
-                                        "Location acquired. Searching nearby activities...",
-                                        Toast.LENGTH_SHORT)
+                                requireContext(),
+                                "Location acquired. Searching nearby activities...",
+                                Toast.LENGTH_SHORT)
                                 .show();
                         loadActivitiesFromApi();
                     }
@@ -330,9 +328,9 @@ public class FeedFragment extends Fragment {
                     public void onError(String errorMessage) {
                         useNearbyFilter = false;
                         Toast.makeText(
-                                        requireContext(),
-                                        "Unable to get location: " + errorMessage,
-                                        Toast.LENGTH_LONG)
+                                requireContext(),
+                                "Unable to get location: " + errorMessage,
+                                Toast.LENGTH_LONG)
                                 .show();
                         // Fall back to all activities
                         // loadActivitiesFromApi();
@@ -343,19 +341,18 @@ public class FeedFragment extends Fragment {
     /** Check and request location permission */
     private void checkAndRequestLocationPermission() {
         if (ContextCompat.checkSelfPermission(
-                                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(
-                                requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Permission already granted
             acquireUserLocation();
         } else {
             // Request permission
             locationPermissionLauncher.launch(
                     new String[] {
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
                     });
         }
     }
@@ -376,9 +373,9 @@ public class FeedFragment extends Fragment {
                     @Override
                     public void onError(String errorMessage) {
                         Toast.makeText(
-                                        requireContext(),
-                                        "Unable to get location: " + errorMessage,
-                                        Toast.LENGTH_LONG)
+                                requireContext(),
+                                "Unable to get location: " + errorMessage,
+                                Toast.LENGTH_LONG)
                                 .show();
                         setLoading(false);
                         showEmptyViewForLocationPermission();
@@ -488,7 +485,8 @@ public class FeedFragment extends Fragment {
                 new TextWatcher() {
                     @Override
                     public void beforeTextChanged(
-                            CharSequence s, int start, int count, int after) {}
+                            CharSequence s, int start, int count, int after) {
+                    }
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -498,17 +496,17 @@ public class FeedFragment extends Fragment {
                         }
 
                         // Create new runnable for debounced search
-                        debounceRunnable =
-                                () -> {
-                                    currentSearchQuery = s.toString().trim();
-                                    applyFiltersAndSearch();
-                                };
+                        debounceRunnable = () -> {
+                            currentSearchQuery = s.toString().trim();
+                            applyFiltersAndSearch();
+                        };
                         // Wait 300ms before doing the search
                         debounceHandler.postDelayed(debounceRunnable, 300);
                     }
 
                     @Override
-                    public void afterTextChanged(Editable s) {}
+                    public void afterTextChanged(Editable s) {
+                    }
                 });
     }
 
@@ -578,69 +576,59 @@ public class FeedFragment extends Fragment {
 
         // Apply trending filter
         if (showTrendingOnly) {
-            filtered =
-                    filtered.stream()
-                            .filter(
-                                    activity ->
-                                            activity.getTrending() != null
-                                                    && activity.getTrending())
-                            .collect(Collectors.toList());
+            filtered = filtered.stream()
+                    .filter(
+                            activity -> activity.getTrending() != null
+                                    && activity.getTrending())
+                    .collect(Collectors.toList());
         }
 
         // Apply search query
         if (!currentSearchQuery.isEmpty()) {
             String query = currentSearchQuery.toLowerCase();
-            filtered =
-                    filtered.stream()
-                            .filter(
-                                    activity -> {
-                                        String title =
-                                                activity.getTitle() != null
-                                                        ? activity.getTitle().toLowerCase()
-                                                        : "";
-                                        String description =
-                                                activity.getDescription() != null
-                                                        ? activity.getDescription().toLowerCase()
-                                                        : "";
-                                        String location =
-                                                activity.getLocation() != null
-                                                        ? activity.getLocation().toLowerCase()
-                                                        : "";
-                                        String category =
-                                                activity.getCategory() != null
-                                                        ? activity.getCategory().toLowerCase()
-                                                        : "";
-                                        return title.contains(query)
-                                                || description.contains(query)
-                                                || location.contains(query)
-                                                || category.contains(query);
-                                    })
-                            .collect(Collectors.toList());
+            filtered = filtered.stream()
+                    .filter(
+                            activity -> {
+                                String title = activity.getTitle() != null
+                                        ? activity.getTitle().toLowerCase()
+                                        : "";
+                                String description = activity.getDescription() != null
+                                        ? activity.getDescription().toLowerCase()
+                                        : "";
+                                String location = activity.getLocation() != null
+                                        ? activity.getLocation().toLowerCase()
+                                        : "";
+                                String category = activity.getCategory() != null
+                                        ? activity.getCategory().toLowerCase()
+                                        : "";
+                                return title.contains(query)
+                                        || description.contains(query)
+                                        || location.contains(query)
+                                        || category.contains(query);
+                            })
+                    .collect(Collectors.toList());
         }
 
         // Apply distance filter
         if (maxDistanceKm != null) {
-            filtered =
-                    filtered.stream()
-                            .filter(
-                                    activity -> {
-                                        if (activity.getDistance() == null) {
-                                            return true; // Include activities without distance info
-                                        }
-                                        return activity.getDistance() <= maxDistanceKm;
-                                    })
-                            .collect(Collectors.toList());
+            filtered = filtered.stream()
+                    .filter(
+                            activity -> {
+                                if (activity.getDistance() == null) {
+                                    return true; // Include activities without distance info
+                                }
+                                return activity.getDistance() <= maxDistanceKm;
+                            })
+                    .collect(Collectors.toList());
         }
 
         // Apply activity type filter
         if (selectedActivityType != null && !selectedActivityType.isEmpty()) {
-            filtered =
-                    filtered.stream()
-                            .filter(
-                                    activity ->
-                                            selectedActivityType.equalsIgnoreCase(
-                                                    activity.getCategory()))
-                            .collect(Collectors.toList());
+            filtered = filtered.stream()
+                    .filter(
+                            activity -> selectedActivityType.equalsIgnoreCase(
+                                    activity.getCategory()))
+                    .collect(Collectors.toList());
         }
 
         // Update adapter
@@ -661,8 +649,45 @@ public class FeedFragment extends Fragment {
         // Get dialog views
         ChipGroup chipGroupDistance = dialogView.findViewById(R.id.chip_group_distance);
         ChipGroup chipGroupType = dialogView.findViewById(R.id.chip_group_type);
+        com.google.android.material.button.MaterialButton resetButton = dialogView.findViewById(R.id.resetButton);
+        com.google.android.material.button.MaterialButton applyButton = dialogView.findViewById(R.id.applyButton);
 
-        // Set current selections
+        // Populate category chips dynamically from CategoryManager
+        List<com.gege.activityfindermobile.data.model.Category> categories = categoryManager.getCachedCategories();
+
+        // Create a map to store category chips by name for easy selection tracking
+        java.util.Map<String, com.google.android.material.chip.Chip> categoryChipMap = new java.util.HashMap<>();
+
+        for (com.gege.activityfindermobile.data.model.Category category : categories) {
+            if (category.getIsActive() != null && category.getIsActive()) {
+                com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip) getLayoutInflater()
+                        .inflate(
+                                R.layout.chip_interest_item,
+                                chipGroupType,
+                                false);
+                chip.setText(category.getName());
+                chip.setCheckable(true);
+
+                // Set icon if available
+                String iconName = category.getIcon();
+                if (iconName != null && !iconName.isEmpty()) {
+                    int iconResId = getResources()
+                            .getIdentifier(
+                                    iconName, "drawable", requireContext().getPackageName());
+                    if (iconResId != 0) {
+                        chip.setChipIcon(getResources().getDrawable(iconResId, null));
+                        chip.setChipIconTint(
+                                android.content.res.ColorStateList.valueOf(
+                                        getResources().getColor(R.color.white, null)));
+                    }
+                }
+
+                chipGroupType.addView(chip);
+                categoryChipMap.put(category.getName(), chip);
+            }
+        }
+
+        // Set current distance selection
         if (maxDistanceKm == 5) {
             chipGroupDistance.check(R.id.chip_distance_5);
         } else if (maxDistanceKm == 10) {
@@ -671,104 +696,73 @@ public class FeedFragment extends Fragment {
             chipGroupDistance.check(R.id.chip_distance_25);
         } else if (maxDistanceKm == 50) {
             chipGroupDistance.check(R.id.chip_distance_50);
-        } else if (maxDistanceKm == 100) {
-            chipGroupDistance.check(R.id.chip_distance_100);
         } else {
-            chipGroupDistance.check(R.id.chip_distance_250);
+            // Default to "Anywhere" for 250km or any other value
+            chipGroupDistance.check(R.id.chip_distance_anywhere);
         }
 
-        if (selectedActivityType == null) {
-            chipGroupType.check(R.id.chip_type_all);
-        } else {
-            switch (selectedActivityType) {
-                case "Sports":
-                    chipGroupType.check(R.id.chip_type_sports);
-                    break;
-                case "Social":
-                    chipGroupType.check(R.id.chip_type_social);
-                    break;
-                case "Outdoor":
-                    chipGroupType.check(R.id.chip_type_outdoor);
-                    break;
-                case "Food":
-                    chipGroupType.check(R.id.chip_type_food);
-                    break;
-                case "Travel":
-                    chipGroupType.check(R.id.chip_type_travel);
-                    break;
-                case "Photography":
-                    chipGroupType.check(R.id.chip_type_photography);
-                    break;
-                case "Music":
-                    chipGroupType.check(R.id.chip_type_music);
-                    break;
-                case "Art":
-                    chipGroupType.check(R.id.chip_type_art);
-                    break;
-                case "Gaming":
-                    chipGroupType.check(R.id.chip_type_gaming);
-                    break;
-                case "Fitness":
-                    chipGroupType.check(R.id.chip_type_fitness);
-                    break;
-            }
+        // Set current category selection
+        if (selectedActivityType != null && categoryChipMap.containsKey(selectedActivityType)) {
+            categoryChipMap.get(selectedActivityType).setChecked(true);
         }
 
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Filters")
-                .setView(dialogView)
-                .setPositiveButton(
-                        "Apply",
-                        (dialog, which) -> {
-                            // Get selected distance
-                            int selectedDistanceId = chipGroupDistance.getCheckedChipId();
-                            if (selectedDistanceId == R.id.chip_distance_5) {
-                                maxDistanceKm = 5;
-                            } else if (selectedDistanceId == R.id.chip_distance_10) {
-                                maxDistanceKm = 10;
-                            } else if (selectedDistanceId == R.id.chip_distance_25) {
-                                maxDistanceKm = 25;
-                            } else if (selectedDistanceId == R.id.chip_distance_50) {
-                                maxDistanceKm = 50;
-                            } else if (selectedDistanceId == R.id.chip_distance_100) {
-                                maxDistanceKm = 100;
-                            } else if (selectedDistanceId == R.id.chip_distance_250) {
-                                maxDistanceKm = 250;
-                            }
+        // Create bottom sheet dialog
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog = new com.google.android.material.bottomsheet.BottomSheetDialog(
+                requireContext());
+        dialog.setContentView(dialogView);
 
-                            // Get selected activity type
-                            int selectedTypeId = chipGroupType.getCheckedChipId();
-                            if (selectedTypeId == R.id.chip_type_all) {
-                                selectedActivityType = null;
-                            } else if (selectedTypeId == R.id.chip_type_sports) {
-                                selectedActivityType = "Sports";
-                            } else if (selectedTypeId == R.id.chip_type_social) {
-                                selectedActivityType = "Social";
-                            } else if (selectedTypeId == R.id.chip_type_outdoor) {
-                                selectedActivityType = "Outdoor";
-                            } else if (selectedTypeId == R.id.chip_type_food) {
-                                selectedActivityType = "Food";
-                            } else if (selectedTypeId == R.id.chip_type_travel) {
-                                selectedActivityType = "Travel";
-                            } else if (selectedTypeId == R.id.chip_type_photography) {
-                                selectedActivityType = "Photography";
-                            } else if (selectedTypeId == R.id.chip_type_music) {
-                                selectedActivityType = "Music";
-                            } else if (selectedTypeId == R.id.chip_type_art) {
-                                selectedActivityType = "Art";
-                            } else if (selectedTypeId == R.id.chip_type_gaming) {
-                                selectedActivityType = "Gaming";
-                            } else if (selectedTypeId == R.id.chip_type_fitness) {
-                                selectedActivityType = "Fitness";
-                            }
+        // Reset button handler
+        resetButton.setOnClickListener(
+                v -> {
+                    // Reset distance to default
+                    chipGroupDistance.check(R.id.chip_distance_anywhere);
+                    maxDistanceKm = com.gege.activityfindermobile.utils.Constants.DEFAULT_MAX_DISTANCE;
 
-                            // Sync the main category chips with the selected filter
-                            syncCategoryChips();
+                    // Clear category selection
+                    chipGroupType.clearCheck();
+                    selectedActivityType = null;
 
-                            applyFiltersAndSearch();
-                        })
-                .setNegativeButton("Cancel", null)
-                .show();
+                    // Apply filters and close
+                    syncCategoryChips();
+                    applyFiltersAndSearch();
+                    dialog.dismiss();
+                });
+
+        // Apply button handler
+        applyButton.setOnClickListener(
+                v -> {
+                    // Get selected distance
+                    int selectedDistanceId = chipGroupDistance.getCheckedChipId();
+                    if (selectedDistanceId == R.id.chip_distance_5) {
+                        maxDistanceKm = 5;
+                    } else if (selectedDistanceId == R.id.chip_distance_10) {
+                        maxDistanceKm = 10;
+                    } else if (selectedDistanceId == R.id.chip_distance_25) {
+                        maxDistanceKm = 25;
+                    } else if (selectedDistanceId == R.id.chip_distance_50) {
+                        maxDistanceKm = 50;
+                    } else if (selectedDistanceId == R.id.chip_distance_anywhere) {
+                        maxDistanceKm = 250;
+                    }
+
+                    // Get selected category
+                    selectedActivityType = null;
+                    for (java.util.Map.Entry<String, com.google.android.material.chip.Chip> entry : categoryChipMap
+                            .entrySet()) {
+                        if (entry.getValue().isChecked()) {
+                            selectedActivityType = entry.getKey();
+                            break;
+                        }
+                    }
+
+                    // Sync the main category chips with the selected filter
+                    syncCategoryChips();
+
+                    applyFiltersAndSearch();
+                    dialog.dismiss();
+                });
+
+        dialog.show();
     }
 
     private void syncCategoryChips() {

@@ -122,11 +122,15 @@ public class ReportDialog extends DialogFragment {
         Chip chipInappropriate = reasonChipGroup.findViewById(R.id.chipInappropriate);
         Chip chipHarassment = reasonChipGroup.findViewById(R.id.chipHarassment);
         Chip chipFalseInfo = reasonChipGroup.findViewById(R.id.chipFalseInfo);
+        Chip chipScam = reasonChipGroup.findViewById(R.id.chipScam);
+        Chip chipOffensive = reasonChipGroup.findViewById(R.id.chipOffensive);
 
         chipSpam.setOnClickListener(v -> reasonInput.setText("Spam"));
         chipInappropriate.setOnClickListener(v -> reasonInput.setText("Inappropriate content"));
         chipHarassment.setOnClickListener(v -> reasonInput.setText("Harassment"));
         chipFalseInfo.setOnClickListener(v -> reasonInput.setText("False information"));
+        chipScam.setOnClickListener(v -> reasonInput.setText("Scam"));
+        chipOffensive.setOnClickListener(v -> reasonInput.setText("Offensive content"));
     }
 
     private void setupButtons() {
