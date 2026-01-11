@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,7 @@ import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -59,13 +61,12 @@ public class ProfileSetupFragment extends Fragment {
     @Inject SharedPreferencesManager prefsManager;
 
     private CircleImageView ivProfilePicture;
-    private MaterialButton btnContinue, btnSkip;
-    private MaterialButton btnUploadPhoto;
+    private MaterialButton btnContinue, btnSkip, btnUploadPhoto;
     private TextInputEditText etBio;
     private ChipGroup chipGroupInterests;
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvMyPhotos;
-    private LinearLayout layoutPhotosEmpty;
+    private View layoutPhotosEmpty;
     private TextView tvPhotoCount;
     private PhotoGalleryAdapter photoGalleryAdapter;
     private List<UserPhoto> setupPhotos = new ArrayList<>();
@@ -73,6 +74,13 @@ public class ProfileSetupFragment extends Fragment {
     private Uri selectedImageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
     private ActivityResultLauncher<String> photoPickerLauncher;
+
+    // Available interests (in a real app, this would come from API)
+    private static final String[] AVAILABLE_INTERESTS = {
+        "Sports", "Music", "Art", "Technology", "Gaming",
+        "Cooking", "Travel", "Reading", "Photography", "Fitness",
+        "Movies", "Dancing", "Hiking", "Yoga", "Food"
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,6 +126,12 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        // Setup back button
+        ImageButton btnBack = view.findViewById(R.id.btn_back);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+        }
+
         ivProfilePicture = view.findViewById(R.id.iv_profile_picture);
         btnContinue = view.findViewById(R.id.btn_continue);
         btnSkip = view.findViewById(R.id.btn_skip);
@@ -131,15 +145,40 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     private void setupListeners() {
-        // Allow clicking on profile picture to change it
+        // Allow clicking on profile picture or "Change Photo" text to change it
         ivProfilePicture.setOnClickListener(v -> openImagePicker());
 
-        btnUploadPhoto.setOnClickListener(v -> openPhotoGalleryPicker());
+        // The frame_profile_picture FrameLayout is also clickable in the layout
+        View frameProfilePicture = getView().findViewById(R.id.frame_profile_picture);
+        if (frameProfilePicture != null) {
+            frameProfilePicture.setOnClickListener(v -> openImagePicker());
+        }
+
         btnContinue.setOnClickListener(v -> saveProfileAndContinue());
         btnSkip.setOnClickListener(v -> navigateToFeed());
 
+        // Setup interest chips
+        setupInterestChips();
+
         // Load existing photos on startup
         loadSetupPhotos();
+    }
+
+    private void setupInterestChips() {
+        chipGroupInterests.removeAllViews();
+
+        for (String interest : AVAILABLE_INTERESTS) {
+            Chip chip =
+                    (Chip)
+                            getLayoutInflater()
+                                    .inflate(
+                                            R.layout.chip_interest_item, chipGroupInterests, false);
+            chip.setText(interest);
+            chip.setCheckable(true);
+            chip.setChecked(false);
+
+            chipGroupInterests.addView(chip);
+        }
     }
 
     private void openImagePicker() {
@@ -311,13 +350,11 @@ public class ProfileSetupFragment extends Fragment {
         if (loading) {
             btnContinue.setEnabled(false);
             btnSkip.setEnabled(false);
-            btnUploadPhoto.setEnabled(false);
             ivProfilePicture.setEnabled(false);
             progressLoading.setVisibility(View.VISIBLE);
         } else {
             btnContinue.setEnabled(true);
             btnSkip.setEnabled(true);
-            btnUploadPhoto.setEnabled(true);
             ivProfilePicture.setEnabled(true);
             progressLoading.setVisibility(View.GONE);
         }
@@ -430,21 +467,16 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     private void displaySetupPhotos(List<UserPhoto> photos) {
-        if (photos != null && !photos.isEmpty()) {
-            tvPhotoCount.setText(photos.size() + "/6");
-            btnUploadPhoto.setEnabled(photos.size() < 6);
-            rvMyPhotos.setVisibility(View.VISIBLE);
-            layoutPhotosEmpty.setVisibility(View.GONE);
-            setupPhotoAdapter(photos);
-        } else {
-            tvPhotoCount.setText("0/6");
-            btnUploadPhoto.setEnabled(true);
-            rvMyPhotos.setVisibility(View.GONE);
-            layoutPhotosEmpty.setVisibility(View.VISIBLE);
-        }
+        int photoCount = photos != null ? photos.size() : 0;
+        tvPhotoCount.setText(photoCount + "/6");
+
+        setupPhotoAdapter(photos);
     }
 
     private void setupPhotoAdapter(List<UserPhoto> photos) {
+        int photoCount = photos != null ? photos.size() : 0;
+        boolean showAddButton = photoCount < 6; // Show add button if less than 6 photos
+
         photoGalleryAdapter =
                 new PhotoGalleryAdapter(
                         photos,
@@ -466,10 +498,11 @@ public class ProfileSetupFragment extends Fragment {
 
                             @Override
                             public void onAddPhotoClick() {
-                                // Not available in this view
+                                openPhotoGalleryPicker();
                             }
                         });
         photoGalleryAdapter.setEditMode(true);
+        photoGalleryAdapter.setShowAddButton(showAddButton);
         rvMyPhotos.setAdapter(photoGalleryAdapter);
     }
 
