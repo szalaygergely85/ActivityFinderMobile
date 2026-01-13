@@ -75,6 +75,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private Long activityId;
     private Long creatorId;
     private String activityTitle;
+    private String activityCategory;
     private ImageView ivActivityHero;
     private com.google.android.material.floatingactionbutton.FloatingActionButton fabBack;
     private GoogleMap googleMap;
@@ -272,6 +273,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
             activityId = args.getLong("activityId", 0L);
             creatorId = args.getLong("creatorId", 0L);
             activityTitle = args.getString("title", "Event");
+            activityCategory = args.getString("category", "");
             activityDateStr = args.getString("date", "");
             displayActivityData(view, args);
         }
@@ -1198,6 +1200,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         Bundle bundle = new Bundle();
         bundle.putLong("activityId", activityId);
         bundle.putString("activityTitle", activityTitle);
+        bundle.putString("activityCategory", activityCategory);
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(

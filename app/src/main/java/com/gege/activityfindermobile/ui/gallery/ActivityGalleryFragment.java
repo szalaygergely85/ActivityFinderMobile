@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,9 +62,11 @@ public class ActivityGalleryFragment extends Fragment {
     private View layoutEmpty;
     private CircularProgressIndicator progressLoading;
     private ExtendedFloatingActionButton fabUpload;
+    private ImageView ivHeaderImage;
 
     private Long activityId;
     private String activityTitle;
+    private String activityCategory;
     private Long currentUserId;
     private ActivityResultLauncher<String> imagePickerLauncher;
 
@@ -75,6 +78,7 @@ public class ActivityGalleryFragment extends Fragment {
         if (getArguments() != null) {
             activityId = getArguments().getLong("activityId", 0L);
             activityTitle = getArguments().getString("activityTitle", "Event Gallery");
+            activityCategory = getArguments().getString("activityCategory", "");
         }
 
         currentUserId = prefsManager.getUserId();
@@ -142,8 +146,12 @@ public class ActivityGalleryFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         progressLoading = view.findViewById(R.id.progress_loading);
         fabUpload = view.findViewById(R.id.fab_upload);
+        ivHeaderImage = view.findViewById(R.id.iv_header_image);
 
         tvActivityTitle.setText(activityTitle);
+
+        // Load category image for header
+        loadCategoryImage(activityCategory);
 
         // Open photo picker directly when FAB is clicked
         fabUpload.setOnClickListener(v -> openImagePicker());
@@ -213,6 +221,36 @@ public class ActivityGalleryFragment extends Fragment {
     private void updatePhotoCount(int count) {
         String photoText = count == 1 ? "1 photo" : count + " photos";
         tvPhotoCount.setText(photoText);
+    }
+
+    /**
+     * Load category image based on category name (same as activity detail)
+     */
+    private void loadCategoryImage(String category) {
+        if (ivHeaderImage == null) {
+            return;
+        }
+
+        if (category == null || category.isEmpty()) {
+            ivHeaderImage.setImageResource(R.drawable.activity_default);
+            return;
+        }
+
+        // Convert category to lowercase and replace spaces with underscores
+        String imageResourceName = "activity_" + category.toLowerCase().replace(" ", "_");
+
+        // Get resource ID
+        int resourceId =
+                getResources()
+                        .getIdentifier(
+                                imageResourceName, "drawable", requireContext().getPackageName());
+
+        // Set image or use default if not found
+        if (resourceId != 0) {
+            ivHeaderImage.setImageResource(resourceId);
+        } else {
+            ivHeaderImage.setImageResource(R.drawable.activity_default);
+        }
     }
 
     private void showDeleteConfirmation(ActivityPhoto photo) {

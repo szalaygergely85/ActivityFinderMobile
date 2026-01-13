@@ -37,6 +37,7 @@ public class RequestsTabFragment extends Fragment {
     private View layoutEmpty;
     private SwipeRefreshLayout swipeRefresh;
     private InterestedUserAdapter adapter;
+    private android.widget.TextView tvSectionTitle;
 
     public static RequestsTabFragment newInstance(Long activityId) {
         RequestsTabFragment fragment = new RequestsTabFragment();
@@ -66,6 +67,7 @@ public class RequestsTabFragment extends Fragment {
         rvRequests = view.findViewById(R.id.rv_requests);
         layoutEmpty = view.findViewById(R.id.layout_empty);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
+        tvSectionTitle = view.findViewById(R.id.tv_section_title);
 
         // Setup adapter
         adapter =
@@ -106,8 +108,10 @@ public class RequestsTabFragment extends Fragment {
                         swipeRefresh.setRefreshing(false);
                         if (participants != null && !participants.isEmpty()) {
                             adapter.setInterestedUsers(participants);
+                            updateSectionTitle(participants.size());
                             showContent();
                         } else {
+                            updateSectionTitle(0);
                             showEmpty();
                         }
                     }
@@ -143,7 +147,9 @@ public class RequestsTabFragment extends Fragment {
                                 .show();
                         // Remove from list
                         adapter.removeParticipant(participant.getId());
-                        if (adapter.getItemCount() == 0) {
+                        int newCount = adapter.getItemCount();
+                        updateSectionTitle(newCount);
+                        if (newCount == 0) {
                             showEmpty();
                         }
                     }
@@ -177,7 +183,9 @@ public class RequestsTabFragment extends Fragment {
                                 .show();
                         // Remove from list
                         adapter.removeParticipant(participant.getId());
-                        if (adapter.getItemCount() == 0) {
+                        int newCount = adapter.getItemCount();
+                        updateSectionTitle(newCount);
+                        if (newCount == 0) {
                             showEmpty();
                         }
                     }
@@ -201,6 +209,16 @@ public class RequestsTabFragment extends Fragment {
     private void showEmpty() {
         rvRequests.setVisibility(View.GONE);
         layoutEmpty.setVisibility(View.VISIBLE);
+    }
+
+    private void updateSectionTitle(int count) {
+        if (tvSectionTitle != null) {
+            String title = "Pending Requests";
+            if (count > 0) {
+                title = "Pending Requests (" + count + ")";
+            }
+            tvSectionTitle.setText(title);
+        }
     }
 
     public void refresh() {

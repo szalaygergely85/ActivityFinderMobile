@@ -40,6 +40,8 @@ public class ManageActivityFragment extends Fragment {
 
     private Long activityId;
     private Long creatorId;
+    private String activityTitle;
+    private String activityStatus;
 
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
@@ -70,15 +72,27 @@ public class ManageActivityFragment extends Fragment {
                     return insets;
                 });
 
-        // Get activity ID from arguments
+        // Get activity data from arguments
         if (getArguments() != null) {
             activityId = getArguments().getLong("activityId", 0L);
             creatorId = getArguments().getLong("creatorId", 0L);
+            activityTitle = getArguments().getString("activityTitle", "Manage Activity");
+            activityStatus = getArguments().getString("activityStatus", "ACTIVE");
         }
 
         MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
         toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
+
+        // Set activity title and status in the custom toolbar
+        android.widget.TextView tvActivityTitle = view.findViewById(R.id.tv_activity_title);
+        android.widget.TextView tvActivityStatus = view.findViewById(R.id.tv_activity_status);
+        if (tvActivityTitle != null) {
+            tvActivityTitle.setText(activityTitle);
+        }
+        if (tvActivityStatus != null) {
+            tvActivityStatus.setText(activityStatus);
+        }
 
         viewPager = view.findViewById(R.id.view_pager);
         tabLayout = view.findViewById(R.id.tab_layout);

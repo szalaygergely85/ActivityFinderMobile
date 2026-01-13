@@ -1,38 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_light">
+    android:background="@color/background_dark">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/primary_dark"
+        android:background="@color/background_dark"
         app:elevation="0dp"
         app:liftOnScroll="false">
 
+        <!-- Top Bar with Back and More -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Manage Activity"
+            android:background="@color/background_dark"
             app:navigationIcon="@drawable/ic_back"
             app:navigationIconTint="@color/white"
             app:titleTextColor="@color/white"
-            app:menu="@menu/menu_manage_activity" />
+            app:menu="@menu/menu_manage_activity">
 
+            <!-- Custom Centered Title Layout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginEnd="56dp">
+
+                <!-- Activity Title -->
+                <TextView
+                    android:id="@+id/tv_activity_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Manage Activity"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <!-- Status -->
+                <TextView
+                    android:id="@+id/tv_activity_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ACTIVE"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="#0d7ff2"
+                    android:letterSpacing="0.1" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <!-- Tabs with new styling -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/primary"
-            app:tabIndicatorColor="@color/accent_light"
-            app:tabSelectedTextColor="@color/text_secondary"
-            app:tabTextColor="@color/white"
-            app:tabMode="fixed">
+            android:layout_height="48dp"
+            android:background="@color/background_dark"
+            app:tabIndicatorColor="#0d7ff2"
+            app:tabIndicatorHeight="3dp"
+            app:tabSelectedTextColor="@color/white"
+            app:tabTextColor="@color/slate_400"
+            app:tabMode="fixed"
+            app:tabIndicatorFullWidth="false"
+            app:tabTextAppearance="@style/TabTextAppearance">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -46,12 +85,19 @@
 
         </com.google.android.material.tabs.TabLayout>
 
+        <!-- Border under tabs -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#1A314d68" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/background_dark"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!-- Loading Progress -->
@@ -62,6 +108,6 @@
         android:layout_gravity="center"
         android:indeterminate="true"
         android:visibility="gone"
-        app:indicatorColor="@color/primary" />
+        app:indicatorColor="#0d7ff2" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
