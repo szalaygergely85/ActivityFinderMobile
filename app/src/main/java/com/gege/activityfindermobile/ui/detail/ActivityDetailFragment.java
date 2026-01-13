@@ -86,10 +86,9 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private MaterialButton btnManage;
     private MaterialButton btnEditActivity;
     private MaterialButton btnDeleteActivity;
-    private MaterialButton btnViewGallery;
     private View cardGallery;
-    private TextView tvPhotoCountBadge;
-    private TextView tvGalleryStatus;
+    private RecyclerView rvGalleryPreview;
+    private com.gege.activityfindermobile.ui.adapters.GalleryPreviewAdapter galleryPreviewAdapter;
     private CircularProgressIndicator progressLoading;
     private RecyclerView rvParticipants;
     private TextView tvNoParticipants;
@@ -225,10 +224,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         btnManage = view.findViewById(R.id.btn_manage);
         btnEditActivity = view.findViewById(R.id.btn_edit_activity);
         btnDeleteActivity = view.findViewById(R.id.btn_delete_activity);
-        btnViewGallery = view.findViewById(R.id.btn_view_gallery);
         cardGallery = view.findViewById(R.id.card_gallery);
-        tvPhotoCountBadge = view.findViewById(R.id.tv_photo_count_badge);
-        tvGalleryStatus = view.findViewById(R.id.tv_gallery_status);
+        rvGalleryPreview = view.findViewById(R.id.rv_gallery_preview);
         progressLoading = view.findViewById(R.id.progress_loading);
         rvParticipants = view.findViewById(R.id.rv_participants);
         tvNoParticipants = view.findViewById(R.id.tv_no_participants);
@@ -299,8 +296,28 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         // Setup delete button
         btnDeleteActivity.setOnClickListener(v -> confirmDeleteActivity());
 
-        // Setup gallery button
-        btnViewGallery.setOnClickListener(v -> navigateToGallery());
+        // Setup gallery preview adapter
+        galleryPreviewAdapter = new com.gege.activityfindermobile.ui.adapters.GalleryPreviewAdapter(requireContext());
+        rvGalleryPreview.setAdapter(galleryPreviewAdapter);
+        rvGalleryPreview.setLayoutManager(
+                new androidx.recyclerview.widget.LinearLayoutManager(
+                        requireContext(),
+                        androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL,
+                        false));
+
+        galleryPreviewAdapter.setOnGalleryClickListener(new com.gege.activityfindermobile.ui.adapters.GalleryPreviewAdapter.OnGalleryClickListener() {
+            @Override
+            public void onPhotoClick(int position) {
+                // Navigate to gallery starting at this position
+                navigateToGallery();
+            }
+
+            @Override
+            public void onSeeAllClick() {
+                // Navigate to full gallery
+                navigateToGallery();
+            }
+        });
 
         // Setup creator card click
         cardCreator.setOnClickListener(v -> navigateToUserProfile(creatorId));
@@ -1160,20 +1177,15 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                             // User has access - show gallery card
                             cardGallery.setVisibility(View.VISIBLE);
 
-                            // Update photo count badge
                             int photoCount =
                                     access.getPhotoCount() != null ? access.getPhotoCount() : 0;
-                            String countText = photoCount == 1 ? "1 photo" : photoCount + " photos";
-                            tvPhotoCountBadge.setText(countText);
 
-                            // Update status message
-                            if (access.getCanUpload()) {
-                                tvGalleryStatus.setText("Share memories from this event");
+                            if (photoCount > 0) {
+                                // Load preview photos
+                                loadGalleryPreview();
                             } else {
-                                tvGalleryStatus.setText(
-                                        "Gallery is full ("
-                                                + access.getMaxPhotos()
-                                                + " photos max)");
+                                // No photos yet - hide gallery for now
+                                cardGallery.setVisibility(View.GONE);
                             }
                         } else {
                             // User doesn't have access - hide gallery card
@@ -1191,6 +1203,31 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                         Log.e(
                                 "ActivityDetailFragment",
                                 "Failed to check gallery access: " + errorMessage);
+                    }
+                });
+    }
+
+    /**
+     * Load preview photos for the gallery section
+     */
+    private void loadGalleryPreview() {
+        activityPhotoRepository.getActivityPhotos(
+                activityId,
+                new ApiCallback<java.util.List<com.gege.activityfindermobile.data.model.ActivityPhoto>>() {
+                    @Override
+                    public void onSuccess(java.util.List<com.gege.activityfindermobile.data.model.ActivityPhoto> photos) {
+                        if (photos != null && !photos.isEmpty()) {
+                            galleryPreviewAdapter.setPhotos(photos);
+                            cardGallery.setVisibility(View.VISIBLE);
+                        } else {
+                            cardGallery.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("ActivityDetailFragment", "Failed to load gallery preview: " + errorMessage);
+                        cardGallery.setVisibility(View.GONE);
                     }
                 });
     }

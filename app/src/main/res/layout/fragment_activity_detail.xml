@@ -700,76 +700,80 @@
 
             </LinearLayout>
 
-            <!-- Event Gallery Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Event Gallery Section -->
+            <LinearLayout
                 android:id="@+id/card_gallery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_medium"
-                android:visibility="gone"
-                app:cardCornerRadius="@dimen/card_corner_radius"
-                app:cardElevation="@dimen/card_elevation"
-                app:strokeWidth="0dp">
+                android:layout_marginTop="32dp"
+                android:orientation="vertical"
+                android:visibility="gone">
 
+                <!-- Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/padding_medium">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:layout_marginBottom="16dp">
 
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Gallery"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <!-- Pagination dots (placeholder for now) -->
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center"
+                        android:layout_marginEnd="4dp">
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="📸 Event Gallery"
-                            android:textSize="@dimen/text_size_title"
-                            android:textColor="@color/text_primary"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tv_photo_count_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0 photos"
-                            android:textSize="12sp"
-                            android:textColor="@color/white"
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="6dp"
+                            android:layout_marginEnd="4dp"
                             android:background="@drawable/bg_badge"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="4dp" />
+                            android:backgroundTint="@color/primary_blue" />
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="6dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/bg_circle"
+                            android:backgroundTint="#33FFFFFF" />
+
+                        <View
+                            android:layout_width="6dp"
+                            android:layout_height="6dp"
+                            android:background="@drawable/bg_circle"
+                            android:backgroundTint="#33FFFFFF" />
 
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_gallery_status"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/margin_small"
-                        android:text="Share memories from this event"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_view_gallery"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/margin_medium"
-                        android:text="@string/view_gallery"
-                        android:textColor="@color/white"
-                        android:paddingVertical="12dp"
-                        app:cornerRadius="12dp"
-                        app:backgroundTint="@color/accent"
-                        app:icon="@drawable/ic_photography"
-                        app:iconTint="@color/white" />
-
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                <!-- Horizontal Photo Gallery -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_gallery_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:clipToPadding="false"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:paddingBottom="24dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_gallery_preview" />
+
+            </LinearLayout>
 
             <!-- Comments Section -->
             <LinearLayout
