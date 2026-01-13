@@ -1,130 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/margin_small"
-    app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_elevation"
-    app:strokeWidth="0dp">
+    android:orientation="vertical"
+    android:background="@color/background_dark">
 
+    <!-- User Info Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_medium">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:minHeight="72dp">
 
-        <!-- User Info Row -->
+        <!-- Profile Image with Border -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_user_avatar"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_person"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#330d7ff2" />
+
+        <!-- User Details -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/iv_user_avatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_person"
-                app:civ_border_width="2dp"
-                app:civ_border_color="@color/gray_light" />
-
-            <LinearLayout
-                android:layout_width="0dp"
+            <!-- Name -->
+            <TextView
+                android:id="@+id/tv_user_name"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="@dimen/margin_medium"
-                android:orientation="vertical">
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
-                <TextView
-                    android:id="@+id/tv_user_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/text_size_large"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+            <!-- Rating and Joined Time Row -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
 
+                <!-- Rating with Star -->
                 <TextView
                     android:id="@+id/tv_user_rating"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
                     android:drawablePadding="4dp"
-                    android:textSize="@dimen/text_size_small"
-                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textColor="@color/slate_400"
                     android:drawableStart="@drawable/ic_star"
-                    android:drawableTint="@color/warning" />
+                    android:drawableTint="@color/warning"
+                    android:gravity="center_vertical" />
 
+                <!-- Separator -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" • "
+                    android:textSize="12sp"
+                    android:textColor="@color/slate_400"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp" />
+
+                <!-- Joined At -->
                 <TextView
                     android:id="@+id/tv_joined_at"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textSize="@dimen/text_size_small"
-                    android:textColor="@color/text_hint" />
+                    android:textSize="12sp"
+                    android:textColor="@color/slate_400" />
 
             </LinearLayout>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_friend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Friend"
-                android:textSize="@dimen/text_size_small"
-                android:visibility="gone"
-                app:chipBackgroundColor="@color/primary_light"
-                app:chipStrokeWidth="0dp"
-                app:chipMinHeight="28dp" />
-
         </LinearLayout>
-
-        <!-- Action Buttons -->
-        <LinearLayout
-            android:id="@+id/layout_actions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_medium"
-            android:orientation="horizontal"
-            android:gravity="end">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_decline"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="@dimen/margin_small"
-                android:text="Decline"
-                app:strokeColor="@color/error"
-                android:textColor="@color/error"
-                app:icon="@drawable/ic_close"
-                app:iconTint="@color/error" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_accept"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Accept"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/success"
-                app:icon="@drawable/ic_check_circle"
-                app:iconTint="@color/white" />
-
-        </LinearLayout>
-
-        <!-- Status chip (shown after action) -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
-            android:layout_gravity="end"
-            android:visibility="gone"
-            app:chipStrokeWidth="0dp"
-            app:chipMinHeight="28dp" />
 
     </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+    <!-- Action Buttons Section -->
+    <LinearLayout
+        android:id="@+id/layout_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:gravity="center">
+
+        <!-- Approve Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_accept"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:text="Approve"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:backgroundTint="#0d7ff2"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_check_circle"
+            app:iconSize="18dp"
+            app:iconTint="@color/white"
+            app:iconGravity="textStart"
+            android:elevation="0dp" />
+
+        <!-- Decline Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_decline"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="Decline"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/surface_dark"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_close"
+            app:iconSize="18dp"
+            app:iconTint="@color/white"
+            app:iconGravity="textStart"
+            android:elevation="0dp" />
+
+    </LinearLayout>
+
+    <!-- Border Bottom -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#1AFFFFFF" />
+
+    <!-- Status chip (shown after action) -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_gravity="end"
+        android:visibility="gone"
+        app:chipStrokeWidth="0dp"
+        app:chipMinHeight="28dp" />
+
+</LinearLayout>

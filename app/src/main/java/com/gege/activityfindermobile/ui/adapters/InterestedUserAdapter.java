@@ -72,7 +72,7 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
     static class ViewHolder extends RecyclerView.ViewHolder {
         CircleImageView ivUserAvatar;
         TextView tvUserName, tvUserRating, tvJoinedAt;
-        Chip chipFriend, chipStatus;
+        Chip chipStatus;
         MaterialButton btnAccept, btnDecline;
         View layoutActions;
 
@@ -82,7 +82,6 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
             tvUserName = itemView.findViewById(R.id.tv_user_name);
             tvUserRating = itemView.findViewById(R.id.tv_user_rating);
             tvJoinedAt = itemView.findViewById(R.id.tv_joined_at);
-            chipFriend = itemView.findViewById(R.id.chip_friend);
             chipStatus = itemView.findViewById(R.id.chip_status);
             btnAccept = itemView.findViewById(R.id.btn_accept);
             btnDecline = itemView.findViewById(R.id.btn_decline);
@@ -102,12 +101,6 @@ public class InterestedUserAdapter extends RecyclerView.Adapter<InterestedUserAd
             } else {
                 tvUserRating.setText("N/A");
             }
-
-            // Show friend badge if applicable
-            chipFriend.setVisibility(
-                    participant.getIsFriend() != null && participant.getIsFriend()
-                            ? View.VISIBLE
-                            : View.GONE);
 
             // Format joined at time
             if (participant.getJoinedAt() != null) {

@@ -1,41 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp">
+    android:layout_margin="6dp">
 
     <!-- Photo Image with 1:1 aspect ratio (square) -->
-    <ImageView
-        android:id="@+id/iv_photo"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_photo"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/app_name"
-        android:background="@drawable/bg_photo_rounded"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_photo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/app_name"
+            tools:src="@drawable/activity_default" />
+
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Profile Badge (Top Left) -->
     <LinearLayout
         android:id="@+id/tv_profile_badge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
+        android:layout_margin="10dp"
         android:background="@drawable/bg_badge"
-        android:backgroundTint="@color/primary_blue"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
+        android:backgroundTint="@color/primary"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintTop_toTopOf="@id/card_photo"
+        app:layout_constraintStart_toStartOf="@id/card_photo">
 
         <ImageView
             android:layout_width="12dp"
@@ -59,11 +69,11 @@
         android:id="@+id/bottom_overlay"
         android:layout_width="0dp"
         android:layout_height="64dp"
-        android:background="@drawable/bg_bottom_gradient"
+        android:background="@drawable/gradient_bottom_dark"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@id/card_photo"
+        app:layout_constraintStart_toStartOf="@id/card_photo"
+        app:layout_constraintEnd_toEndOf="@id/card_photo" />
 
     <!-- Bottom Action Buttons Container -->
     <LinearLayout
@@ -72,35 +82,35 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end"
-        android:padding="8dp"
+        android:padding="10dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintBottom_toBottomOf="@id/card_photo"
+        app:layout_constraintStart_toStartOf="@id/card_photo"
+        app:layout_constraintEnd_toEndOf="@id/card_photo">
 
         <!-- Set as Profile Button -->
         <ImageButton
             android:id="@+id/btn_set_as_profile"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/bg_button_overlay"
             android:contentDescription="Set as Profile"
             android:scaleType="centerInside"
             android:src="@drawable/ic_star"
-            android:padding="6dp"
+            android:padding="8dp"
             app:tint="@color/white" />
 
         <!-- Delete Button -->
         <ImageButton
             android:id="@+id/btn_delete_photo"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:background="@drawable/bg_button_overlay"
             android:contentDescription="Delete Photo"
             android:scaleType="centerInside"
             android:src="@drawable/ic_delete"
-            android:padding="6dp"
+            android:padding="8dp"
             app:tint="@color/white" />
 
     </LinearLayout>
