@@ -35,25 +35,26 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/gradient_overlay" />
 
-            <!-- Price Badge (Top Left) -->
+            <!-- Expired Badge (Top Left) -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_price_badge"
+                android:id="@+id/card_expired_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
                 android:layout_margin="16dp"
+                android:visibility="gone"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#99000000"
-                app:strokeColor="#33FFFFFF"
+                app:cardBackgroundColor="#1AEF4444"
+                app:strokeColor="#33EF4444"
                 app:strokeWidth="1dp">
 
                 <TextView
-                    android:id="@+id/tv_price"
+                    android:id="@+id/tv_expired"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Free"
-                    android:textColor="#FFFFFF"
+                    android:text="Expired"
+                    android:textColor="#EF4444"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:paddingStart="12dp"

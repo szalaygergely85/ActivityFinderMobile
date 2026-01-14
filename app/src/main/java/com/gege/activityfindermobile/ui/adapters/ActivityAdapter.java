@@ -118,7 +118,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                 tvSpotsAvailable,
                 tvSpotsDisplay,
                 tvActivityCategory;
-        Chip chipCategory, chipStatus, chipExpired;
+        Chip chipCategory, chipStatus;
+        View cardExpiredBadge;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -137,7 +138,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             tvActivityCategory = itemView.findViewById(R.id.tv_activity_category);
             chipCategory = itemView.findViewById(R.id.chip_category);
             chipStatus = itemView.findViewById(R.id.chip_status);
-            chipExpired = itemView.findViewById(R.id.chip_expired);
+            cardExpiredBadge = itemView.findViewById(R.id.card_expired_badge);
 
             itemView.setOnClickListener(
                     v -> {
@@ -229,7 +230,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
             // Check if activity is expired
             boolean isExpired = isActivityExpired(activity);
-            chipExpired.setVisibility(isExpired ? View.VISIBLE : View.GONE);
+            cardExpiredBadge.setVisibility(isExpired ? View.VISIBLE : View.GONE);
 
             // Set status chip based on user's relationship with activity
             updateStatusChip(activity, chipStatus, context);
