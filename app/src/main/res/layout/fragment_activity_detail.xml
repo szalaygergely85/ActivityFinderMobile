@@ -156,8 +156,8 @@
                             android:visibility="gone"
                             app:cardCornerRadius="8dp"
                             app:cardElevation="0dp"
-                            app:cardBackgroundColor="#99000000"
-                            app:strokeColor="#33FFFFFF"
+                            app:cardBackgroundColor="#1AEF4444"
+                            app:strokeColor="#33EF4444"
                             app:strokeWidth="1dp"
                             tools:visibility="visible">
 
@@ -166,7 +166,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Expired"
-                                android:textColor="#FFFFFF"
+                                android:textColor="#EF4444"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:paddingStart="12dp"
