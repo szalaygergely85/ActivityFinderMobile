@@ -20,9 +20,18 @@ import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.gege.activityfindermobile.utils.UiUtil;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.inject.Inject;
 
@@ -35,11 +44,13 @@ public class RegisterFragment extends Fragment {
 
     @Inject SharedPreferencesManager prefsManager;
 
-    private TextInputLayout tilFullName, tilEmail, tilPassword, tilConfirmPassword;
-    private TextInputEditText etFullName, etEmail, etPassword, etConfirmPassword;
+    private TextInputLayout tilFullName, tilEmail, tilBirthDate, tilPassword, tilConfirmPassword;
+    private TextInputEditText etFullName, etEmail, etBirthDate, etPassword, etConfirmPassword;
     private MaterialButton btnRegister;
     private CircularProgressIndicator progressLoading;
     private TextView tvSignIn;
+
+    private String selectedBirthDate = null; // Format: yyyy-MM-dd
 
     @Nullable
     @Override
@@ -61,10 +72,12 @@ public class RegisterFragment extends Fragment {
     private void initViews(View view) {
         tilFullName = view.findViewById(R.id.til_full_name);
         tilEmail = view.findViewById(R.id.til_email);
+        tilBirthDate = view.findViewById(R.id.til_birth_date);
         tilPassword = view.findViewById(R.id.til_password);
         tilConfirmPassword = view.findViewById(R.id.til_confirm_password);
         etFullName = view.findViewById(R.id.et_full_name);
         etEmail = view.findViewById(R.id.et_email);
+        etBirthDate = view.findViewById(R.id.et_birth_date);
         etPassword = view.findViewById(R.id.et_password);
         etConfirmPassword = view.findViewById(R.id.et_confirm_password);
         btnRegister = view.findViewById(R.id.btn_register);
@@ -75,6 +88,8 @@ public class RegisterFragment extends Fragment {
     private void setupListeners() {
         btnRegister.setOnClickListener(v -> attemptRegister());
 
+        etBirthDate.setOnClickListener(v -> showDatePicker());
+
         tvSignIn.setOnClickListener(
                 v -> {
                     NavController navController = Navigation.findNavController(requireView());
@@ -82,10 +97,57 @@ public class RegisterFragment extends Fragment {
                 });
     }
 
+    private void showDatePicker() {
+        // Set max date to 18 years ago (user must be 18+)
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.add(Calendar.YEAR, -18);
+
+        // Set min date to 100 years ago
+        Calendar minDate = Calendar.getInstance();
+        minDate.add(Calendar.YEAR, -100);
+
+        CalendarConstraints constraints =
+                new CalendarConstraints.Builder()
+                        .setEnd(maxDate.getTimeInMillis())
+                        .setStart(minDate.getTimeInMillis())
+                        .setValidator(DateValidatorPointBackward.before(maxDate.getTimeInMillis()))
+                        .build();
+
+        MaterialDatePicker<Long> datePicker =
+                MaterialDatePicker.Builder.datePicker()
+                        .setTitleText("Select your birth date")
+                        .setSelection(maxDate.getTimeInMillis())
+                        .setCalendarConstraints(constraints)
+                        .build();
+
+        datePicker.addOnPositiveButtonClickListener(
+                selection -> {
+                    // Format for display (user-friendly)
+                    SimpleDateFormat displayFormat =
+                            new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                    displayFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                    // Format for API (yyyy-MM-dd)
+                    SimpleDateFormat apiFormat =
+                            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    apiFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                    Date date = new Date(selection);
+                    etBirthDate.setText(displayFormat.format(date));
+                    selectedBirthDate = apiFormat.format(date);
+
+                    // Clear error if any
+                    tilBirthDate.setError(null);
+                });
+
+        datePicker.show(getParentFragmentManager(), "BIRTH_DATE_PICKER");
+    }
+
     private void attemptRegister() {
         // Clear previous errors
         tilFullName.setError(null);
         tilEmail.setError(null);
+        tilBirthDate.setError(null);
         tilPassword.setError(null);
         tilConfirmPassword.setError(null);
 
@@ -119,6 +181,12 @@ public class RegisterFragment extends Fragment {
             return;
         }
 
+        if (selectedBirthDate == null || selectedBirthDate.isEmpty()) {
+            tilBirthDate.setError("Birth date is required");
+            etBirthDate.requestFocus();
+            return;
+        }
+
         if (password.isEmpty()) {
             tilPassword.setError("Password is required");
             etPassword.requestFocus();
@@ -147,7 +215,8 @@ public class RegisterFragment extends Fragment {
         setLoading(true);
 
         // Create registration request
-        UserRegistrationRequest request = new UserRegistrationRequest(fullName, email, password);
+        UserRegistrationRequest request =
+                new UserRegistrationRequest(fullName, email, password, selectedBirthDate);
 
         // Call API
         userRepository.registerUser(
@@ -204,6 +273,7 @@ public class RegisterFragment extends Fragment {
             progressLoading.setVisibility(View.VISIBLE);
             etFullName.setEnabled(false);
             etEmail.setEnabled(false);
+            etBirthDate.setEnabled(false);
             etPassword.setEnabled(false);
             etConfirmPassword.setEnabled(false);
         } else {
@@ -211,6 +281,7 @@ public class RegisterFragment extends Fragment {
             progressLoading.setVisibility(View.GONE);
             etFullName.setEnabled(true);
             etEmail.setEnabled(true);
+            etBirthDate.setEnabled(true);
             etPassword.setEnabled(true);
             etConfirmPassword.setEnabled(true);
         }

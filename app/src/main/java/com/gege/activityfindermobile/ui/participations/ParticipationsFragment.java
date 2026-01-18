@@ -91,6 +91,15 @@ public class ParticipationsFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty);
         tabLayout = view.findViewById(R.id.tab_layout);
 
+        // Setup back button
+        View btnBack = view.findViewById(R.id.btn_back);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigateUp();
+            });
+        }
+
         // Setup tabs
         tabLayout.addTab(tabLayout.newTab().setText("Joined"));
         tabLayout.addTab(tabLayout.newTab().setText("Interested"));

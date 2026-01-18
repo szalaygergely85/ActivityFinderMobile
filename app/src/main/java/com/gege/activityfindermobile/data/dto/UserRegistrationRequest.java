@@ -13,10 +13,14 @@ public class UserRegistrationRequest {
     @SerializedName("password")
     private String password;
 
-    public UserRegistrationRequest(String fullName, String email, String password) {
+    @SerializedName("birthDate")
+    private String birthDate; // Format: yyyy-MM-dd
+
+    public UserRegistrationRequest(String fullName, String email, String password, String birthDate) {
         this.fullName = fullName;
         this.email = email;
         this.password = password;
+        this.birthDate = birthDate;
     }
 
     // Getters and Setters
@@ -42,5 +46,13 @@ public class UserRegistrationRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(String birthDate) {
+        this.birthDate = birthDate;
     }
 }

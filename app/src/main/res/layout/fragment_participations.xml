@@ -3,32 +3,73 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_light">
+    android:background="@color/background_dark">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/primary_dark"
+        android:background="@color/background_dark"
         app:liftOnScroll="false"
         app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <!-- Header with Back and Title -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/nav_joined"
-            app:navigationIconTint="@color/white"
-            app:titleTextColor="@color/white" />
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:background="@color/background_dark">
+
+            <!-- Back Button -->
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back"
+                android:contentDescription="Back"
+                app:tint="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/toolbar_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_joined"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:gravity="center"
+                app:layout_constraintStart_toEndOf="@id/btn_back"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/primary_dark"
-            app:tabTextColor="@color/accent_light"
-            app:tabSelectedTextColor="@color/white"
-            app:tabIndicatorColor="@color/accent_light"
-            app:tabIndicatorHeight="3dp" />
+            android:background="@color/background_dark"
+            android:paddingHorizontal="16dp"
+            app:tabTextColor="@color/slate_400"
+            app:tabSelectedTextColor="@color/primary_blue"
+            app:tabIndicatorColor="@color/primary_blue"
+            app:tabIndicatorHeight="3dp"
+            app:tabTextAppearance="@style/TabTextAppearance"
+            app:tabMode="fixed"
+            app:tabGravity="start" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/slate_800" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -43,45 +84,67 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:padding="@dimen/padding_small"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="100dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <!-- Empty State -->
     <LinearLayout
         android:id="@+id/layout_empty"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginHorizontal="32dp"
         android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone"
-        android:padding="@dimen/padding_large">
+        android:paddingHorizontal="32dp"
+        android:paddingVertical="60dp"
+        android:background="@drawable/bg_dashed_border">
+
+        <!-- Icon Circle -->
+        <View
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="@color/surface_dark"
+            android:elevation="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="-104dp"
+            android:layout_marginBottom="24dp"
             android:text="🎯"
-            android:textSize="64sp" />
+            android:textSize="40sp" />
 
+        <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_medium"
             android:text="No joined activities yet"
-            android:textSize="@dimen/text_size_large"
-            android:textColor="@color/text_secondary" />
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp" />
 
+        <!-- Description -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_small"
             android:text="Explore and join activities!"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/text_hint" />
+            android:textSize="14sp"
+            android:textColor="@color/slate_400"
+            android:gravity="center"
+            android:maxWidth="260dp" />
 
     </LinearLayout>
 
+    <!-- Loading Progress -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progress_loading"
         android:layout_width="wrap_content"
@@ -89,6 +152,6 @@
         android:layout_gravity="center"
         android:indeterminate="true"
         android:visibility="gone"
-        app:indicatorColor="@color/primary" />
+        app:indicatorColor="@color/primary_blue" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

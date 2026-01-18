@@ -257,8 +257,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
     }
 
     private void initViews(View view) {
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(
+        view.findViewById(R.id.btn_back).setOnClickListener(
                 v -> {
                     NavController navController = Navigation.findNavController(requireView());
                     navController.navigateUp();

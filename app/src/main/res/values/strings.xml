@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Activity Finder</string>
+    <string name="app_name">Vivento</string>
 
     <!-- Bottom Navigation -->
     <string name="nav_explore">Explore</string>

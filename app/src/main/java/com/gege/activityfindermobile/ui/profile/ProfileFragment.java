@@ -118,6 +118,14 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupListeners() {
+        View btnBack = requireView().findViewById(R.id.btn_back);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigateUp();
+            });
+        }
+
         btnLogout.setOnClickListener(v -> showLogoutDialog());
 
         btnEditProfile.setOnClickListener(v -> navigateToEditProfile());
