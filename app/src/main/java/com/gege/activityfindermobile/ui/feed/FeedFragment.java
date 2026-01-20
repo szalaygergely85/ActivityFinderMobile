@@ -25,6 +25,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -216,6 +217,10 @@ public class FeedFragment extends Fragment {
                 currentUserId,
                 categoryManager);
         rvActivities.setAdapter(adapter);
+
+        // Use GridLayoutManager for tablets (span count from resources)
+        int spanCount = getResources().getInteger(R.integer.feed_span_count);
+        rvActivities.setLayoutManager(new GridLayoutManager(requireContext(), spanCount));
 
         // Swipe refresh
         swipeRefresh.setOnRefreshListener(

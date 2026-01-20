@@ -26,4 +26,12 @@
     <dimen name="chip_min_height">40dp</dimen>
 
     <!-- Icon -->
+
+    <!-- Tablet responsive widths (no max on phones) -->
+    <dimen name="form_max_width">10000dp</dimen>
+    <dimen name="card_max_width">10000dp</dimen>
+    <dimen name="content_max_width">10000dp</dimen>
+
+    <!-- RecyclerView span count -->
+    <integer name="feed_span_count">1</integer>
 </resources>
