@@ -1,11 +1,18 @@
 package com.gege.activityfindermobile.ui.main;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -27,10 +34,23 @@ public class MainActivity extends AppCompatActivity {
     @Inject SharedPreferencesManager prefsManager;
     @Inject NotificationRepository notificationRepository;
 
+    private static final String TAG = "MainActivity";
+
     private NavController navController;
     private BottomNavigationView bottomNavigationView;
     private Handler notificationPollingHandler;
     private Runnable notificationPollingRunnable;
+
+    private final ActivityResultLauncher<String> requestNotificationPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(),
+                    isGranted -> {
+                        if (isGranted) {
+                            Log.d(TAG, "Notification permission granted");
+                        } else {
+                            Log.w(TAG, "Notification permission denied");
+                        }
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         checkLoginStatus();
         setupNotificationPolling();
+        requestNotificationPermission();
     }
 
     @Override
@@ -146,5 +167,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void refreshNotificationBadge() {
         updateNotificationBadge();
+    }
+
+    private void requestNotificationPermission() {
+        // Only needed for Android 13 (API 33) and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 }

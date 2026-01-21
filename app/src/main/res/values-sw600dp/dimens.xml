@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tablet responsive widths -->
+    <dimen name="form_max_width">480dp</dimen>
+    <dimen name="card_max_width">400dp</dimen>
+    <dimen name="content_max_width">600dp</dimen>
+
+    <!-- RecyclerView span count for tablets -->
+    <integer name="feed_span_count">2</integer>
+</resources>

@@ -14,8 +14,10 @@ import androidx.navigation.Navigation;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
+import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
+import com.gege.activityfindermobile.data.repository.NotificationRepository;
 import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.gege.activityfindermobile.utils.UiUtil;
@@ -23,6 +25,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import javax.inject.Inject;
 
@@ -34,6 +37,8 @@ public class LoginFragment extends Fragment {
     @Inject UserRepository userRepository;
 
     @Inject SharedPreferencesManager prefsManager;
+
+    @Inject NotificationRepository notificationRepository;
 
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText etEmail, etPassword;
@@ -157,6 +162,9 @@ public class LoginFragment extends Fragment {
 
                         UiUtil.showToast(requireContext(), "Welcome back, " + fullName + "!");
 
+                        // Register FCM token for push notifications
+                        registerFcmToken();
+
                         // Navigate to main screen
                         NavController navController = Navigation.findNavController(requireView());
                         navController.navigate(R.id.action_loginFragment_to_nav_feed);
@@ -182,5 +190,42 @@ public class LoginFragment extends Fragment {
             etEmail.setEnabled(true);
             etPassword.setEnabled(true);
         }
+    }
+
+    private void registerFcmToken() {
+        FirebaseMessaging.getInstance()
+                .getToken()
+                .addOnCompleteListener(
+                        task -> {
+                            if (!task.isSuccessful()) {
+                                android.util.Log.w(
+                                        "LoginFragment",
+                                        "Failed to get FCM token",
+                                        task.getException());
+                                return;
+                            }
+
+                            String token = task.getResult();
+                            android.util.Log.d("LoginFragment", "FCM Token: " + token);
+
+                            // Send token to backend
+                            notificationRepository.registerDeviceToken(
+                                    token,
+                                    new ApiCallbackVoid() {
+                                        @Override
+                                        public void onSuccess() {
+                                            android.util.Log.d(
+                                                    "LoginFragment",
+                                                    "FCM token registered successfully");
+                                        }
+
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            android.util.Log.e(
+                                                    "LoginFragment",
+                                                    "Failed to register FCM token: " + errorMessage);
+                                        }
+                                    });
+                        });
     }
 }
