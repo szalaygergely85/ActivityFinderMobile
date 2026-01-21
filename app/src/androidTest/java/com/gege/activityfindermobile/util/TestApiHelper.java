@@ -283,4 +283,57 @@ public class TestApiHelper {
         currentAccessToken = null;
         currentUserId = null;
     }
+
+    /**
+     * Wait for specified milliseconds.
+     * Useful for waiting between operations that need backend processing time.
+     */
+    public void waitMillis(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Wait for a short time (500ms) - use between dependent operations.
+     */
+    public void waitShort() {
+        waitMillis(500);
+    }
+
+    /**
+     * Wait for medium time (1000ms) - use after create operations before querying.
+     */
+    public void waitMedium() {
+        waitMillis(1000);
+    }
+
+    /**
+     * Login with retry - useful when login might fail due to timing.
+     * @param maxRetries Maximum number of retry attempts
+     * @param delayBetweenRetries Delay in ms between retries
+     * @return LoginResponse or null if all retries fail
+     */
+    public LoginResponse loginWithRetry(String email, String password, int maxRetries, long delayBetweenRetries) {
+        for (int i = 0; i <= maxRetries; i++) {
+            LoginResponse response = login(email, password);
+            if (response != null) {
+                return response;
+            }
+            if (i < maxRetries) {
+                Log.d(TAG, "Login attempt " + (i + 1) + " failed, retrying in " + delayBetweenRetries + "ms...");
+                waitMillis(delayBetweenRetries);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Login with default retry settings (3 retries, 500ms delay).
+     */
+    public LoginResponse loginWithRetry(String email, String password) {
+        return loginWithRetry(email, password, 3, 500);
+    }
 }
