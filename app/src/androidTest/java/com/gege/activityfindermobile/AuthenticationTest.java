@@ -24,31 +24,49 @@ import java.util.List;
 public class AuthenticationTest {
 
     private TestApiHelper apiHelper;
-    private List<Long> createdUserIds;
+    private List<TestUserCredentials> createdUsers;
+
+    // Store credentials for cleanup - we need to re-login to delete
+    private static class TestUserCredentials {
+        final Long userId;
+        final String email;
+        final String password;
+
+        TestUserCredentials(Long userId, String email, String password) {
+            this.userId = userId;
+            this.email = email;
+            this.password = password;
+        }
+    }
 
     @Before
     public void setUp() {
         apiHelper = new TestApiHelper();
-        createdUserIds = new ArrayList<>();
+        createdUsers = new ArrayList<>();
     }
 
     @After
     public void tearDown() {
-        // Clean up all created users
-        for (Long userId : createdUserIds) {
+        // Clean up all created users - need to login first to have auth token
+        for (TestUserCredentials user : createdUsers) {
             try {
-                apiHelper.deleteUser(userId);
+                // Login to get auth token for deletion
+                apiHelper.clearSession();
+                LoginResponse loginResponse = apiHelper.login(user.email, user.password);
+                if (loginResponse != null) {
+                    apiHelper.deleteUser(user.userId);
+                }
             } catch (Exception e) {
                 // Ignore cleanup errors
             }
         }
-        createdUserIds.clear();
+        createdUsers.clear();
         apiHelper.clearSession();
     }
 
-    private void trackUser(Long userId) {
+    private void trackUser(Long userId, String email, String password) {
         if (userId != null) {
-            createdUserIds.add(userId);
+            createdUsers.add(new TestUserCredentials(userId, email, password));
         }
     }
 
@@ -66,7 +84,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", response);
-        trackUser(response.getUserId());
+        trackUser(response.getUserId(), testUser.email, testUser.password);
 
         assertNotNull("Should return user ID", response.getUserId());
         assertNotNull("Should return access token", response.getAccessToken());
@@ -88,7 +106,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("18-year-old registration should succeed", response);
-        trackUser(response.getUserId());
+        trackUser(response.getUserId(), testUser.email, testUser.password);
         assertNotNull("Should return user ID", response.getUserId());
     }
 
@@ -180,7 +198,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("First registration should succeed", firstResponse);
-        trackUser(firstResponse.getUserId());
+        trackUser(firstResponse.getUserId(), testUser.email, testUser.password);
 
         // Second registration with same email should fail
         LoginResponse secondResponse = apiHelper.createUser(
@@ -232,7 +250,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", registerResponse);
-        trackUser(registerResponse.getUserId());
+        trackUser(registerResponse.getUserId(), testUser.email, testUser.password);
 
         // Clear session and wait for backend to fully commit
         apiHelper.clearSession();
@@ -262,7 +280,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", registerResponse);
-        trackUser(registerResponse.getUserId());
+        trackUser(registerResponse.getUserId(), testUser.email, testUser.password);
 
         // Clear session and wait for backend
         apiHelper.clearSession();
@@ -304,7 +322,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", registerResponse);
-        trackUser(registerResponse.getUserId());
+        trackUser(registerResponse.getUserId(), testUser.email, testUser.password);
 
         // Clear session and wait for backend
         apiHelper.clearSession();
@@ -330,7 +348,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", registerResponse);
-        trackUser(registerResponse.getUserId());
+        trackUser(registerResponse.getUserId(), lowercaseEmail, testUser.password);
 
         // Clear session and wait for backend
         apiHelper.clearSession();
@@ -363,7 +381,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", registerResponse);
-        trackUser(registerResponse.getUserId());
+        trackUser(registerResponse.getUserId(), testUser.email, testUser.password);
 
         // Wait for backend to commit
         apiHelper.waitShort();
@@ -433,7 +451,7 @@ public class AuthenticationTest {
         );
 
         assertNotNull("Registration should succeed", response);
-        trackUser(response.getUserId());
+        trackUser(response.getUserId(), testUser.email, testUser.password);
 
         // Validate token format (JWT tokens have 3 parts separated by dots)
         String accessToken = response.getAccessToken();
