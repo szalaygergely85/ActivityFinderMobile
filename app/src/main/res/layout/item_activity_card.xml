@@ -73,12 +73,12 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- First Row: Category (left) and Distance (right) -->
+            <!-- First Row: Distance (right aligned) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:gravity="center_vertical|end"
                 android:layout_marginBottom="8dp">
 
                 <TextView

@@ -42,6 +42,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,6 +97,7 @@ public class FeedFragment extends Fragment {
                                                                                                         // distance from
                                                                                                         // constants
     private String selectedActivityType = null; // null = all types (used by both category chips and general filter)
+    private String sortBy = "datetime"; // "datetime" or "distance"
 
     // Permission launcher
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
@@ -636,6 +638,26 @@ public class FeedFragment extends Fragment {
                     .collect(Collectors.toList());
         }
 
+        // Apply sorting
+        if ("distance".equals(sortBy)) {
+            filtered = filtered.stream()
+                    .sorted(Comparator.comparing(
+                            Activity::getDistance,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+        } else {
+            // Sort by datetime (date + time)
+            filtered = filtered.stream()
+                    .sorted(Comparator.comparing(
+                            (Activity a) -> {
+                                String date = a.getDate() != null ? a.getDate() : "";
+                                String time = a.getTime() != null ? a.getTime() : "";
+                                return date + " " + time;
+                            },
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+        }
+
         // Update adapter
         adapter.setActivities(filtered);
         android.util.Log.d(
@@ -652,6 +674,7 @@ public class FeedFragment extends Fragment {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_general_filter, null);
 
         // Get dialog views
+        ChipGroup chipGroupSort = dialogView.findViewById(R.id.chip_group_sort);
         ChipGroup chipGroupDistance = dialogView.findViewById(R.id.chip_group_distance);
         ChipGroup chipGroupType = dialogView.findViewById(R.id.chip_group_type);
         com.google.android.material.button.MaterialButton resetButton = dialogView.findViewById(R.id.resetButton);
@@ -692,6 +715,13 @@ public class FeedFragment extends Fragment {
             }
         }
 
+        // Set current sort selection
+        if ("distance".equals(sortBy)) {
+            chipGroupSort.check(R.id.chip_sort_distance);
+        } else {
+            chipGroupSort.check(R.id.chip_sort_datetime);
+        }
+
         // Set current distance selection
         if (maxDistanceKm == 5) {
             chipGroupDistance.check(R.id.chip_distance_5);
@@ -719,6 +749,10 @@ public class FeedFragment extends Fragment {
         // Reset button handler
         resetButton.setOnClickListener(
                 v -> {
+                    // Reset sort to datetime
+                    chipGroupSort.check(R.id.chip_sort_datetime);
+                    sortBy = "datetime";
+
                     // Reset distance to default
                     chipGroupDistance.check(R.id.chip_distance_anywhere);
                     maxDistanceKm = com.gege.activityfindermobile.utils.Constants.DEFAULT_MAX_DISTANCE;
@@ -736,6 +770,14 @@ public class FeedFragment extends Fragment {
         // Apply button handler
         applyButton.setOnClickListener(
                 v -> {
+                    // Get selected sort option
+                    int selectedSortId = chipGroupSort.getCheckedChipId();
+                    if (selectedSortId == R.id.chip_sort_distance) {
+                        sortBy = "distance";
+                    } else {
+                        sortBy = "datetime";
+                    }
+
                     // Get selected distance
                     int selectedDistanceId = chipGroupDistance.getCheckedChipId();
                     if (selectedDistanceId == R.id.chip_distance_5) {
