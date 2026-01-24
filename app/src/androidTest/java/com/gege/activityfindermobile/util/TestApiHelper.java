@@ -258,6 +258,72 @@ public class TestApiHelper {
         }
     }
 
+    /**
+     * Get nearby activities synchronously.
+     * @return List of activities, or null on failure
+     */
+    public java.util.List<Activity> getNearbyActivities(double latitude, double longitude, float radiusKm) {
+        try {
+            Response<java.util.List<Activity>> response = activityApiService
+                    .getNearbyActivities(latitude, longitude, radiusKm).execute();
+
+            if (response.isSuccessful() && response.body() != null) {
+                Log.d(TAG, "Found " + response.body().size() + " nearby activities");
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get nearby activities: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting nearby activities: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get activities by category synchronously.
+     * @return List of activities, or null on failure
+     */
+    public java.util.List<Activity> getActivitiesByCategory(String category) {
+        try {
+            Response<java.util.List<Activity>> response = activityApiService
+                    .getActivitiesByCategory(category).execute();
+
+            if (response.isSuccessful() && response.body() != null) {
+                Log.d(TAG, "Found " + response.body().size() + " activities in category: " + category);
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get activities by category: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting activities by category: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get all open activities synchronously.
+     * @return List of activities, or null on failure
+     */
+    public java.util.List<Activity> getAllOpenActivities() {
+        try {
+            Response<java.util.List<Activity>> response = activityApiService
+                    .getAllOpenActivities().execute();
+
+            if (response.isSuccessful() && response.body() != null) {
+                Log.d(TAG, "Found " + response.body().size() + " open activities");
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get open activities: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting open activities: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
     // ==================== Getters ====================
 
     public String getCurrentAccessToken() {

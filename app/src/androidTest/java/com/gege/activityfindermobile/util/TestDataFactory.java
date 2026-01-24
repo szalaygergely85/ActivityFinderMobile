@@ -232,4 +232,47 @@ public class TestDataFactory {
     public static final String CATEGORY_ARTS = "ARTS";
     public static final String CATEGORY_SOCIAL = "SOCIAL";
     public static final String CATEGORY_LEARNING = "LEARNING";
+
+    // ==================== Location Presets ====================
+
+    // New York City coordinates
+    public static final double NYC_LATITUDE = 40.7128;
+    public static final double NYC_LONGITUDE = -74.0060;
+
+    // ~5km from NYC (Jersey City)
+    public static final double JERSEY_CITY_LATITUDE = 40.7178;
+    public static final double JERSEY_CITY_LONGITUDE = -74.0431;
+
+    // ~15km from NYC (Newark)
+    public static final double NEWARK_LATITUDE = 40.7357;
+    public static final double NEWARK_LONGITUDE = -74.1724;
+
+    // ~30km from NYC (Yonkers)
+    public static final double YONKERS_LATITUDE = 40.9312;
+    public static final double YONKERS_LONGITUDE = -73.8987;
+
+    /**
+     * Create an activity at specific coordinates.
+     */
+    public static ActivityCreateRequest createActivityAtLocation(
+            String title, String category, double latitude, double longitude, String activityDate) {
+        ActivityCreateRequest request = new ActivityCreateRequest();
+        request.setTitle(title);
+        request.setDescription("Test activity at location: " + title);
+        request.setActivityDate(activityDate);
+        request.setLocation("Test Location");
+        request.setTotalSpots(5);
+        request.setCategory(category);
+        request.setLatitude(latitude);
+        request.setLongitude(longitude);
+        return request;
+    }
+
+    /**
+     * Create an activity at specific coordinates with default date (tomorrow).
+     */
+    public static ActivityCreateRequest createActivityAtLocation(
+            String title, String category, double latitude, double longitude) {
+        return createActivityAtLocation(title, category, latitude, longitude, activityDateTomorrow());
+    }
 }

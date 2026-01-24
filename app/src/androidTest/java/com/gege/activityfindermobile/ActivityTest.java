@@ -66,7 +66,8 @@ public class ActivityTest {
             try {
                 // Re-login to ensure we have valid token
                 apiHelper.clearSession();
-                apiHelper.login(testUser.email, testUser.password);
+                apiHelper.waitShort();
+                apiHelper.loginWithRetry(testUser.email, testUser.password);
                 apiHelper.deleteUser(currentUserId);
             } catch (Exception e) {
                 // Ignore cleanup errors

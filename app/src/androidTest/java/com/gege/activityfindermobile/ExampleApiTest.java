@@ -36,6 +36,11 @@ public class ExampleApiTest {
 
     @After
     public void tearDown() {
+        // Re-login to ensure we have auth token for cleanup
+        if (createdUserId != null && apiHelper.getCurrentAccessToken() == null) {
+            apiHelper.loginWithRetry(testUser.email, testUser.password);
+        }
+
         // Clean up: delete created activity first, then user
         if (createdActivityId != null && createdUserId != null) {
             apiHelper.deleteActivity(createdActivityId, createdUserId);
@@ -65,8 +70,9 @@ public class ExampleApiTest {
 
         // Clear session and login again
         apiHelper.clearSession();
+        apiHelper.waitShort(); // Allow backend to fully process registration
 
-        LoginResponse loginResponse = apiHelper.login(testUser.email, testUser.password);
+        LoginResponse loginResponse = apiHelper.loginWithRetry(testUser.email, testUser.password);
 
         assertNotNull("Login should succeed", loginResponse);
         assertEquals("User ID should match", createdUserId, loginResponse.getUserId());

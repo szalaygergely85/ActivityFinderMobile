@@ -52,7 +52,8 @@ public class AuthenticationTest {
             try {
                 // Login to get auth token for deletion
                 apiHelper.clearSession();
-                LoginResponse loginResponse = apiHelper.login(user.email, user.password);
+                apiHelper.waitShort();
+                LoginResponse loginResponse = apiHelper.loginWithRetry(user.email, user.password);
                 if (loginResponse != null) {
                     apiHelper.deleteUser(user.userId);
                 }

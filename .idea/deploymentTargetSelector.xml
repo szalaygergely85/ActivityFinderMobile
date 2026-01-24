@@ -16,13 +16,16 @@
       <SelectionState runConfigName="AuthenticationTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="login_withValidCredentials_shouldSucceed()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="login_multipleTimesWithSameUser_shouldSucceed()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="ActivityTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="FeedTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="Tests in 'com.gege.activityfindermobile'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
