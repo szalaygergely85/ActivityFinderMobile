@@ -93,7 +93,7 @@
                         android:layout_weight="1"
                         android:minHeight="160dp"
                         android:scaleType="centerCrop"
-                       />
+                        android:src="@drawable/activity_social" />
 
                     <!-- Text Content -->
                     <LinearLayout
