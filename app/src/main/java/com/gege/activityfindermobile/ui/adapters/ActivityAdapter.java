@@ -20,6 +20,7 @@ import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.utils.CategoryManager;
 import com.gege.activityfindermobile.utils.Constants;
 import com.gege.activityfindermobile.utils.DateUtil;
+import com.gege.activityfindermobile.utils.DistanceFormatter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -35,6 +36,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
     private ParticipantRepository participantRepository;
     private Long currentUserId;
     private CategoryManager categoryManager;
+    private boolean useKilometers = true; // Default to km
 
     public interface OnActivityClickListener {
         void onActivityClick(Activity activity);
@@ -72,6 +74,10 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
     public void setCurrentUserId(Long currentUserId) {
         this.currentUserId = currentUserId;
+    }
+
+    public void setUseKilometers(boolean useKilometers) {
+        this.useKilometers = useKilometers;
     }
 
     public void setActivities(List<Activity> activities) {
@@ -190,9 +196,10 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
 
             tvLocation.setText(activity.getLocation());
 
-            // Display distance if available
-            if (activity.getDistance() != null && activity.getDistance() > 0) {
-                tvDistance.setText(String.format("%.1f km", activity.getDistance()));
+            // Display distance if available (respects user's km/miles preference)
+            String formattedDistance = DistanceFormatter.format(activity.getDistance(), useKilometers);
+            if (formattedDistance != null) {
+                tvDistance.setText(formattedDistance);
                 tvDistance.setVisibility(View.VISIBLE);
             } else {
                 tvDistance.setVisibility(View.GONE);

@@ -29,7 +29,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class ProfileFragment extends Fragment {
     private TextView tvName, tvEmail, tvBio, tvRatingValue, tvActivitiesCount, tvPhotoCount;
     private Chip chipBadge;
     private ChipGroup chipGroupInterests;
-    private MaterialButton btnLogout, btnEditProfile;
+    private MaterialButton btnEditProfile;
     private CircularProgressIndicator progressLoading;
     private View cardPhotos, layoutPhotosEmpty;
     private RecyclerView rvUserPhotos;
@@ -108,7 +107,6 @@ public class ProfileFragment extends Fragment {
         // tvUserLocation = view.findViewById(R.id.tv_user_location);
         chipBadge = view.findViewById(R.id.chip_badge);
         chipGroupInterests = view.findViewById(R.id.chip_group_interests);
-        btnLogout = view.findViewById(R.id.btn_logout);
         btnEditProfile = view.findViewById(R.id.btn_edit_profile);
         progressLoading = view.findViewById(R.id.progress_loading);
         cardPhotos = view.findViewById(R.id.card_photos);
@@ -126,9 +124,17 @@ public class ProfileFragment extends Fragment {
             });
         }
 
-        btnLogout.setOnClickListener(v -> showLogoutDialog());
+        View btnSettings = requireView().findViewById(R.id.btn_settings);
+        if (btnSettings != null) {
+            btnSettings.setOnClickListener(v -> navigateToSettings());
+        }
 
         btnEditProfile.setOnClickListener(v -> navigateToEditProfile());
+    }
+
+    private void navigateToSettings() {
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.action_nav_profile_to_settingsFragment);
     }
 
     private void navigateToEditProfile() {
@@ -263,29 +269,6 @@ public class ProfileFragment extends Fragment {
             }
         }
     */
-    private void showLogoutDialog() {
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Logout")
-                .setMessage("Are you sure you want to logout?")
-                .setPositiveButton(
-                        "Logout",
-                        (dialog, which) -> {
-                            performLogout();
-                        })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void performLogout() {
-        // Clear user session
-        prefsManager.clearUserSession();
-
-        Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
-
-        // Navigate to login screen
-        navigateToLogin();
-    }
-
     private void navigateToLogin() {
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_profile_to_loginFragment);

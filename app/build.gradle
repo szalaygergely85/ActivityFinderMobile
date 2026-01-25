@@ -13,8 +13,8 @@ android {
         applicationId "com.gege.activityfindermobile"
         minSdk 26
         targetSdk 36
-        versionCode 8
-        versionName "1.07 alpha"
+        versionCode 9
+        versionName "1.08 alpha"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

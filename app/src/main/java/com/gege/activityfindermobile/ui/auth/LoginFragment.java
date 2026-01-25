@@ -155,10 +155,11 @@ public class LoginFragment extends Fragment {
                         Long userId = loginResponse.getUserId();
                         String token = loginResponse.getAccessToken();
                         String refreshToken = loginResponse.getRefreshToken();
+                        String userEmail = loginResponse.getEmail();
                         String fullName = loginResponse.getFullName();
 
-                        // Save user session with JWT tokens (access + refresh)
-                        prefsManager.saveUserSession(userId, token, refreshToken);
+                        // Save user session with JWT tokens (access + refresh) and email
+                        prefsManager.saveUserSession(userId, token, refreshToken, userEmail);
 
                         UiUtil.showToast(requireContext(), "Welcome back, " + fullName + "!");
 

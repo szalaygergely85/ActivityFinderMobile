@@ -2,8 +2,8 @@ package com.gege.activityfindermobile.utils;
 
 public class Constants {
     // Change this to your backend URL
-     public static final String BASE_URL = "http://10.0.2.2:8080/"; // Android emulator localhost
-   //  public static final String BASE_URL = "https://api.vivento.fun/";
+    // public static final String BASE_URL = "http://10.0.2.2:8080/"; // Android emulator localhost
+    public static final String BASE_URL = "https://api.vivento.fun/";
     // For production: "https://your-domain.com/"
 
     // SharedPreferences keys
@@ -12,6 +12,7 @@ public class Constants {
     public static final String KEY_USER_TOKEN = "userToken";
     public static final String KEY_REFRESH_TOKEN = "refreshToken";
     public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
+    public static final String KEY_USER_EMAIL = "user_email";
 
     // Filter constants
     public static final int[] DISTANCE_FILTER_OPTIONS = {5, 10, 25, 50, 250}; // km

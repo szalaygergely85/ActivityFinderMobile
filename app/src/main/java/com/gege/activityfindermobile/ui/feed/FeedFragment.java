@@ -135,6 +135,17 @@ public class FeedFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // Refresh distance unit preference when returning from settings
+        if (adapter != null) {
+            boolean useKilometers = prefsManager.getBoolean("distance_unit", true);
+            adapter.setUseKilometers(useKilometers);
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -218,6 +229,11 @@ public class FeedFragment extends Fragment {
                 participantRepository,
                 currentUserId,
                 categoryManager);
+
+        // Apply user's distance unit preference (km or miles)
+        boolean useKilometers = prefsManager.getBoolean("distance_unit", true);
+        adapter.setUseKilometers(useKilometers);
+
         rvActivities.setAdapter(adapter);
 
         // Use GridLayoutManager for tablets (span count from resources)

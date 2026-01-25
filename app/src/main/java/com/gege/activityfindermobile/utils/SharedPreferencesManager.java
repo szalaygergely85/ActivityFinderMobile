@@ -50,6 +50,16 @@ public class SharedPreferencesManager {
         return sharedPreferences.getString(Constants.KEY_REFRESH_TOKEN, null);
     }
 
+    /** Save user email */
+    public void saveUserEmail(String email) {
+        sharedPreferences.edit().putString(Constants.KEY_USER_EMAIL, email).apply();
+    }
+
+    /** Get user email */
+    public String getUserEmail() {
+        return sharedPreferences.getString(Constants.KEY_USER_EMAIL, null);
+    }
+
     /** Set login status */
     public void setLoggedIn(boolean isLoggedIn) {
         sharedPreferences.edit().putBoolean(Constants.KEY_IS_LOGGED_IN, isLoggedIn).apply();
@@ -60,8 +70,8 @@ public class SharedPreferencesManager {
         return sharedPreferences.getBoolean(Constants.KEY_IS_LOGGED_IN, false);
     }
 
-    /** Save user session (login) - now includes refresh token */
-    public void saveUserSession(Long userId, String accessToken, String refreshToken) {
+    /** Save user session (login) - now includes refresh token and email */
+    public void saveUserSession(Long userId, String accessToken, String refreshToken, String email) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
@@ -70,8 +80,14 @@ public class SharedPreferencesManager {
                 .putLong(Constants.KEY_USER_ID, userId)
                 .putString(Constants.KEY_USER_TOKEN, accessToken != null ? accessToken : "")
                 .putString(Constants.KEY_REFRESH_TOKEN, refreshToken != null ? refreshToken : "")
+                .putString(Constants.KEY_USER_EMAIL, email != null ? email : "")
                 .putBoolean(Constants.KEY_IS_LOGGED_IN, true)
                 .apply();
+    }
+
+    /** Save user session (login) - without email */
+    public void saveUserSession(Long userId, String accessToken, String refreshToken) {
+        saveUserSession(userId, accessToken, refreshToken, null);
     }
 
     /** Legacy method for backward compatibility */
@@ -87,6 +103,7 @@ public class SharedPreferencesManager {
                 .remove(Constants.KEY_USER_ID)
                 .remove(Constants.KEY_USER_TOKEN)
                 .remove(Constants.KEY_REFRESH_TOKEN)
+                .remove(Constants.KEY_USER_EMAIL)
                 .putBoolean(Constants.KEY_IS_LOGGED_IN, false)
                 .apply();
     }
@@ -106,8 +123,23 @@ public class SharedPreferencesManager {
         sharedPreferences.edit().putBoolean(key, value).apply();
     }
 
+    /** Alias for saveBoolean */
+    public void putBoolean(String key, boolean value) {
+        saveBoolean(key, value);
+    }
+
     /** Get a boolean value with a default */
     public boolean getBoolean(String key, boolean defaultValue) {
         return sharedPreferences.getBoolean(key, defaultValue);
+    }
+
+    /** Save a string value */
+    public void putString(String key, String value) {
+        sharedPreferences.edit().putString(key, value).apply();
+    }
+
+    /** Get a string value with a default */
+    public String getString(String key, String defaultValue) {
+        return sharedPreferences.getString(key, defaultValue);
     }
 }
