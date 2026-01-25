@@ -85,6 +85,9 @@ public class Activity {
     @SerializedName("interests")
     private List<String> interests; // Activity interests/tags
 
+    @SerializedName("coverImageUrl")
+    private String coverImageUrl; // User-selected cover image URL
+
     // Constructor
     public Activity() {}
 
@@ -376,5 +379,13 @@ public class Activity {
 
     public void setInterests(List<String> interests) {
         this.interests = interests;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
     }
 }

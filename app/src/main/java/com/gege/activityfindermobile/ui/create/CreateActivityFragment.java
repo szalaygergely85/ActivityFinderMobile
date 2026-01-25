@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,15 +20,20 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
 import com.gege.activityfindermobile.data.model.Activity;
+import com.gege.activityfindermobile.data.model.CoverImage;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.MapPickerActivity;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.gege.activityfindermobile.utils.Constants;
 import com.gege.activityfindermobile.utils.UiUtil;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
@@ -76,6 +83,12 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
     private AutoCompleteTextView etCategory;
     private MaterialButton btnCreate;
     private CircularProgressIndicator progressLoading;
+
+    // Cover image views
+    private MaterialCardView cardCoverImage;
+    private ImageView ivCoverPreview;
+    private LinearLayout layoutCoverPlaceholder;
+    private String selectedCoverImageUrl = null;
 
     // Map variables
     private MapView mapViewPreview;
@@ -281,6 +294,11 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
 
         btnCreate = view.findViewById(R.id.btn_create);
         progressLoading = view.findViewById(R.id.progress_loading);
+
+        // Cover image views
+        cardCoverImage = view.findViewById(R.id.card_cover_image);
+        ivCoverPreview = view.findViewById(R.id.iv_cover_preview);
+        layoutCoverPlaceholder = view.findViewById(R.id.layout_cover_placeholder);
     }
 
     private void setupCategoryDropdown() {
@@ -438,8 +456,67 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         // Map picker button (end icon)
         tilLocation.setEndIconOnClickListener(v -> openMapPicker());
 
+        // Cover image picker
+        cardCoverImage.setOnClickListener(v -> openCoverImagePicker());
+
         // Create button
         btnCreate.setOnClickListener(v -> validateAndCreateActivity());
+    }
+
+    private void openCoverImagePicker() {
+        CoverImagePickerDialog dialog = CoverImagePickerDialog.newInstance(selectedCoverImageUrl);
+        dialog.setOnCoverImageSelectedListener(
+                new CoverImagePickerDialog.OnCoverImageSelectedListener() {
+                    @Override
+                    public void onCoverImageSelected(CoverImage coverImage) {
+                        selectedCoverImageUrl = coverImage.getImageUrl();
+                        updateCoverImagePreview();
+                    }
+
+                    @Override
+                    public void onClearCoverImage() {
+                        selectedCoverImageUrl = null;
+                        updateCoverImagePreview();
+                    }
+                });
+        dialog.show(getChildFragmentManager(), "cover_image_picker");
+    }
+
+    private void updateCoverImagePreview() {
+        if (selectedCoverImageUrl != null && !selectedCoverImageUrl.isEmpty()) {
+            // Build full URL
+            String fullUrl = buildCoverImageUrl(selectedCoverImageUrl);
+
+            // Show preview image
+            ivCoverPreview.setVisibility(View.VISIBLE);
+            layoutCoverPlaceholder.setVisibility(View.GONE);
+
+            Glide.with(requireContext())
+                    .load(fullUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .centerCrop()
+                    .placeholder(R.drawable.activity_default)
+                    .error(R.drawable.activity_default)
+                    .into(ivCoverPreview);
+        } else {
+            // Show placeholder
+            ivCoverPreview.setVisibility(View.GONE);
+            layoutCoverPlaceholder.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private String buildCoverImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return "";
+        }
+        if (imageUrl.startsWith("http")) {
+            return imageUrl;
+        }
+        String baseUrl = Constants.BASE_URL;
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl + (imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl);
     }
 
     private void openMapPicker() {
@@ -641,6 +718,9 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
             request.setLongitude(selectedLongitude);
         }
 
+        // Set cover image if selected
+        request.setCoverImageUrl(selectedCoverImageUrl);
+
         // Call API
         activityRepository.createActivity(
                 userId,
@@ -748,6 +828,10 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                             updateMapLocation(selectedLatitude, selectedLongitude, selectedLocationName);
                         }
 
+                        // Load cover image if available
+                        selectedCoverImageUrl = activity.getCoverImageUrl();
+                        updateCoverImagePreview();
+
                         // Parse and set date and time
                         try {
                             java.util.Date dateTime =
@@ -830,6 +914,9 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
             request.setLatitude(selectedLatitude);
             request.setLongitude(selectedLongitude);
         }
+
+        // Set cover image if selected
+        request.setCoverImageUrl(selectedCoverImageUrl);
 
         // Call API
         activityRepository.updateActivity(

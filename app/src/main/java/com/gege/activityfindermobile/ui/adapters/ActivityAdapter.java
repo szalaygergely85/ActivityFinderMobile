@@ -18,8 +18,11 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.utils.CategoryManager;
+import com.gege.activityfindermobile.utils.Constants;
 import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
@@ -155,8 +158,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                     "ActivityAdapter",
                     "ItemView height: " + itemView.getHeight() + ", width: " + itemView.getWidth());
 
-            // Load category background image
-            loadCategoryImage(activity.getCategory(), context);
+            // Load cover image (custom or category-based)
+            loadCategoryImage(activity.getCategory(), activity.getCoverImageUrl(), context);
 
             // Load creator avatar
             ImageLoader.loadCircularProfileImage(
@@ -445,7 +448,24 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             return DateUtil.isDisplayDateExpired(activity.getDate());
         }
 
-        private void loadCategoryImage(String category, Context context) {
+        private void loadCategoryImage(String category, String coverImageUrl, Context context) {
+            // Check if activity has a custom cover image
+            if (coverImageUrl != null && !coverImageUrl.isEmpty()) {
+                // Load cover image from backend
+                String fullUrl = buildCoverImageUrl(coverImageUrl);
+                android.util.Log.d("ActivityAdapter", "Loading cover image from: " + fullUrl);
+
+                Glide.with(context)
+                        .load(fullUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .centerCrop()
+                        .placeholder(R.drawable.activity_default)
+                        .error(R.drawable.activity_default)
+                        .into(ivActivityImage);
+                return;
+            }
+
+            // Fall back to category-based image
             if (category == null || category.isEmpty()) {
                 // Use default image
                 android.util.Log.d("ActivityAdapter", "Category is null/empty, using default");
@@ -488,6 +508,20 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                         "Resource not found: " + imageResourceName + ", using default");
                 ivActivityImage.setImageResource(R.drawable.activity_default);
             }
+        }
+
+        private String buildCoverImageUrl(String imageUrl) {
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                return "";
+            }
+            if (imageUrl.startsWith("http")) {
+                return imageUrl;
+            }
+            String baseUrl = Constants.BASE_URL;
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            return baseUrl + (imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl);
         }
 
         private void displayCreatorRating(Double rating, TextView tvCreatorRating) {

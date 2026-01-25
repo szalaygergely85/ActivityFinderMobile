@@ -40,13 +40,15 @@ public class AuthInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request originalRequest = chain.request();
 
-        // Skip auth header for login and register endpoints
+        // Skip auth header for public endpoints
         String path = originalRequest.url().encodedPath();
         if (path.contains("/api/users/login")
                 || path.contains("/api/users/register")
                 || path.contains("/api/auth/login")
                 || path.contains("/api/auth/register")
-                || path.contains("/api/users/refresh-token")) {
+                || path.contains("/api/users/refresh-token")
+                || path.contains("/api/covers")
+                || path.contains("/api/categories")) {
             return chain.proceed(originalRequest);
         }
 

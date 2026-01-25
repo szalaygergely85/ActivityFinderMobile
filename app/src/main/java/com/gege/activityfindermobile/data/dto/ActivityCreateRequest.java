@@ -30,6 +30,9 @@ public class ActivityCreateRequest {
     @SerializedName("longitude")
     private Double longitude;
 
+    @SerializedName("coverImageUrl")
+    private String coverImageUrl;
+
     // Constructor
     public ActivityCreateRequest() {}
 
@@ -119,5 +122,13 @@ public class ActivityCreateRequest {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
     }
 }
