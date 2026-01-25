@@ -28,6 +28,7 @@ import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.CoverImage;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
+import com.gege.activityfindermobile.utils.CountryDetector;
 import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.MapPickerActivity;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
@@ -976,7 +977,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                 FindAutocompletePredictionsRequest request =
                         FindAutocompletePredictionsRequest.builder()
                                 .setSessionToken(sessionToken)
-                                .setCountries("HU")
+                                .setCountries(CountryDetector.getSavedCountryCode(this.getContext()))
                                 .setQuery(query)
                                 .build();
 

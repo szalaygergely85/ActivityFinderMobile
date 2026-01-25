@@ -35,6 +35,7 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ActivityAdapter;
+import com.gege.activityfindermobile.utils.CountryDetector;
 import com.gege.activityfindermobile.utils.LocationManager;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.chip.ChipGroup;
@@ -389,6 +390,10 @@ public class FeedFragment extends Fragment {
                     public void onLocationReceived(double latitude, double longitude) {
                         userLatitude = latitude;
                         userLongitude = longitude;
+
+                        // Detect and save user's country for Places API
+                        CountryDetector.detectCountry(requireContext(), latitude, longitude, null);
+
                         // Load activities once location is acquired
                         loadActivitiesFromApi();
                     }
