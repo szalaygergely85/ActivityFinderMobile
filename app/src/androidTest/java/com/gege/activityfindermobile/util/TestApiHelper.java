@@ -3,14 +3,32 @@ package com.gege.activityfindermobile.util;
 import android.util.Log;
 
 import com.gege.activityfindermobile.data.api.ActivityApiService;
+import com.gege.activityfindermobile.data.api.CoverImageApiService;
+import com.gege.activityfindermobile.data.api.MessageApiService;
+import com.gege.activityfindermobile.data.api.ParticipantApiService;
+import com.gege.activityfindermobile.data.api.ParticipantStatusUpdateRequest;
+import com.gege.activityfindermobile.data.api.ReportApiService;
 import com.gege.activityfindermobile.data.api.UserApiService;
+import com.gege.activityfindermobile.data.api.UserPhotoApiService;
 import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
+import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
+import com.gege.activityfindermobile.data.dto.MessageRequest;
+import com.gege.activityfindermobile.data.dto.ReportCountResponse;
+import com.gege.activityfindermobile.data.dto.ReportRequest;
+import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
 import com.gege.activityfindermobile.data.model.Activity;
+import com.gege.activityfindermobile.data.model.ActivityMessage;
+import com.gege.activityfindermobile.data.model.CoverImage;
+import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.data.model.Report;
+import com.gege.activityfindermobile.data.model.User;
+import com.gege.activityfindermobile.data.model.UserPhoto;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -28,11 +46,24 @@ public class TestApiHelper {
     private static final String TAG = "TestApiHelper";
     private static final String BASE_URL = "http://10.0.2.2:8080/"; // Android emulator localhost
 
+    // API Services
     private final UserApiService userApiService;
     private final ActivityApiService activityApiService;
+    private final CoverImageApiService coverImageApiService;
+    private final ParticipantApiService participantApiService;
+    private final ReportApiService reportApiService;
+    private final UserPhotoApiService userPhotoApiService;
+    private final MessageApiService messageApiService;
 
+    // Session state
     private String currentAccessToken;
     private Long currentUserId;
+
+    // Participant status constants
+    public static final String PARTICIPANT_STATUS_PENDING = "PENDING";
+    public static final String PARTICIPANT_STATUS_ACCEPTED = "ACCEPTED";
+    public static final String PARTICIPANT_STATUS_DECLINED = "DECLINED";
+    public static final String PARTICIPANT_STATUS_REMOVED = "REMOVED";
 
     public TestApiHelper() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -64,6 +95,11 @@ public class TestApiHelper {
 
         userApiService = retrofit.create(UserApiService.class);
         activityApiService = retrofit.create(ActivityApiService.class);
+        coverImageApiService = retrofit.create(CoverImageApiService.class);
+        participantApiService = retrofit.create(ParticipantApiService.class);
+        reportApiService = retrofit.create(ReportApiService.class);
+        userPhotoApiService = retrofit.create(UserPhotoApiService.class);
+        messageApiService = retrofit.create(MessageApiService.class);
     }
 
     // ==================== User Operations ====================
@@ -401,5 +437,545 @@ public class TestApiHelper {
      */
     public LoginResponse loginWithRetry(String email, String password) {
         return loginWithRetry(email, password, 3, 500);
+    }
+
+    // ==================== Cover Image Operations ====================
+
+    /**
+     * Get all available cover images synchronously.
+     *
+     * @return List of CoverImage objects, or null on failure
+     */
+    public List<CoverImage> getAllCoverImages() {
+        try {
+            Response<List<CoverImage>> response = coverImageApiService.getAllCoverImages().execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Log.d(TAG, "Found " + response.body().size() + " cover images");
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get cover images: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting cover images: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // ==================== Activity Update Operations ====================
+
+    /**
+     * Update an activity synchronously.
+     *
+     * @return Updated Activity object, or null on failure
+     */
+    public Activity updateActivity(Long activityId, ActivityCreateRequest request) {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        try {
+            Response<Activity> response =
+                    activityApiService.updateActivity(activityId, currentUserId, request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Activity activity = response.body();
+                Log.d(TAG, "Activity updated successfully: " + activity.getId());
+                return activity;
+            } else {
+                String errorBody =
+                        response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+                Log.e(TAG, "Failed to update activity: " + response.code() + " - " + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error updating activity: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // ==================== User Profile Operations ====================
+
+    /**
+     * Get user by ID synchronously.
+     *
+     * @return User object, or null on failure
+     */
+    public User getUserById(Long userId) {
+        try {
+            Response<User> response = userApiService.getUserById(userId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get user: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting user: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get current user profile.
+     *
+     * @return User object, or null on failure
+     */
+    public User getCurrentUserProfile() {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        return getUserById(currentUserId);
+    }
+
+    /**
+     * Update user profile synchronously.
+     *
+     * @return Updated User object, or null on failure
+     */
+    public User updateUserProfile(UserProfileUpdateRequest request) {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        try {
+            Response<User> response =
+                    userApiService
+                            .updateUserProfile(currentUserId, currentUserId, request)
+                            .execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Log.d(TAG, "Profile updated successfully");
+                return response.body();
+            } else {
+                String errorBody =
+                        response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+                Log.e(TAG, "Failed to update profile: " + response.code() + " - " + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error updating profile: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // ==================== User Photo Operations ====================
+
+    /**
+     * Get current user's photos synchronously.
+     *
+     * @return List of UserPhoto objects, or null on failure
+     */
+    public List<UserPhoto> getMyPhotos() {
+        try {
+            Response<List<UserPhoto>> response = userPhotoApiService.getMyPhotos().execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get photos: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting photos: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get another user's photos synchronously.
+     *
+     * @return List of UserPhoto objects, or null on failure
+     */
+    public List<UserPhoto> getUserPhotos(Long userId) {
+        try {
+            Response<List<UserPhoto>> response =
+                    userPhotoApiService.getUserPhotos(userId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get user photos: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting user photos: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Set a photo as profile picture synchronously.
+     *
+     * @return Updated UserPhoto, or null on failure
+     */
+    public UserPhoto setPhotoAsProfile(Long photoId) {
+        try {
+            Response<UserPhoto> response =
+                    userPhotoApiService.setPhotoAsProfile(photoId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Log.d(TAG, "Photo set as profile: " + photoId);
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to set photo as profile: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error setting photo as profile: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Delete a photo synchronously.
+     *
+     * @return true if successful, false otherwise
+     */
+    public boolean deletePhoto(Long photoId) {
+        try {
+            Response<Void> response = userPhotoApiService.deletePhoto(photoId).execute();
+            if (response.isSuccessful()) {
+                Log.d(TAG, "Photo deleted: " + photoId);
+                return true;
+            } else {
+                Log.e(TAG, "Failed to delete photo: " + response.code());
+                return false;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error deleting photo: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    // ==================== Participant Operations ====================
+
+    /**
+     * Express interest in an activity synchronously.
+     *
+     * @return Participant object, or null on failure
+     */
+    public Participant expressInterest(Long activityId, boolean isFriend) {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        try {
+            ExpressInterestRequest request = new ExpressInterestRequest(isFriend);
+            Response<Participant> response =
+                    participantApiService
+                            .expressInterest(activityId, currentUserId, request)
+                            .execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Participant participant = response.body();
+                Log.d(
+                        TAG,
+                        "Interest expressed for activity "
+                                + activityId
+                                + ", participant ID: "
+                                + participant.getId());
+                return participant;
+            } else {
+                String errorBody =
+                        response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+                Log.e(TAG, "Failed to express interest: " + response.code() + " - " + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error expressing interest: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /** Express interest in an activity (not as friend). */
+    public Participant expressInterest(Long activityId) {
+        return expressInterest(activityId, false);
+    }
+
+    /**
+     * Update participant status synchronously (for activity creator).
+     *
+     * @param participantId The participant record ID
+     * @param status The new status: ACCEPTED, DECLINED, or REMOVED
+     * @return Updated Participant, or null on failure
+     */
+    public Participant updateParticipantStatus(Long participantId, String status) {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        try {
+            ParticipantStatusUpdateRequest request = new ParticipantStatusUpdateRequest(status);
+            Response<Participant> response =
+                    participantApiService
+                            .updateParticipantStatus(participantId, currentUserId, request)
+                            .execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Participant participant = response.body();
+                Log.d(TAG, "Participant " + participantId + " status updated to: " + status);
+                return participant;
+            } else {
+                String errorBody =
+                        response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+                Log.e(
+                        TAG,
+                        "Failed to update participant status: "
+                                + response.code()
+                                + " - "
+                                + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error updating participant status: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get activity participants synchronously.
+     *
+     * @return List of Participant objects, or null on failure
+     */
+    public List<Participant> getActivityParticipants(Long activityId) {
+        try {
+            Response<List<Participant>> response =
+                    participantApiService.getActivityParticipants(activityId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get participants: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting participants: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get interested users for an activity (pending participants).
+     *
+     * @return List of Participant objects, or null on failure
+     */
+    public List<Participant> getInterestedUsers(Long activityId) {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        try {
+            Response<List<Participant>> response =
+                    participantApiService.getInterestedUsers(activityId, currentUserId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get interested users: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting interested users: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get current user's participations.
+     *
+     * @return List of Participant objects, or null on failure
+     */
+    public List<Participant> getMyParticipations() {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return null;
+        }
+        try {
+            Response<List<Participant>> response =
+                    participantApiService.getMyParticipations(currentUserId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get participations: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting participations: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Leave an activity synchronously.
+     *
+     * @return true if successful, false otherwise
+     */
+    public boolean leaveActivity(Long activityId) {
+        if (currentUserId == null) {
+            Log.e(TAG, "No current user - login first");
+            return false;
+        }
+        try {
+            Response<Void> response =
+                    participantApiService.leaveActivity(activityId, currentUserId).execute();
+            if (response.isSuccessful()) {
+                Log.d(TAG, "Left activity: " + activityId);
+                return true;
+            } else {
+                Log.e(TAG, "Failed to leave activity: " + response.code());
+                return false;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error leaving activity: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    // ==================== Report Operations ====================
+
+    /**
+     * Submit a report synchronously.
+     *
+     * @return Report object, or null on failure
+     */
+    public Report submitReport(ReportRequest request) {
+        try {
+            Response<Report> response = reportApiService.submitReport(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                Report report = response.body();
+                Log.d(TAG, "Report submitted: " + report.getId());
+                return report;
+            } else {
+                String errorBody =
+                        response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+                Log.e(TAG, "Failed to submit report: " + response.code() + " - " + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error submitting report: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Report an activity.
+     *
+     * @return Report object, or null on failure
+     */
+    public Report reportActivity(Long activityId, String reason) {
+        return submitReport(ReportRequest.forActivity(activityId, reason));
+    }
+
+    /**
+     * Report a user.
+     *
+     * @return Report object, or null on failure
+     */
+    public Report reportUser(Long userId, String reason) {
+        return submitReport(ReportRequest.forUser(userId, reason));
+    }
+
+    /**
+     * Report a message.
+     *
+     * @return Report object, or null on failure
+     */
+    public Report reportMessage(Long messageId, String reason) {
+        return submitReport(ReportRequest.forMessage(messageId, reason));
+    }
+
+    /**
+     * Get my reports synchronously.
+     *
+     * @return List of Report objects, or null on failure
+     */
+    public List<Report> getMyReports() {
+        try {
+            Response<List<Report>> response = reportApiService.getMyReports().execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get my reports: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting my reports: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get activity report count synchronously.
+     *
+     * @return Report count, or -1 on failure
+     */
+    public int getActivityReportCount(Long activityId) {
+        try {
+            Response<ReportCountResponse> response =
+                    reportApiService.getActivityReportCount(activityId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body().getReportCount();
+            } else {
+                Log.e(TAG, "Failed to get activity report count: " + response.code());
+                return -1;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting activity report count: " + e.getMessage(), e);
+            return -1;
+        }
+    }
+
+    // ==================== Message Operations ====================
+
+    /**
+     * Send a message in an activity chat synchronously.
+     *
+     * @return ActivityMessage object, or null on failure
+     */
+    public ActivityMessage sendMessage(Long activityId, String content) {
+        try {
+            MessageRequest request = new MessageRequest(content);
+            Response<ActivityMessage> response =
+                    messageApiService.sendMessage(activityId, request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                ActivityMessage message = response.body();
+                Log.d(TAG, "Message sent: " + message.getId());
+                return message;
+            } else {
+                String errorBody =
+                        response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+                Log.e(TAG, "Failed to send message: " + response.code() + " - " + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error sending message: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Get messages for an activity synchronously.
+     *
+     * @return List of ActivityMessage objects, or null on failure
+     */
+    public List<ActivityMessage> getMessages(Long activityId) {
+        try {
+            Response<List<ActivityMessage>> response =
+                    messageApiService.getMessages(activityId).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                return response.body();
+            } else {
+                Log.e(TAG, "Failed to get messages: " + response.code());
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error getting messages: " + e.getMessage(), e);
+            return null;
+        }
     }
 }

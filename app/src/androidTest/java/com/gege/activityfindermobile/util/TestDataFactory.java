@@ -1,10 +1,14 @@
 package com.gege.activityfindermobile.util;
 
 import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
+import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -274,5 +278,100 @@ public class TestDataFactory {
     public static ActivityCreateRequest createActivityAtLocation(
             String title, String category, double latitude, double longitude) {
         return createActivityAtLocation(title, category, latitude, longitude, activityDateTomorrow());
+    }
+
+    // ==================== Profile Update Requests ====================
+
+    /** Available interests (15 total). */
+    public static final String[] AVAILABLE_INTERESTS = {
+        "Sports", "Music", "Art", "Technology", "Gaming",
+        "Travel", "Food", "Fitness", "Photography", "Reading",
+        "Movies", "Dancing", "Cooking", "Hiking", "Yoga"
+    };
+
+    /** Create a basic profile update request. */
+    public static UserProfileUpdateRequest createProfileUpdateRequest() {
+        UserProfileUpdateRequest request = new UserProfileUpdateRequest();
+        request.setFullName(uniqueFullName("Updated"));
+        request.setBio("This is my updated bio for testing purposes.");
+        request.setInterests(Arrays.asList("Sports", "Music", "Technology"));
+        request.setCity("New York");
+        return request;
+    }
+
+    /** Create a profile update request with specific interests. */
+    public static UserProfileUpdateRequest createProfileUpdateRequest(List<String> interests) {
+        UserProfileUpdateRequest request = new UserProfileUpdateRequest();
+        request.setFullName(uniqueFullName("Updated"));
+        request.setBio("Updated bio with custom interests.");
+        request.setInterests(interests);
+        return request;
+    }
+
+    /** Create a profile update request with bio only. */
+    public static UserProfileUpdateRequest createBioUpdateRequest(String bio) {
+        UserProfileUpdateRequest request = new UserProfileUpdateRequest();
+        request.setBio(bio);
+        return request;
+    }
+
+    /** Create a profile update request with location. */
+    public static UserProfileUpdateRequest createLocationUpdateRequest(
+            String city, Double latitude, Double longitude) {
+        UserProfileUpdateRequest request = new UserProfileUpdateRequest();
+        request.setCity(city);
+        request.setLatitude(latitude);
+        request.setLongitude(longitude);
+        return request;
+    }
+
+    /**
+     * Get random interests (1 to count).
+     *
+     * @param count Number of interests to return (max 15)
+     * @return List of random interests
+     */
+    public static List<String> randomInterests(int count) {
+        List<String> all = new ArrayList<>(Arrays.asList(AVAILABLE_INTERESTS));
+        Collections.shuffle(all);
+        return all.subList(0, Math.min(count, all.size()));
+    }
+
+    // ==================== Report Reasons ====================
+
+    public static final String REPORT_REASON_SPAM = "This content appears to be spam.";
+    public static final String REPORT_REASON_INAPPROPRIATE =
+            "This content is inappropriate or offensive.";
+    public static final String REPORT_REASON_HARASSMENT = "This user is harassing other users.";
+    public static final String REPORT_REASON_FAKE = "This appears to be a fake account or activity.";
+    public static final String REPORT_REASON_SCAM = "This looks like a scam or fraudulent activity.";
+
+    /** Create a unique report reason. */
+    public static String uniqueReportReason() {
+        return "Test report reason " + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    // ==================== Activity with Cover Image ====================
+
+    /** Create an activity with cover image URL. */
+    public static ActivityCreateRequest createActivityWithCover(String coverImageUrl) {
+        ActivityCreateRequest request = createBasicActivity();
+        request.setCoverImageUrl(coverImageUrl);
+        return request;
+    }
+
+    /** Create an activity with custom title, category and cover. */
+    public static ActivityCreateRequest createActivityWithCover(
+            String title, String category, String coverImageUrl) {
+        ActivityCreateRequest request = createActivity(title, category, 5);
+        request.setCoverImageUrl(coverImageUrl);
+        return request;
+    }
+
+    // ==================== Message Content ====================
+
+    /** Create unique message content. */
+    public static String uniqueMessageContent() {
+        return "Test message " + UUID.randomUUID().toString().substring(0, 8);
     }
 }
