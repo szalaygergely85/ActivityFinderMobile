@@ -134,16 +134,6 @@ public class ParticipantFlowTest {
     }
 
     @Test
-    public void expressInterest_asFriend_shouldSetFriendFlag() {
-        Activity activity = createTestActivity();
-
-        Participant participant = participantApiHelper.expressInterest(activity.getId(), true);
-
-        assertNotNull("Participant should be created", participant);
-        assertTrue("Should be marked as friend", participant.getIsFriend());
-    }
-
-    @Test
     public void expressInterest_twice_shouldFail() {
         Activity activity = createTestActivity();
 

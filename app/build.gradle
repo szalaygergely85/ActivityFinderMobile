@@ -13,8 +13,8 @@ android {
         applicationId "com.gege.activityfindermobile"
         minSdk 26
         targetSdk 36
-        versionCode 9
-        versionName "1.08 alpha"
+        versionCode 10
+        versionName "1.09 alpha"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -47,7 +47,13 @@ dependencies {
     implementation libs.firebase.messaging
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.test.core
+    androidTestImplementation libs.test.rules
+    androidTestImplementation libs.test.runner
     androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.espresso.contrib
+    androidTestImplementation libs.espresso.intents
+    debugImplementation libs.fragment.testing
 
     // Navigation Component
     implementation libs.navigation.fragment

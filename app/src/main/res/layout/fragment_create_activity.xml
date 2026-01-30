@@ -55,8 +55,10 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <FrameLayout
@@ -89,9 +91,7 @@
                     <!-- Header Image -->
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:minHeight="160dp"
+                        android:layout_height="160dp"
                         android:scaleType="centerCrop"
                         android:src="@drawable/activity_social" />
 
@@ -358,7 +358,7 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Oct 24, 2023"
+                        android:hint="Select date"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/ic_calendar"
                         app:endIconTint="@color/primary_blue"
@@ -401,7 +401,7 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="7:00 PM"
+                        android:hint="Select time"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/ic_time"
                         app:endIconTint="@color/primary_blue"

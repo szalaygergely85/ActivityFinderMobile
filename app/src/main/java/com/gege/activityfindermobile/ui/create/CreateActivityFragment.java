@@ -133,10 +133,17 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                 view,
                 (v, insets) -> {
                     Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
 
                     AppBarLayout appBar = v.findViewById(R.id.app_bar);
                     if (appBar != null) {
                         appBar.setPadding(0, systemBars.top, 0, 0);
+                    }
+
+                    // Adjust scroll view padding when keyboard is shown
+                    View scrollView = v.findViewById(R.id.scroll_view);
+                    if (scrollView != null) {
+                        scrollView.setPadding(0, 0, 0, imeInsets.bottom);
                     }
 
                     return insets;
@@ -148,6 +155,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         setupCategoryDropdown();
         setupLocationAutocomplete();
         setupListeners();
+        setDefaultDateTime();
 
         // Check if we're in edit mode
         if (getArguments() != null) {
@@ -557,6 +565,26 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                                 + ")");
             }
         }
+    }
+
+    private void setDefaultDateTime() {
+        // Set default date to tomorrow
+        selectedDate = Calendar.getInstance();
+        selectedDate.add(Calendar.DAY_OF_MONTH, 1);
+
+        // Set default time to 6:00 PM
+        selectedTime = Calendar.getInstance();
+        selectedTime.set(Calendar.HOUR_OF_DAY, 18);
+        selectedTime.set(Calendar.MINUTE, 0);
+
+        // Update the text fields with default values
+        java.text.SimpleDateFormat dateFormat =
+                new java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault());
+        etDate.setText(dateFormat.format(selectedDate.getTime()));
+
+        java.text.SimpleDateFormat timeFormat =
+                new java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault());
+        etTime.setText(timeFormat.format(selectedTime.getTime()));
     }
 
     private void showDatePicker() {

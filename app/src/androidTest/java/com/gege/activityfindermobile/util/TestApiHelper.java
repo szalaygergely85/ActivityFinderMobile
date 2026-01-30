@@ -59,11 +59,11 @@ public class TestApiHelper {
     private String currentAccessToken;
     private Long currentUserId;
 
-    // Participant status constants
-    public static final String PARTICIPANT_STATUS_PENDING = "PENDING";
+    // Participant status constants (match backend ParticipantStatus enum)
+    public static final String PARTICIPANT_STATUS_PENDING = "INTERESTED";
     public static final String PARTICIPANT_STATUS_ACCEPTED = "ACCEPTED";
     public static final String PARTICIPANT_STATUS_DECLINED = "DECLINED";
-    public static final String PARTICIPANT_STATUS_REMOVED = "REMOVED";
+    public static final String PARTICIPANT_STATUS_REMOVED = "DECLINED"; // Same as declined
 
     public TestApiHelper() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
