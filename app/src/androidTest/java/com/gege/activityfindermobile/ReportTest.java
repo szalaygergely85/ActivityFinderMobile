@@ -10,6 +10,7 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.ActivityMessage;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.model.Report;
+import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
@@ -44,6 +45,10 @@ public class ReportTest {
         reporterApiHelper = new TestApiHelper();
         targetApiHelper = new TestApiHelper();
         createdActivityIds = new ArrayList<>();
+
+        // Get device location and set it in TestDataFactory
+        DeviceLocationHelper locationHelper = new DeviceLocationHelper();
+        locationHelper.acquireLocationAndSetForTests();
 
         // Create reporter user
         reporterUser = TestDataFactory.createTestUser("Reporter");

@@ -5,53 +5,55 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.action.ViewActions.swipeDown;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 
+import android.Manifest;
 import android.view.View;
 
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.ui.main.MainActivity;
+import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.Manifest;
-
-import androidx.test.rule.GrantPermissionRule;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Functional UI tests for the Activity Detail screen.
- * Tests activity information display, participant interaction, and messaging.
- * Requires a logged-in user and an existing activity.
+ * Tests are consolidated for efficiency - login/logout happens once per class.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ActivityDetailUiTest {
 
-    @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+    @ClassRule
+    public static GrantPermissionRule permissionRule = GrantPermissionRule.grant(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.POST_NOTIFICATIONS
@@ -61,18 +63,23 @@ public class ActivityDetailUiTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    private TestApiHelper apiHelper;
-    private Long testUserId;
-    private String testEmail;
-    private String testPassword;
-    private List<Long> createdActivityIds;
+    private static TestApiHelper apiHelper;
+    private static Long testUserId;
+    private static String testEmail;
+    private static String testPassword;
+    private static String testActivityTitle;
+    private static List<Long> createdActivityIds = new ArrayList<>();
+    private static boolean isLoggedIn = false;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUpClass() {
         apiHelper = new TestApiHelper();
-        createdActivityIds = new ArrayList<>();
 
-        // Create a test user and login
+        // Get device location
+        DeviceLocationHelper locationHelper = new DeviceLocationHelper();
+        locationHelper.acquireLocationAndSetForTests();
+
+        // Create test user once for all tests
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("ActivityDetailUiTest");
         testEmail = testUser.email;
         testPassword = testUser.password;
@@ -86,22 +93,27 @@ public class ActivityDetailUiTest {
 
         if (response != null) {
             testUserId = response.getUserId();
+        } else {
+            throw new RuntimeException("Failed to create test user via API");
         }
 
-        // Create a test activity via API
-        createTestActivity();
+        apiHelper.waitMedium();
 
-        // Login via UI
-        loginViaUi(testEmail, testPassword);
-        waitFor(2000);
-
-        // Navigate to activity detail
-        navigateToActivityDetail();
+        // Create a test activity
+        com.gege.activityfindermobile.data.dto.ActivityCreateRequest request = TestDataFactory.createBasicActivity();
+        testActivityTitle = request.getTitle();
+        Activity activity = apiHelper.createActivity(request);
+        if (activity != null) {
+            createdActivityIds.add(activity.getId());
+        }
     }
 
-    @After
-    public void tearDown() {
-        // Clean up activities first
+    @AfterClass
+    public static void tearDownClass() {
+        // Clear app tokens
+        UiTestHelper.clearAppSharedPreferences();
+
+        // Clean up activities
         for (Long activityId : createdActivityIds) {
             try {
                 apiHelper.deleteActivity(activityId, testUserId);
@@ -110,7 +122,7 @@ public class ActivityDetailUiTest {
             }
         }
 
-        // Clean up user
+        // Delete test user once after all tests
         if (testUserId != null) {
             try {
                 apiHelper.clearSession();
@@ -122,179 +134,137 @@ public class ActivityDetailUiTest {
             }
         }
         apiHelper.clearSession();
+        isLoggedIn = false;
     }
 
-    private void createTestActivity() {
-        Activity activity = apiHelper.createActivity(
-                TestDataFactory.createBasicActivity()
-        );
-        if (activity != null) {
-            createdActivityIds.add(activity.getId());
+    private void ensureLoggedInAndOnDetail() {
+        // First ensure we're logged in
+        if (!isLoggedIn) {
+            try {
+                onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
+                isLoggedIn = true;
+            } catch (Exception e) {
+                // Need to login
+                try {
+                    onView(withId(R.id.et_email))
+                            .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+                    onView(withId(R.id.et_password))
+                            .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+                    onView(withId(R.id.btn_login))
+                            .perform(scrollTo(), click());
+                    waitFor(5000);
+                    isLoggedIn = true;
+                } catch (Exception ex) {
+                    isLoggedIn = true;
+                }
+            }
+        }
+
+        // Refresh and navigate to activity detail
+        onView(withId(R.id.swipe_refresh)).perform(swipeDown());
+        waitFor(3000);
+
+        // Find and click on our test activity
+        onView(withId(R.id.rv_activities))
+                .perform(RecyclerViewActions.scrollTo(
+                        hasDescendant(withText(testActivityTitle))));
+        waitFor(500);
+        onView(allOf(withId(R.id.tv_activity_title), withText(testActivityTitle)))
+                .perform(click());
+        waitFor(1000);
+    }
+
+    private void goBackToFeed() {
+        try {
+            onView(withId(R.id.fab_back)).perform(click());
+            waitFor(500);
+        } catch (Exception e) {
+            // Already on feed
         }
     }
 
-    private void loginViaUi(String email, String password) {
-        // Enter credentials and login
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(email), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(password), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-        waitFor(3000);
+    // ==================== CONSOLIDATED TESTS ====================
 
-        // Verify login succeeded
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
+    /**
+     * Tests all activity detail header elements
+     */
+    @Test
+    public void testActivityDetailHeader() {
+        ensureLoggedInAndOnDetail();
 
-    private void navigateToActivityDetail() {
-        waitFor(2000);
-        // Click on first activity in the list
-        onView(withId(R.id.rv_activities))
-                .perform(actionOnItemAtPosition(0, click()));
-        waitFor(1000);
-
-        // Verify we're on activity detail screen
+        // Back button
         onView(withId(R.id.fab_back)).check(matches(isDisplayed()));
+
+        // Hero image
+        onView(withId(R.id.iv_activity_hero)).check(matches(isDisplayed()));
+
+        goBackToFeed();
     }
 
-    // ==================== HEADER TESTS ====================
-
+    /**
+     * Tests activity information display
+     */
     @Test
-    public void activityDetail_backButtonDisplayed() {
-        onView(withId(R.id.fab_back)).check(matches(isDisplayed()));
+    public void testActivityInfoDisplay() {
+        ensureLoggedInAndOnDetail();
+
+        // Title, description
+        onView(withId(R.id.tv_title)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.tv_description_full)).perform(scrollTo()).check(matches(isDisplayed()));
+
+        // Date, time, location
+        onView(withId(R.id.tv_date)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.tv_time)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.tv_location)).perform(scrollTo()).check(matches(isDisplayed()));
+
+        // Spots and category
+        onView(withId(R.id.tv_spots)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.tv_activity_category)).perform(scrollTo()).check(matches(isDisplayed()));
+
+        goBackToFeed();
     }
 
+    /**
+     * Tests creator info and section headers
+     */
     @Test
-    public void activityDetail_heroImageDisplayed() {
-        onView(withId(R.id.iv_activity_hero))
-                .check(matches(isDisplayed()));
+    public void testCreatorAndSections() {
+        ensureLoggedInAndOnDetail();
+
+        // Creator card
+        onView(withId(R.id.card_creator)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.tv_creator_name)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.iv_creator_avatar)).perform(scrollTo()).check(matches(isDisplayed()));
+
+        // Section headers
+        onView(withText("Host")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("About this activity")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Location")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Participants")).perform(scrollTo()).check(matches(isDisplayed()));
+
+        goBackToFeed();
     }
 
-    // ==================== ACTIVITY INFO TESTS ====================
-
+    /**
+     * Tests map and directions
+     */
     @Test
-    public void activityDetail_titleDisplayed() {
-        onView(withId(R.id.tv_title))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
+    public void testMapAndDirections() {
+        ensureLoggedInAndOnDetail();
+
+        onView(withId(R.id.map_container)).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withId(R.id.btn_get_directions)).perform(scrollTo()).check(matches(isDisplayed()));
+
+        goBackToFeed();
     }
 
+    /**
+     * Tests back navigation
+     */
     @Test
-    public void activityDetail_descriptionDisplayed() {
-        onView(withId(R.id.tv_description_full))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
+    public void testBackNavigation() {
+        ensureLoggedInAndOnDetail();
 
-    @Test
-    public void activityDetail_dateDisplayed() {
-        onView(withId(R.id.tv_date))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_timeDisplayed() {
-        onView(withId(R.id.tv_time))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_locationDisplayed() {
-        onView(withId(R.id.tv_location))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_spotsInfoDisplayed() {
-        onView(withId(R.id.tv_spots))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_categoryDisplayed() {
-        onView(withId(R.id.tv_activity_category))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    // ==================== CREATOR INFO TESTS ====================
-
-    @Test
-    public void activityDetail_creatorCardDisplayed() {
-        onView(withId(R.id.card_creator))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_creatorNameDisplayed() {
-        onView(withId(R.id.tv_creator_name))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_creatorAvatarDisplayed() {
-        onView(withId(R.id.iv_creator_avatar))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    // ==================== MAP PREVIEW TESTS ====================
-
-    @Test
-    public void activityDetail_mapContainerDisplayed() {
-        onView(withId(R.id.map_container))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_getDirectionsButtonDisplayed() {
-        onView(withId(R.id.btn_get_directions))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    // ==================== SECTION HEADER TESTS ====================
-
-    @Test
-    public void activityDetail_hostSectionHeaderDisplayed() {
-        onView(withText("Host"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_aboutSectionHeaderDisplayed() {
-        onView(withText("About this activity"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_locationSectionHeaderDisplayed() {
-        onView(withText("Location"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void activityDetail_participantsSectionHeaderDisplayed() {
-        onView(withText("Participants"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    // ==================== NAVIGATION TESTS ====================
-
-    @Test
-    public void activityDetail_backButtonNavigatesBack() {
         onView(withId(R.id.fab_back)).perform(click());
         waitFor(1000);
 

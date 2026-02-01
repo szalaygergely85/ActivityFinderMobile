@@ -99,6 +99,55 @@ dependencies {
 
 }
 
+// Task to set emulator location before running tests
+// Usage: ./gradlew setEmulatorLocation connectedAndroidTest
+task setEmulatorLocation {
+    doLast {
+        // NYC coordinates
+        def latitude = "40.7128"
+        def longitude = "-74.0060"
+
+        println "Setting emulator location to NYC ($latitude, $longitude)..."
+
+        try {
+            // Try adb emu geo fix (for emulators)
+            exec {
+                commandLine 'adb', 'emu', 'geo', 'fix', longitude, latitude
+                ignoreExitValue true
+            }
+            println "Location set via 'adb emu geo fix'"
+        } catch (Exception e) {
+            println "Note: Could not set location via adb emu. If using physical device, set location manually."
+        }
+
+        // Also disable animations for Espresso tests
+        try {
+            exec {
+                commandLine 'adb', 'shell', 'settings', 'put', 'global', 'window_animation_scale', '0'
+                ignoreExitValue true
+            }
+            exec {
+                commandLine 'adb', 'shell', 'settings', 'put', 'global', 'transition_animation_scale', '0'
+                ignoreExitValue true
+            }
+            exec {
+                commandLine 'adb', 'shell', 'settings', 'put', 'global', 'animator_duration_scale', '0'
+                ignoreExitValue true
+            }
+            println "Animations disabled for Espresso tests"
+        } catch (Exception e) {
+            println "Note: Could not disable animations"
+        }
+    }
+}
+
+// Make connectedAndroidTest depend on setEmulatorLocation
+tasks.whenTaskAdded { task ->
+    if (task.name == 'connectedDebugAndroidTest') {
+        task.dependsOn setEmulatorLocation
+    }
+}
+
 spotless {
     java {
         target 'src/**/*.java'

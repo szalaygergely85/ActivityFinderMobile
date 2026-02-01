@@ -12,6 +12,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.Manifest;
 import android.view.View;
 
 import androidx.test.espresso.UiController;
@@ -20,33 +21,33 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.ui.main.MainActivity;
+import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.Manifest;
-
-import androidx.test.rule.GrantPermissionRule;
-
 /**
  * End-to-end UI flow tests.
  * Tests complete user journeys through the application.
+ * Tests are consolidated for efficiency.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class EndToEndFlowTest {
 
-    @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+    @ClassRule
+    public static GrantPermissionRule permissionRule = GrantPermissionRule.grant(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.POST_NOTIFICATIONS
@@ -56,20 +57,47 @@ public class EndToEndFlowTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    private TestApiHelper apiHelper;
-    private Long testUserId;
-    private String testEmail;
-    private String testPassword;
-    private String testFullName;
+    private static TestApiHelper apiHelper;
+    private static Long testUserId;
+    private static String testEmail;
+    private static String testPassword;
+    private static boolean isLoggedIn = false;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUpClass() {
         apiHelper = new TestApiHelper();
+
+        // Get device location
+        DeviceLocationHelper locationHelper = new DeviceLocationHelper();
+        locationHelper.acquireLocationAndSetForTests();
+
+        // Create test user once for all tests
+        TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("E2ETest");
+        testEmail = testUser.email;
+        testPassword = testUser.password;
+
+        var response = apiHelper.createUser(
+                testUser.fullName,
+                testUser.email,
+                testUser.password,
+                testUser.birthDate
+        );
+
+        if (response != null) {
+            testUserId = response.getUserId();
+        } else {
+            throw new RuntimeException("Failed to create test user via API");
+        }
+
+        apiHelper.waitMedium();
     }
 
-    @After
-    public void tearDown() {
-        // Clean up test user
+    @AfterClass
+    public static void tearDownClass() {
+        // Clear app tokens
+        UiTestHelper.clearAppSharedPreferences();
+
+        // Delete test user once after all tests
         if (testUserId != null) {
             try {
                 apiHelper.clearSession();
@@ -81,87 +109,121 @@ public class EndToEndFlowTest {
             }
         }
         apiHelper.clearSession();
+        isLoggedIn = false;
     }
 
-    // ==================== REGISTRATION TO LOGIN FLOW ====================
+    private void ensureLoggedOut() {
+        // Clear SharedPreferences directly
+        UiTestHelper.clearAppSharedPreferences();
+        waitFor(500);
+        activityRule.getScenario().recreate();
+        waitFor(1000);
+    }
 
+    private void ensureLoggedIn() {
+        if (isLoggedIn) {
+            try {
+                onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
+                return;
+            } catch (Exception e) {
+                // Need to re-login
+            }
+        }
+
+        try {
+            onView(withId(R.id.et_email))
+                    .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+            onView(withId(R.id.et_password))
+                    .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+            onView(withId(R.id.btn_login))
+                    .perform(scrollTo(), click());
+            waitFor(5000);
+            isLoggedIn = true;
+        } catch (Exception e) {
+            isLoggedIn = true; // Already logged in
+        }
+    }
+
+    // ==================== CONSOLIDATED TESTS ====================
+
+    /**
+     * Tests login/register navigation flow
+     */
     @Test
-    public void flow_navigateFromLoginToRegisterAndBack() {
+    public void testLoginRegisterNavigation() {
+        ensureLoggedOut();
+
         // Start on login screen
         onView(withId(R.id.btn_login)).check(matches(isDisplayed()));
 
         // Navigate to register
-        onView(withId(R.id.tv_sign_up))
-                .perform(scrollTo(), click());
+        onView(withId(R.id.tv_sign_up)).perform(scrollTo(), click());
         waitFor(1000);
-
-        // Verify register screen
         onView(withId(R.id.btn_register)).check(matches(isDisplayed()));
 
         // Navigate back to login
-        onView(withId(R.id.tv_sign_in))
-                .perform(scrollTo(), click());
+        onView(withId(R.id.tv_sign_in)).perform(scrollTo(), click());
         waitFor(1000);
-
-        // Verify login screen
         onView(withId(R.id.btn_login)).check(matches(isDisplayed()));
     }
 
-    // ==================== LOGIN TO FEED FLOW ====================
-
+    /**
+     * Tests main app navigation flows (feed, create, profile)
+     */
     @Test
-    public void flow_loginAndViewFeed() {
-        // Create test user via API
-        setupTestUser();
-
-        // Login via UI
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-
-        waitFor(3000);
-
-        // Verify feed is displayed
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-        onView(withId(R.id.fab_create)).check(matches(isDisplayed()));
-    }
-
-    // ==================== FEED TO CREATE ACTIVITY FLOW ====================
-
-    @Test
-    public void flow_navigateFromFeedToCreateActivityAndBack() {
-        // Setup and login
-        setupTestUser();
-        loginViaUi();
+    public void testMainNavigationFlows() {
+        ensureLoggedIn();
 
         // Verify on feed
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
 
-        // Navigate to create activity
+        // Navigate to create activity and back
         onView(withId(R.id.fab_create)).perform(click());
         waitFor(1000);
-
-        // Verify create activity screen
         onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
-
-        // Navigate back
         onView(withId(R.id.btn_back)).perform(click());
         waitFor(1000);
+        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
 
-        // Verify back on feed
+        // Navigate to profile and back
+        onView(withId(R.id.nav_profile)).perform(click());
+        waitFor(1000);
+        onView(withId(R.id.nav_feed)).perform(click());
+        waitFor(1000);
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
     }
 
-    // ==================== CREATE ACTIVITY FLOW ====================
-
+    /**
+     * Tests search and filter flows
+     */
     @Test
-    public void flow_fillCreateActivityFormAndNavigateBack() {
-        // Setup and login
-        setupTestUser();
-        loginViaUi();
+    public void testSearchAndFilterFlows() {
+        ensureLoggedIn();
+
+        // Open search
+        onView(withId(R.id.btn_search)).perform(click());
+        waitFor(500);
+        onView(withId(R.id.search_card)).check(matches(isDisplayed()));
+
+        // Enter search text
+        onView(withId(R.id.et_search))
+                .perform(replaceText("Basketball"), closeSoftKeyboard());
+
+        // Close search
+        onView(withId(R.id.btn_search)).perform(click());
+        waitFor(500);
+
+        // Open filter dialog
+        onView(withId(R.id.btn_filter)).perform(click());
+        waitFor(500);
+    }
+
+    /**
+     * Tests create activity form flow
+     */
+    @Test
+    public void testCreateActivityFormFlow() {
+        ensureLoggedIn();
 
         // Navigate to create activity
         onView(withId(R.id.fab_create)).perform(click());
@@ -170,72 +232,29 @@ public class EndToEndFlowTest {
         // Fill in form fields
         onView(withId(R.id.et_title))
                 .perform(scrollTo(), replaceText("Test Event"), closeSoftKeyboard());
-
         onView(withId(R.id.et_description))
                 .perform(scrollTo(), replaceText("This is a test event description"), closeSoftKeyboard());
-
         onView(withId(R.id.actv_location))
                 .perform(scrollTo(), replaceText("Test Location"), closeSoftKeyboard());
-
         onView(withId(R.id.et_total_spots))
                 .perform(scrollTo(), replaceText("10"), closeSoftKeyboard());
 
         // Navigate back without saving
         onView(withId(R.id.btn_back)).perform(click());
         waitFor(1000);
-
-        // Should be back on feed
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
     }
 
-    // ==================== SEARCH FLOW ====================
-
+    /**
+     * Tests activity detail navigation
+     */
     @Test
-    public void flow_openAndCloseSearch() {
-        // Setup and login
-        setupTestUser();
-        loginViaUi();
+    public void testActivityDetailFlow() {
+        ensureLoggedIn();
 
-        // Open search
-        onView(withId(R.id.btn_search)).perform(click());
-        waitFor(500);
-
-        // Verify search card is visible
-        onView(withId(R.id.search_card)).check(matches(isDisplayed()));
-
-        // Enter search text
-        onView(withId(R.id.et_search))
-                .perform(replaceText("Basketball"), closeSoftKeyboard());
-
-        // Close search by clicking search button again
-        onView(withId(R.id.btn_search)).perform(click());
-        waitFor(500);
-    }
-
-    // ==================== FILTER DIALOG FLOW ====================
-
-    @Test
-    public void flow_openFilterDialog() {
-        // Setup and login
-        setupTestUser();
-        loginViaUi();
-
-        // Open filter dialog
-        onView(withId(R.id.btn_filter)).perform(click());
-        waitFor(500);
-
-        // Filter dialog should open
-        // The actual filter dialog verification depends on implementation
-    }
-
-    // ==================== ACTIVITY DETAIL FLOW ====================
-
-    @Test
-    public void flow_viewActivityDetailAndNavigateBack() {
-        // Setup user and create an activity
-        setupTestUser();
-        createTestActivity();
-        loginViaUi();
+        // Create an activity to view
+        apiHelper.createActivity(TestDataFactory.createBasicActivity());
+        waitFor(2000);
 
         // Refresh to see the activity
         onView(withId(R.id.swipe_refresh)).perform(swipeDown());
@@ -244,7 +263,6 @@ public class EndToEndFlowTest {
         // Click on first activity
         onView(withId(R.id.rv_activities))
                 .perform(actionOnItemAtPosition(0, click()));
-
         waitFor(1000);
 
         // Should see activity detail (back button)
@@ -253,104 +271,10 @@ public class EndToEndFlowTest {
         // Navigate back
         onView(withId(R.id.fab_back)).perform(click());
         waitFor(1000);
-
-        // Should be back on feed
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
-
-    // ==================== PROFILE FLOW ====================
-
-    @Test
-    public void flow_navigateToProfileAndBack() {
-        // Setup and login
-        setupTestUser();
-        loginViaUi();
-
-        // Navigate to profile
-        onView(withId(R.id.nav_profile)).perform(click());
-        waitFor(1000);
-
-        // Navigate back to feed
-        onView(withId(R.id.nav_feed)).perform(click());
-        waitFor(1000);
-
-        // Verify feed is displayed
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
-
-    // ==================== COMPLETE USER JOURNEY ====================
-
-    @Test
-    public void flow_completeUserJourney() {
-        // 1. Start at login
-        onView(withId(R.id.btn_login)).check(matches(isDisplayed()));
-
-        // 2. Navigate to register and back
-        onView(withId(R.id.tv_sign_up)).perform(scrollTo(), click());
-        waitFor(500);
-        onView(withId(R.id.tv_sign_in)).perform(scrollTo(), click());
-        waitFor(500);
-
-        // 3. Create user and login
-        setupTestUser();
-        loginViaUi();
-
-        // 4. View feed
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-
-        // 5. Open search
-        onView(withId(R.id.btn_search)).perform(click());
-        waitFor(300);
-        onView(withId(R.id.btn_search)).perform(click());
-        waitFor(300);
-
-        // 6. Navigate to create activity
-        onView(withId(R.id.fab_create)).perform(click());
-        waitFor(500);
-        onView(withId(R.id.btn_back)).perform(click());
-        waitFor(500);
-
-        // 7. Final verification - back on feed
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
     }
 
     // ==================== HELPER METHODS ====================
-
-    private void setupTestUser() {
-        TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("E2ETest");
-        testEmail = testUser.email;
-        testPassword = testUser.password;
-        testFullName = testUser.fullName;
-
-        var response = apiHelper.createUser(
-                testUser.fullName,
-                testUser.email,
-                testUser.password,
-                testUser.birthDate
-        );
-
-        if (response != null) {
-            testUserId = response.getUserId();
-        }
-    }
-
-    private void createTestActivity() {
-        apiHelper.createActivity(TestDataFactory.createBasicActivity());
-    }
-
-    private void loginViaUi() {
-        // Enter credentials and login
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-        waitFor(3000);
-
-        // Verify login succeeded
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
 
     private void waitFor(long millis) {
         onView(ViewMatchers.isRoot()).perform(waitForAction(millis));

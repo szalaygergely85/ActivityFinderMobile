@@ -8,22 +8,58 @@ import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.matcher.ViewMatchers;
 
 import com.gege.activityfindermobile.R;
+import com.gege.activityfindermobile.utils.Constants;
 
 import org.hamcrest.Matcher;
+
+import com.gege.activityfindermobile.data.dto.LoginResponse;
+import com.gege.activityfindermobile.util.TestApiHelper;
+import com.gege.activityfindermobile.util.TestDataFactory;
 
 /**
  * Helper class providing common operations for UI tests.
  * Reduces code duplication across test classes.
  */
 public class UiTestHelper {
+
+    /**
+     * Create a test user via API and return the user ID.
+     * Throws RuntimeException if user creation fails.
+     *
+     * @param apiHelper The TestApiHelper instance
+     * @param testUser The test user data
+     * @return The created user's ID
+     */
+    public static Long createTestUserOrFail(TestApiHelper apiHelper, TestDataFactory.TestUser testUser) {
+        LoginResponse response = apiHelper.createUser(
+                testUser.fullName,
+                testUser.email,
+                testUser.password,
+                testUser.birthDate
+        );
+
+        if (response == null) {
+            throw new RuntimeException("Failed to create test user via API - check server connectivity");
+        }
+
+        // Wait for backend to process the registration
+        apiHelper.waitMedium();
+
+        return response.getUserId();
+    }
 
     /**
      * Wait for a specified number of milliseconds.
@@ -58,6 +94,7 @@ public class UiTestHelper {
     /**
      * Login with the given credentials via UI.
      * Verifies login succeeded by checking for feed screen.
+     * Waits 5 seconds for login + location acquisition + activities to load.
      */
     public static void loginViaUi(String email, String password) {
         onView(withId(R.id.et_email))
@@ -66,9 +103,50 @@ public class UiTestHelper {
                 .perform(scrollTo(), replaceText(password), closeSoftKeyboard());
         onView(withId(R.id.btn_login))
                 .perform(scrollTo(), click());
-        waitFor(3000);
+        // Wait longer for login + location acquisition + activities to load
+        waitFor(5000);
         // Verify login succeeded
         verifyFeedScreenDisplayed();
+    }
+
+    /**
+     * Check if already logged in and skip login if so.
+     * Otherwise, login with the given credentials via UI.
+     */
+    public static void loginOrSkipIfAlreadyLoggedIn(String email, String password) {
+        // Check if we're already on the feed screen (already logged in)
+        try {
+            onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
+            // Already logged in, no need to login again
+            return;
+        } catch (Exception e) {
+            // Not on feed screen, need to login
+        }
+
+        loginViaUi(email, password);
+    }
+
+    /**
+     * Ensure user is logged out.
+     * If on feed screen (logged in), navigate to profile/settings and log out.
+     */
+    public static void ensureLoggedOut() {
+        // Check if we're on the feed screen (logged in)
+        try {
+            onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
+            // We're logged in, need to log out
+            // Navigate to profile
+            onView(withId(R.id.nav_profile)).perform(click());
+            waitFor(1000);
+            // Go to settings
+            onView(withId(R.id.btn_settings)).perform(scrollTo(), click());
+            waitFor(1000);
+            // Click logout
+            onView(withText("Log Out")).perform(scrollTo(), click());
+            waitFor(2000);
+        } catch (Exception e) {
+            // Not on feed screen, already logged out
+        }
     }
 
     /**
@@ -243,5 +321,32 @@ public class UiTestHelper {
      */
     public static void scrollAndVerifyDisplayed(int viewId) {
         onView(withId(viewId)).perform(scrollTo()).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Clear the app's SharedPreferences directly.
+     * This is the most reliable way to clear session data in tests.
+     * Call this in tearDown before deleting the test user.
+     */
+    public static void clearAppSharedPreferences() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        SharedPreferences prefs = context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().clear().apply();
+    }
+
+    /**
+     * Clear session data from SharedPreferences.
+     * This removes only the session-related keys while preserving other preferences.
+     */
+    public static void clearSessionData() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        SharedPreferences prefs = context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit()
+                .remove(Constants.KEY_USER_ID)
+                .remove(Constants.KEY_USER_TOKEN)
+                .remove(Constants.KEY_REFRESH_TOKEN)
+                .remove(Constants.KEY_USER_EMAIL)
+                .putBoolean(Constants.KEY_IS_LOGGED_IN, false)
+                .apply();
     }
 }

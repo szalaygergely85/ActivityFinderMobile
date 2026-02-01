@@ -114,8 +114,36 @@ public class TestDataFactory {
         return activityDateInFuture(7);
     }
 
+    // Default location coordinates (can be overridden by device location)
+    private static double currentLatitude = 40.7128;  // NYC default
+    private static double currentLongitude = -74.0060;
+
+    /**
+     * Set the location to use for creating test activities.
+     * Call this with the device's current location before creating activities.
+     */
+    public static void setTestLocation(double latitude, double longitude) {
+        currentLatitude = latitude;
+        currentLongitude = longitude;
+    }
+
+    /**
+     * Get the current test latitude.
+     */
+    public static double getTestLatitude() {
+        return currentLatitude;
+    }
+
+    /**
+     * Get the current test longitude.
+     */
+    public static double getTestLongitude() {
+        return currentLongitude;
+    }
+
     /**
      * Create a basic ActivityCreateRequest for testing.
+     * Uses the location set via setTestLocation() or defaults to NYC.
      */
     public static ActivityCreateRequest createBasicActivity() {
         ActivityCreateRequest request = new ActivityCreateRequest();
@@ -125,13 +153,14 @@ public class TestDataFactory {
         request.setLocation("Test Location, Test City");
         request.setTotalSpots(5);
         request.setCategory("SPORTS");
-        request.setLatitude(40.7128);
-        request.setLongitude(-74.0060);
+        request.setLatitude(currentLatitude);
+        request.setLongitude(currentLongitude);
         return request;
     }
 
     /**
      * Create an ActivityCreateRequest with custom parameters.
+     * Uses the location set via setTestLocation() or defaults to NYC.
      */
     public static ActivityCreateRequest createActivity(String title, String category, int totalSpots) {
         ActivityCreateRequest request = new ActivityCreateRequest();
@@ -141,8 +170,8 @@ public class TestDataFactory {
         request.setLocation("Test Location, Test City");
         request.setTotalSpots(totalSpots);
         request.setCategory(category);
-        request.setLatitude(40.7128);
-        request.setLongitude(-74.0060);
+        request.setLatitude(currentLatitude);
+        request.setLongitude(currentLongitude);
         return request;
     }
 

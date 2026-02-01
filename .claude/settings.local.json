@@ -5,7 +5,8 @@
       "Bash(find:*)",
       "Bash(Select-String -Pattern \"Activity\")",
       "Bash(findstr:*)",
-      "Bash(./gradlew compileDebugAndroidTestJavaWithJavac:*)"
+      "Bash(./gradlew compileDebugAndroidTestJavaWithJavac:*)",
+      "Bash(del \"C:\\\\MyFiles\\\\CodingProjects\\\\ActivityFinderMobile\\\\app\\\\src\\\\androidTest\\\\java\\\\com\\\\gege\\\\activityfindermobile\\\\util\\\\MockLocationHelper.java\")"
     ]
   }
 }

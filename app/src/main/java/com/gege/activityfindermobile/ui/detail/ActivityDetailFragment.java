@@ -357,9 +357,10 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         String creatorAvatar = args.getString("creatorAvatar");
         ImageLoader.loadCircularProfileImage(requireContext(), creatorAvatar, ivCreatorAvatar);
 
-        // Load category image
+        // Load cover image (custom or category-based)
         String category = args.getString("category", "");
-        loadCategoryImage(category);
+        String coverImageUrl = args.getString("coverImageUrl", "");
+        loadCoverImage(category, coverImageUrl);
 
         // Set category text
         TextView tvActivityCategory = view.findViewById(R.id.tv_activity_category);
@@ -1150,6 +1151,9 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
 
                             // Update map if ready
                             updateMapLocation();
+
+                            // Update cover image
+                            loadCoverImage(activity.getCategory(), activity.getCoverImageUrl());
                         }
                     }
 
@@ -1244,12 +1248,35 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                 R.id.action_activityDetailFragment_to_activityGalleryFragment, bundle);
     }
 
-    /** Load category image based on category name (same as feed) */
-    private void loadCategoryImage(String category) {
+    /** Load cover image - uses custom cover image if available, otherwise falls back to category image */
+    private void loadCoverImage(String category, String coverImageUrl) {
         if (ivActivityHero == null) {
             return;
         }
 
+        // Check if activity has a custom cover image
+        if (coverImageUrl != null && !coverImageUrl.isEmpty()) {
+            // Build full URL if it's a relative path
+            String fullUrl = coverImageUrl;
+            if (!coverImageUrl.startsWith("http")) {
+                String baseUrl = com.gege.activityfindermobile.utils.Constants.BASE_URL;
+                if (baseUrl.endsWith("/")) {
+                    baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+                }
+                fullUrl = baseUrl + (coverImageUrl.startsWith("/") ? coverImageUrl : "/" + coverImageUrl);
+            }
+
+            com.bumptech.glide.Glide.with(requireContext())
+                    .load(fullUrl)
+                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                    .centerCrop()
+                    .placeholder(R.drawable.activity_default)
+                    .error(R.drawable.activity_default)
+                    .into(ivActivityHero);
+            return;
+        }
+
+        // Fall back to category-based image
         if (category == null || category.isEmpty()) {
             ivActivityHero.setImageResource(R.drawable.activity_default);
             return;

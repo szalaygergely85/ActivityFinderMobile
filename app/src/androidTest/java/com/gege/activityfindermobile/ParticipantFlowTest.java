@@ -8,6 +8,7 @@ import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
@@ -42,6 +43,10 @@ public class ParticipantFlowTest {
         creatorApiHelper = new TestApiHelper();
         participantApiHelper = new TestApiHelper();
         createdActivityIds = new ArrayList<>();
+
+        // Get device location and set it in TestDataFactory
+        DeviceLocationHelper locationHelper = new DeviceLocationHelper();
+        locationHelper.acquireLocationAndSetForTests();
 
         // Create activity creator user
         creatorUser = TestDataFactory.createTestUser("Creator");

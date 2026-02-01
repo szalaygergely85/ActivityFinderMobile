@@ -37,14 +37,18 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import com.gege.activityfindermobile.utils.Constants;
+
 /**
  * Synchronous API helper for Android instrumentation tests.
  * All methods block until the API call completes.
+ * Uses the same BASE_URL as the app to ensure test users are created on the same server.
  */
 public class TestApiHelper {
 
     private static final String TAG = "TestApiHelper";
-    private static final String BASE_URL = "http://10.0.2.2:8080/"; // Android emulator localhost
+    // Use the same BASE_URL as the app to ensure test data is on the same server
+    private static final String BASE_URL = Constants.BASE_URL;
 
     // API Services
     private final UserApiService userApiService;

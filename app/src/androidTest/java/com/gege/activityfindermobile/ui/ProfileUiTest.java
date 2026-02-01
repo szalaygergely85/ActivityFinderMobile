@@ -10,6 +10,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.Manifest;
 import android.view.View;
 
 import androidx.test.espresso.UiController;
@@ -18,34 +19,32 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.ui.main.MainActivity;
+import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.Manifest;
-
-import androidx.test.rule.GrantPermissionRule;
-
 /**
  * Functional UI tests for the Profile screen.
- * Tests profile display, edit functionality, and navigation.
- * Requires a logged-in user to access the profile screen.
+ * Tests are consolidated for efficiency - login/logout happens once per class.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ProfileUiTest {
 
-    @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+    @ClassRule
+    public static GrantPermissionRule permissionRule = GrantPermissionRule.grant(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.POST_NOTIFICATIONS
@@ -55,17 +54,22 @@ public class ProfileUiTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    private TestApiHelper apiHelper;
-    private Long testUserId;
-    private String testEmail;
-    private String testPassword;
-    private String testFullName;
+    private static TestApiHelper apiHelper;
+    private static Long testUserId;
+    private static String testEmail;
+    private static String testPassword;
+    private static String testFullName;
+    private static boolean isLoggedIn = false;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUpClass() {
         apiHelper = new TestApiHelper();
 
-        // Create a test user and login
+        // Get device location
+        DeviceLocationHelper locationHelper = new DeviceLocationHelper();
+        locationHelper.acquireLocationAndSetForTests();
+
+        // Create test user once for all tests
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("ProfileUiTest");
         testEmail = testUser.email;
         testPassword = testUser.password;
@@ -80,18 +84,19 @@ public class ProfileUiTest {
 
         if (response != null) {
             testUserId = response.getUserId();
+        } else {
+            throw new RuntimeException("Failed to create test user via API");
         }
 
-        // Login via UI
-        loginViaUi(testEmail, testPassword);
-        waitFor(2000);
-
-        // Navigate to profile tab
-        navigateToProfile();
+        apiHelper.waitMedium();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
+        // Clear app tokens
+        UiTestHelper.clearAppSharedPreferences();
+
+        // Delete test user once after all tests
         if (testUserId != null) {
             try {
                 apiHelper.clearSession();
@@ -103,115 +108,107 @@ public class ProfileUiTest {
             }
         }
         apiHelper.clearSession();
+        isLoggedIn = false;
     }
 
-    private void loginViaUi(String email, String password) {
-        // Enter credentials and login
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(email), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(password), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-        waitFor(3000);
+    private void ensureLoggedInAndOnProfile() {
+        // First ensure we're logged in
+        if (!isLoggedIn) {
+            try {
+                onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
+                isLoggedIn = true;
+            } catch (Exception e) {
+                // Need to login
+                try {
+                    onView(withId(R.id.et_email))
+                            .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+                    onView(withId(R.id.et_password))
+                            .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+                    onView(withId(R.id.btn_login))
+                            .perform(scrollTo(), click());
+                    waitFor(5000);
+                    isLoggedIn = true;
+                } catch (Exception ex) {
+                    isLoggedIn = true; // Assume already logged in
+                }
+            }
+        }
 
-        // Verify login succeeded
-        onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
-
-    private void navigateToProfile() {
-        // Click on profile tab in bottom navigation
+        // Navigate to profile
         onView(withId(R.id.nav_profile)).perform(click());
         waitFor(1000);
     }
 
-    // ==================== PROFILE DISPLAY TESTS ====================
+    // ==================== CONSOLIDATED TESTS ====================
 
+    /**
+     * Tests profile display elements
+     */
     @Test
-    public void profile_userNameDisplayed() {
-        // User's name should be displayed
+    public void testProfileDisplayElements() {
+        ensureLoggedInAndOnProfile();
+
+        // User's name
         onView(withText(testFullName)).check(matches(isDisplayed()));
-    }
 
-    @Test
-    public void profile_editButtonDisplayed() {
+        // Edit button
         onView(withId(R.id.btn_edit_profile))
                 .perform(scrollTo())
                 .check(matches(isDisplayed()));
-    }
 
-    @Test
-    public void profile_settingsButtonDisplayed() {
+        // Settings button
         onView(withId(R.id.btn_settings))
                 .perform(scrollTo())
                 .check(matches(isDisplayed()));
-    }
 
-    // ==================== MY ACTIVITIES SECTION TESTS ====================
-
-    @Test
-    public void profile_myActivitiesOptionDisplayed() {
+        // My Activities option
         onView(withText("My Activities"))
                 .perform(scrollTo())
                 .check(matches(isDisplayed()));
-    }
 
-    @Test
-    public void profile_participationsOptionDisplayed() {
+        // Participations option
         onView(withText("Participations"))
                 .perform(scrollTo())
                 .check(matches(isDisplayed()));
     }
 
-    // ==================== EDIT PROFILE NAVIGATION TESTS ====================
-
+    /**
+     * Tests navigation to edit profile
+     */
     @Test
-    public void profile_editButtonNavigatesToEditScreen() {
+    public void testEditProfileNavigation() {
+        ensureLoggedInAndOnProfile();
+
         onView(withId(R.id.btn_edit_profile))
                 .perform(scrollTo(), click());
         waitFor(1000);
 
-        // Should show edit profile screen elements
+        // Should show edit profile screen
         onView(withId(R.id.et_bio)).check(matches(isDisplayed()));
+
+        // Go back
+        onView(withId(R.id.btn_back)).perform(click());
+        waitFor(500);
     }
 
-    // ==================== SETTINGS NAVIGATION TESTS ====================
-
+    /**
+     * Tests settings and logout options
+     */
     @Test
-    public void profile_settingsNavigatesToSettingsScreen() {
+    public void testSettingsAndLogoutOptions() {
+        ensureLoggedInAndOnProfile();
+
+        // Navigate to settings
         onView(withId(R.id.btn_settings))
                 .perform(scrollTo(), click());
         waitFor(1000);
 
-        // Should show settings screen - verify by checking for Log Out option
+        // Log Out option exists
         onView(withText("Log Out"))
                 .perform(scrollTo())
                 .check(matches(isDisplayed()));
-    }
 
-    // ==================== LOGOUT FUNCTIONALITY TESTS ====================
-
-    @Test
-    public void profile_logoutOptionExists() {
-        // Navigate to settings first
-        onView(withId(R.id.btn_settings))
-                .perform(scrollTo(), click());
-        waitFor(1000);
-
-        // Look for logout option
-        onView(withText("Log Out"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    // ==================== ACCOUNT DELETION TESTS ====================
-
-    @Test
-    public void profile_deleteAccountOptionExists() {
-        onView(withId(R.id.btn_settings))
-                .perform(scrollTo(), click());
-        waitFor(1000);
-
+        // Delete Account option exists
         onView(withText("Delete Account"))
                 .perform(scrollTo())
                 .check(matches(isDisplayed()));

@@ -503,6 +503,7 @@ public class FeedFragment extends Fragment {
         bundle.putDouble("latitude", activity.getLatitude() != null ? activity.getLatitude() : 0.0);
         bundle.putDouble(
                 "longitude", activity.getLongitude() != null ? activity.getLongitude() : 0.0);
+        bundle.putString("coverImageUrl", activity.getCoverImageUrl());
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_nav_feed_to_activityDetailFragment, bundle);
