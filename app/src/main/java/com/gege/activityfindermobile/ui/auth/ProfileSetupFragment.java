@@ -25,11 +25,13 @@ import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
+import com.gege.activityfindermobile.data.model.Category;
 import com.gege.activityfindermobile.data.model.ImageUploadResponse;
 import com.gege.activityfindermobile.data.model.User;
 import com.gege.activityfindermobile.data.model.UserPhoto;
 import com.gege.activityfindermobile.data.repository.UserPhotoRepository;
 import com.gege.activityfindermobile.data.repository.UserRepository;
+import com.gege.activityfindermobile.utils.CategoryManager;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
@@ -60,6 +62,8 @@ public class ProfileSetupFragment extends Fragment {
 
     @Inject SharedPreferencesManager prefsManager;
 
+    @Inject CategoryManager categoryManager;
+
     private CircleImageView ivProfilePicture;
     private MaterialButton btnContinue, btnSkip, btnUploadPhoto;
     private TextInputEditText etBio;
@@ -74,13 +78,6 @@ public class ProfileSetupFragment extends Fragment {
     private Uri selectedImageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
     private ActivityResultLauncher<String> photoPickerLauncher;
-
-    // Available interests (in a real app, this would come from API)
-    private static final String[] AVAILABLE_INTERESTS = {
-        "Sports", "Music", "Art", "Technology", "Gaming",
-        "Cooking", "Travel", "Reading", "Photography", "Fitness",
-        "Movies", "Dancing", "Hiking", "Yoga", "Food"
-    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -167,17 +164,38 @@ public class ProfileSetupFragment extends Fragment {
     private void setupInterestChips() {
         chipGroupInterests.removeAllViews();
 
-        for (String interest : AVAILABLE_INTERESTS) {
-            Chip chip =
-                    (Chip)
-                            getLayoutInflater()
-                                    .inflate(
-                                            R.layout.chip_interest_item, chipGroupInterests, false);
-            chip.setText(interest);
-            chip.setCheckable(true);
-            chip.setChecked(false);
+        // Load categories from CategoryManager (fetched from database)
+        List<Category> categories = categoryManager.getCachedCategories();
 
-            chipGroupInterests.addView(chip);
+        if (categories.isEmpty()) {
+            // If cache is empty, refresh and try again after a short delay
+            categoryManager.refreshCategories();
+            // Use a handler to retry after categories are loaded
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                List<Category> refreshedCategories = categoryManager.getCachedCategories();
+                populateInterestChips(refreshedCategories);
+            }, 1000);
+        } else {
+            populateInterestChips(categories);
+        }
+    }
+
+    private void populateInterestChips(List<Category> categories) {
+        chipGroupInterests.removeAllViews();
+
+        for (Category category : categories) {
+            if (category.getName() != null && !category.getName().isEmpty()) {
+                Chip chip =
+                        (Chip)
+                                getLayoutInflater()
+                                        .inflate(
+                                                R.layout.chip_interest_item, chipGroupInterests, false);
+                chip.setText(category.getName());
+                chip.setCheckable(true);
+                chip.setChecked(false);
+
+                chipGroupInterests.addView(chip);
+            }
         }
     }
 
