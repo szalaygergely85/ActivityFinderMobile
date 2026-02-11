@@ -105,7 +105,11 @@ public class ActivityDetailUiTest {
         Activity activity = apiHelper.createActivity(request);
         if (activity != null) {
             createdActivityIds.add(activity.getId());
+        } else {
+            throw new RuntimeException("Failed to create test activity via API");
         }
+
+        apiHelper.waitMedium();
     }
 
     @AfterClass
@@ -138,40 +142,74 @@ public class ActivityDetailUiTest {
     }
 
     private void ensureLoggedInAndOnDetail() {
-        // First ensure we're logged in
-        if (!isLoggedIn) {
+        // Each test gets a fresh MainActivity from ActivityScenarioRule.
+        // Detect actual UI state instead of relying on static flags.
+
+        // Wait for the activity to fully launch
+        waitFor(2000);
+
+        // Check if we need to login (login screen visible) or already on feed
+        boolean onFeed = false;
+        try {
+            onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
+            onFeed = true;
+        } catch (Exception e) {
+            // Not on feed - might be on login screen or detail
+        }
+
+        if (!onFeed) {
+            // Try going back first (might be on detail from previous test)
+            goBackToFeed();
             try {
                 onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-                isLoggedIn = true;
+                onFeed = true;
             } catch (Exception e) {
-                // Need to login
-                try {
-                    onView(withId(R.id.et_email))
-                            .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-                    onView(withId(R.id.et_password))
-                            .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-                    onView(withId(R.id.btn_login))
-                            .perform(scrollTo(), click());
-                    waitFor(5000);
-                    isLoggedIn = true;
-                } catch (Exception ex) {
-                    isLoggedIn = true;
-                }
+                // Still not on feed - must be on login screen
             }
         }
 
-        // Refresh and navigate to activity detail
-        onView(withId(R.id.swipe_refresh)).perform(swipeDown());
-        waitFor(3000);
+        if (!onFeed) {
+            // Login
+            try {
+                onView(withId(R.id.et_email))
+                        .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+                onView(withId(R.id.et_password))
+                        .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+                onView(withId(R.id.btn_login))
+                        .perform(scrollTo(), click());
+                waitFor(5000);
+            } catch (Exception ex) {
+                // Ignore - might already be logged in
+            }
+        }
 
-        // Find and click on our test activity
-        onView(withId(R.id.rv_activities))
-                .perform(RecyclerViewActions.scrollTo(
-                        hasDescendant(withText(testActivityTitle))));
-        waitFor(500);
-        onView(allOf(withId(R.id.tv_activity_title), withText(testActivityTitle)))
-                .perform(click());
-        waitFor(1000);
+        // Wait for feed to acquire location and load activities
+        waitFor(5000);
+
+        // Refresh and navigate to activity detail (retry to handle slow loading)
+        Exception lastException = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                onView(withId(R.id.swipe_refresh)).perform(swipeDown());
+                waitFor(5000);
+
+                onView(withId(R.id.rv_activities))
+                        .perform(RecyclerViewActions.scrollTo(
+                                hasDescendant(withText(testActivityTitle))));
+                waitFor(500);
+                onView(allOf(withId(R.id.tv_activity_title), withText(testActivityTitle)))
+                        .perform(click());
+                waitFor(1000);
+                lastException = null;
+                break;
+            } catch (Exception e) {
+                lastException = e;
+                waitFor(3000);
+            }
+        }
+        if (lastException != null) {
+            throw new RuntimeException("Could not find activity in feed after retries", lastException);
+        }
     }
 
     private void goBackToFeed() {

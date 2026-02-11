@@ -47,7 +47,6 @@ public class AuthInterceptor implements Interceptor {
                 || path.contains("/api/auth/login")
                 || path.contains("/api/auth/register")
                 || path.contains("/api/users/refresh-token")
-                || path.contains("/api/covers")
                 || path.contains("/api/categories")) {
             return chain.proceed(originalRequest);
         }

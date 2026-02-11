@@ -466,6 +466,44 @@ public class TestApiHelper {
         }
     }
 
+    /**
+     * Upload a cover image synchronously.
+     *
+     * @param imageFile The image file to upload
+     * @param displayName The display name for the cover image
+     * @return CoverImage object, or null on failure
+     */
+    public CoverImage uploadCoverImage(java.io.File imageFile, String displayName) {
+        if (imageFile == null || !imageFile.exists()) {
+            Log.e(TAG, "Image file not found for cover upload");
+            return null;
+        }
+        try {
+            okhttp3.RequestBody requestFile =
+                    okhttp3.RequestBody.create(okhttp3.MediaType.parse("image/png"), imageFile);
+            okhttp3.MultipartBody.Part filePart =
+                    okhttp3.MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+            okhttp3.RequestBody displayNamePart =
+                    okhttp3.RequestBody.create(okhttp3.MediaType.parse("text/plain"), displayName);
+
+            Response<CoverImage> response =
+                    coverImageApiService.uploadCoverImage(filePart, displayNamePart).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                CoverImage cover = response.body();
+                Log.d(TAG, "Cover image uploaded: " + cover.getId() + " - " + cover.getImageUrl());
+                return cover;
+            } else {
+                String errorBody = response.errorBody() != null
+                        ? response.errorBody().string() : "Unknown error";
+                Log.e(TAG, "Failed to upload cover image: " + response.code() + " - " + errorBody);
+                return null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Network error uploading cover image: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
     // ==================== Activity Update Operations ====================
 
     /**

@@ -397,6 +397,35 @@ public class TestDataFactory {
         return request;
     }
 
+    // ==================== Test Image File Creation ====================
+
+    /**
+     * Create a small test PNG image file for upload testing.
+     *
+     * @param cacheDir The directory to store the temp file (use context.getCacheDir())
+     * @return The created File, or null on failure
+     */
+    public static java.io.File createTestImageFile(java.io.File cacheDir) {
+        try {
+            android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                    100, 100, android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            canvas.drawColor(android.graphics.Color.BLUE);
+
+            String fileName = "test_cover_" + UUID.randomUUID().toString().substring(0, 8) + ".png";
+            java.io.File file = new java.io.File(cacheDir, fileName);
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            fos.close();
+            bitmap.recycle();
+
+            return file;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // ==================== Message Content ====================
 
     /** Create unique message content. */

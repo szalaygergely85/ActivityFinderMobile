@@ -53,7 +53,10 @@ dependencies {
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.espresso.contrib
     androidTestImplementation libs.espresso.intents
+    androidTestImplementation 'org.hamcrest:hamcrest:2.2'
     debugImplementation libs.fragment.testing
+    debugImplementation libs.test.core
+    debugImplementation libs.test.runner
 
     // Navigation Component
     implementation libs.navigation.fragment

@@ -53,6 +53,21 @@ public class ActivityTest {
         assertNotNull("Test user creation should succeed", response);
         currentUserId = response.getUserId();
         apiHelper.waitShort();
+
+        // Upload a test cover image if none exist
+        List<CoverImage> existingCovers = apiHelper.getAllCoverImages();
+        if (existingCovers == null || existingCovers.isEmpty()) {
+            java.io.File testImage = TestDataFactory.createTestImageFile(
+                    androidx.test.platform.app.InstrumentationRegistry
+                            .getInstrumentation().getTargetContext().getCacheDir());
+            assertNotNull("Test image file should be created", testImage);
+
+            CoverImage uploadedCover = apiHelper.uploadCoverImage(testImage, "Test Cover");
+            assertNotNull("Cover image upload should succeed", uploadedCover);
+            apiHelper.waitShort();
+
+            testImage.delete();
+        }
     }
 
     @After

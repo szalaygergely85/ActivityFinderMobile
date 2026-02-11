@@ -6,7 +6,10 @@
       "Bash(Select-String -Pattern \"Activity\")",
       "Bash(findstr:*)",
       "Bash(./gradlew compileDebugAndroidTestJavaWithJavac:*)",
-      "Bash(del \"C:\\\\MyFiles\\\\CodingProjects\\\\ActivityFinderMobile\\\\app\\\\src\\\\androidTest\\\\java\\\\com\\\\gege\\\\activityfindermobile\\\\util\\\\MockLocationHelper.java\")"
+      "Bash(del \"C:\\\\MyFiles\\\\CodingProjects\\\\ActivityFinderMobile\\\\app\\\\src\\\\androidTest\\\\java\\\\com\\\\gege\\\\activityfindermobile\\\\util\\\\MockLocationHelper.java\")",
+      "WebSearch",
+      "Bash(adb shell getprop:*)",
+      "WebFetch(domain:developers.google.com)"
     ]
   }
 }
