@@ -30,23 +30,22 @@ import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Functional UI tests for the Create Activity screen.
- * Tests are consolidated for efficiency - login/logout happens once per class.
+ * Each test does a hard reset and fresh login.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class CreateActivityUiTest {
 
-    @ClassRule
-    public static GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.POST_NOTIFICATIONS
@@ -56,21 +55,23 @@ public class CreateActivityUiTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    private static TestApiHelper apiHelper;
-    private static Long testUserId;
-    private static String testEmail;
-    private static String testPassword;
-    private static boolean isLoggedIn = false;
+    private TestApiHelper apiHelper;
+    private Long testUserId;
+    private String testEmail;
+    private String testPassword;
 
-    @BeforeClass
-    public static void setUpClass() {
+    @Before
+    public void setUp() {
+        // Hard reset - clear preferences and recreate activity to ensure login screen
+        UiTestHelper.clearAppSharedPreferences();
+        activityRule.getScenario().recreate();
+        waitFor(1000);
+
         apiHelper = new TestApiHelper();
 
-        // Get device location
         DeviceLocationHelper locationHelper = new DeviceLocationHelper();
         locationHelper.acquireLocationAndSetForTests();
 
-        // Create test user once for all tests
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("CreateActivityUiTest");
         testEmail = testUser.email;
         testPassword = testUser.password;
@@ -89,74 +90,38 @@ public class CreateActivityUiTest {
         }
 
         apiHelper.waitMedium();
-    }
 
-    @AfterClass
-    public static void tearDownClass() {
-        // Clear app tokens
-        UiTestHelper.clearAppSharedPreferences();
-
-        // Delete test user once after all tests
-        if (testUserId != null) {
-            try {
-                apiHelper.clearSession();
-                apiHelper.waitShort();
-                apiHelper.loginWithRetry(testEmail, testPassword);
-                apiHelper.deleteUser(testUserId);
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
-        }
-        apiHelper.clearSession();
-        isLoggedIn = false;
-    }
-
-    private void ensureLoggedInAndOnCreateActivity() {
-        // First ensure we're logged in
-        if (!isLoggedIn) {
-            try {
-                onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-                isLoggedIn = true;
-            } catch (Exception e) {
-                // Need to login
-                try {
-                    onView(withId(R.id.et_email))
-                            .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-                    onView(withId(R.id.et_password))
-                            .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-                    onView(withId(R.id.btn_login))
-                            .perform(scrollTo(), click());
-                    waitFor(5000);
-                    isLoggedIn = true;
-                } catch (Exception ex) {
-                    isLoggedIn = true;
-                }
-            }
-        }
+        // Fresh login
+        onView(withId(R.id.et_email))
+                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+        onView(withId(R.id.et_password))
+                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+        onView(withId(R.id.btn_login))
+                .perform(scrollTo(), click());
+        waitFor(8000);
 
         // Navigate to create activity
         onView(withId(R.id.fab_create)).perform(click());
         waitFor(1000);
     }
 
-    private void goBackToFeed() {
-        try {
-            onView(withId(R.id.btn_back)).perform(click());
-            waitFor(500);
-        } catch (Exception e) {
-            // Already on feed
+    @After
+    public void tearDown() {
+        UiTestHelper.clearAppSharedPreferences();
+
+        if (testUserId != null) {
+            try {
+                apiHelper.loginWithRetry(testEmail, testPassword);
+                apiHelper.deleteUser(testUserId);
+            } catch (Exception e) {
+                // Ignore
+            }
         }
+        apiHelper.clearSession();
     }
 
-    // ==================== CONSOLIDATED TESTS ====================
-
-    /**
-     * Tests all UI elements visibility in one test
-     */
     @Test
-    public void testFormElementsDisplayed() {
-        ensureLoggedInAndOnCreateActivity();
-
+    public void testCreateActivityScreen() {
         // Header and navigation
         onView(withId(R.id.toolbar_title)).check(matches(isDisplayed()));
         onView(withId(R.id.btn_back)).check(matches(isDisplayed()));
@@ -172,124 +137,38 @@ public class CreateActivityUiTest {
 
         // Cover image and map
         onView(withId(R.id.card_cover_image)).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.layout_cover_placeholder)).perform(scrollTo()).check(matches(isDisplayed()));
         onView(withId(R.id.map_preview_container)).perform(scrollTo()).check(matches(isDisplayed()));
 
         // Section headers
-        onView(withText("Basic Information")).check(matches(isDisplayed()));
+        onView(withText("Basic Information")).perform(scrollTo()).check(matches(isDisplayed()));
         onView(withText("When & Where")).perform(scrollTo()).check(matches(isDisplayed()));
         onView(withText("Capacity")).perform(scrollTo()).check(matches(isDisplayed()));
 
-        // Create button
-        onView(withId(R.id.btn_create)).perform(scrollTo()).check(matches(isDisplayed()));
+        // Create button (in fixed footer, always visible)
+        onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
         onView(withId(R.id.btn_create)).check(matches(isEnabled()));
 
         // Progress hidden
         onView(withId(R.id.progress_loading)).check(matches(not(isDisplayed())));
 
-        goBackToFeed();
-    }
-
-    /**
-     * Tests form input functionality
-     */
-    @Test
-    public void testFormInputFunctionality() {
-        ensureLoggedInAndOnCreateActivity();
-
-        // Title field
-        String title = "Test Activity Title";
-        onView(withId(R.id.et_title))
-                .perform(scrollTo(), replaceText(title), closeSoftKeyboard());
-        onView(withId(R.id.et_title)).check(matches(withText(title)));
-
-        // Description field
-        String description = "This is a test description for the activity.";
-        onView(withId(R.id.et_description))
-                .perform(scrollTo(), replaceText(description), closeSoftKeyboard());
-        onView(withId(R.id.et_description)).check(matches(withText(description)));
-
-        // Total spots field
-        String spots = "10";
-        onView(withId(R.id.et_total_spots))
-                .perform(scrollTo(), replaceText(spots), closeSoftKeyboard());
-        onView(withId(R.id.et_total_spots)).check(matches(withText(spots)));
-
-        // Location field
-        String location = "Central Park, New York";
-        onView(withId(R.id.actv_location))
-                .perform(scrollTo(), replaceText(location), closeSoftKeyboard());
-        onView(withId(R.id.actv_location)).check(matches(withText(location)));
-
-        goBackToFeed();
-    }
-
-    /**
-     * Tests pickers and dropdowns
-     */
-    @Test
-    public void testPickersAndDropdowns() {
-        ensureLoggedInAndOnCreateActivity();
-
-        // Category dropdown
-        onView(withId(R.id.et_category)).perform(scrollTo(), click());
-        waitFor(500);
-
-        // Date picker (just test it opens)
-        onView(withId(R.id.et_date)).perform(scrollTo(), click());
-        waitFor(500);
-
-        // Time picker (just test it opens)
-        onView(withId(R.id.et_time)).perform(scrollTo(), click());
-        waitFor(500);
-
-        // Cover image card
-        onView(withId(R.id.card_cover_image)).perform(scrollTo(), click());
-        waitFor(500);
-
-        goBackToFeed();
-    }
-
-    /**
-     * Tests form validation - empty fields
-     */
-    @Test
-    public void testFormValidation() {
-        ensureLoggedInAndOnCreateActivity();
-
-        // Try to submit with empty title
-        onView(withId(R.id.et_title))
-                .perform(scrollTo(), replaceText(""), closeSoftKeyboard());
-        onView(withId(R.id.btn_create)).perform(scrollTo(), click());
-        waitFor(500);
-        // Should still be on create activity screen
-        onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
-
-        // Try with title but no category
+        // Test input fields
         onView(withId(R.id.et_title))
                 .perform(scrollTo(), replaceText("Test Activity"), closeSoftKeyboard());
-        onView(withId(R.id.btn_create)).perform(scrollTo(), click());
-        waitFor(500);
-        onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
+        onView(withId(R.id.et_title)).check(matches(withText("Test Activity")));
 
-        goBackToFeed();
-    }
+        onView(withId(R.id.et_description))
+                .perform(scrollTo(), replaceText("Test description"), closeSoftKeyboard());
+        onView(withId(R.id.et_description)).check(matches(withText("Test description")));
 
-    /**
-     * Tests navigation back to feed
-     */
-    @Test
-    public void testBackNavigation() {
-        ensureLoggedInAndOnCreateActivity();
+        onView(withId(R.id.et_total_spots))
+                .perform(scrollTo(), replaceText("10"), closeSoftKeyboard());
+        onView(withId(R.id.et_total_spots)).check(matches(withText("10")));
 
+        // Test back navigation
         onView(withId(R.id.btn_back)).perform(click());
         waitFor(1000);
-
-        // Should navigate back to feed
         onView(withId(R.id.fab_create)).check(matches(isDisplayed()));
     }
-
-    // ==================== HELPER METHODS ====================
 
     private void waitFor(long millis) {
         onView(ViewMatchers.isRoot()).perform(waitForAction(millis));

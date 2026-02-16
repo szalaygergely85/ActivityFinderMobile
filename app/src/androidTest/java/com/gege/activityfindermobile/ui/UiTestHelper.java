@@ -138,8 +138,8 @@ public class UiTestHelper {
             // Navigate to profile
             onView(withId(R.id.nav_profile)).perform(click());
             waitFor(1000);
-            // Go to settings
-            onView(withId(R.id.btn_settings)).perform(scrollTo(), click());
+            // Go to settings (btn_settings is in fixed header, no scroll needed)
+            onView(withId(R.id.btn_settings)).perform(click());
             waitFor(1000);
             // Click logout
             onView(withText("Log Out")).perform(scrollTo(), click());

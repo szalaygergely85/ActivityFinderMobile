@@ -30,9 +30,8 @@ import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,14 +39,14 @@ import org.junit.runner.RunWith;
 /**
  * End-to-end UI flow tests.
  * Tests complete user journeys through the application.
- * Tests are consolidated for efficiency.
+ * Each test does a hard reset and fresh login.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class EndToEndFlowTest {
 
-    @ClassRule
-    public static GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.POST_NOTIFICATIONS
@@ -57,21 +56,23 @@ public class EndToEndFlowTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    private static TestApiHelper apiHelper;
-    private static Long testUserId;
-    private static String testEmail;
-    private static String testPassword;
-    private static boolean isLoggedIn = false;
+    private TestApiHelper apiHelper;
+    private Long testUserId;
+    private String testEmail;
+    private String testPassword;
 
-    @BeforeClass
-    public static void setUpClass() {
+    @Before
+    public void setUp() {
+        // Hard reset - clear preferences and recreate activity to ensure login screen
+        UiTestHelper.clearAppSharedPreferences();
+        activityRule.getScenario().recreate();
+        waitFor(1000);
+
         apiHelper = new TestApiHelper();
 
-        // Get device location
         DeviceLocationHelper locationHelper = new DeviceLocationHelper();
         locationHelper.acquireLocationAndSetForTests();
 
-        // Create test user once for all tests
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("E2ETest");
         testEmail = testUser.email;
         testPassword = testUser.password;
@@ -92,88 +93,47 @@ public class EndToEndFlowTest {
         apiHelper.waitMedium();
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-        // Clear app tokens
+    @After
+    public void tearDown() {
         UiTestHelper.clearAppSharedPreferences();
 
-        // Delete test user once after all tests
         if (testUserId != null) {
             try {
-                apiHelper.clearSession();
-                apiHelper.waitShort();
                 apiHelper.loginWithRetry(testEmail, testPassword);
                 apiHelper.deleteUser(testUserId);
             } catch (Exception e) {
-                // Ignore cleanup errors
+                // Ignore
             }
         }
         apiHelper.clearSession();
-        isLoggedIn = false;
     }
 
-    private void ensureLoggedOut() {
-        // Clear SharedPreferences directly
-        UiTestHelper.clearAppSharedPreferences();
-        waitFor(500);
-        activityRule.getScenario().recreate();
-        waitFor(1000);
-    }
-
-    private void ensureLoggedIn() {
-        if (isLoggedIn) {
-            try {
-                onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-                return;
-            } catch (Exception e) {
-                // Need to re-login
-            }
-        }
-
-        try {
-            onView(withId(R.id.et_email))
-                    .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-            onView(withId(R.id.et_password))
-                    .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-            onView(withId(R.id.btn_login))
-                    .perform(scrollTo(), click());
-            waitFor(5000);
-            isLoggedIn = true;
-        } catch (Exception e) {
-            isLoggedIn = true; // Already logged in
-        }
-    }
-
-    // ==================== CONSOLIDATED TESTS ====================
-
-    /**
-     * Tests login/register navigation flow
-     */
     @Test
-    public void testLoginRegisterNavigation() {
-        ensureLoggedOut();
-
+    public void testEndToEndFlows() {
+        // ==================== LOGIN/REGISTER NAVIGATION ====================
         // Start on login screen
         onView(withId(R.id.btn_login)).check(matches(isDisplayed()));
 
         // Navigate to register
         onView(withId(R.id.tv_sign_up)).perform(scrollTo(), click());
         waitFor(1000);
-        onView(withId(R.id.btn_register)).check(matches(isDisplayed()));
+        onView(withId(R.id.btn_register)).perform(scrollTo()).check(matches(isDisplayed()));
 
         // Navigate back to login
         onView(withId(R.id.tv_sign_in)).perform(scrollTo(), click());
         waitFor(1000);
         onView(withId(R.id.btn_login)).check(matches(isDisplayed()));
-    }
 
-    /**
-     * Tests main app navigation flows (feed, create, profile)
-     */
-    @Test
-    public void testMainNavigationFlows() {
-        ensureLoggedIn();
+        // ==================== LOGIN ====================
+        onView(withId(R.id.et_email))
+                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+        onView(withId(R.id.et_password))
+                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+        onView(withId(R.id.btn_login))
+                .perform(scrollTo(), click());
+        waitFor(8000);
 
+        // ==================== MAIN NAVIGATION ====================
         // Verify on feed
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
 
@@ -182,7 +142,7 @@ public class EndToEndFlowTest {
         waitFor(1000);
         onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
         onView(withId(R.id.btn_back)).perform(click());
-        waitFor(1000);
+        waitFor(3000);
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
 
         // Navigate to profile and back
@@ -191,15 +151,8 @@ public class EndToEndFlowTest {
         onView(withId(R.id.nav_feed)).perform(click());
         waitFor(1000);
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
 
-    /**
-     * Tests search and filter flows
-     */
-    @Test
-    public void testSearchAndFilterFlows() {
-        ensureLoggedIn();
-
+        // ==================== SEARCH AND FILTER ====================
         // Open search
         onView(withId(R.id.btn_search)).perform(click());
         waitFor(500);
@@ -216,15 +169,8 @@ public class EndToEndFlowTest {
         // Open filter dialog
         onView(withId(R.id.btn_filter)).perform(click());
         waitFor(500);
-    }
 
-    /**
-     * Tests create activity form flow
-     */
-    @Test
-    public void testCreateActivityFormFlow() {
-        ensureLoggedIn();
-
+        // ==================== CREATE ACTIVITY FORM ====================
         // Navigate to create activity
         onView(withId(R.id.fab_create)).perform(click());
         waitFor(1000);
@@ -243,22 +189,15 @@ public class EndToEndFlowTest {
         onView(withId(R.id.btn_back)).perform(click());
         waitFor(1000);
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-    }
 
-    /**
-     * Tests activity detail navigation
-     */
-    @Test
-    public void testActivityDetailFlow() {
-        ensureLoggedIn();
-
+        // ==================== ACTIVITY DETAIL ====================
         // Create an activity to view
         apiHelper.createActivity(TestDataFactory.createBasicActivity());
         waitFor(2000);
 
         // Refresh to see the activity
         onView(withId(R.id.swipe_refresh)).perform(swipeDown());
-        waitFor(2000);
+        waitFor(3000);
 
         // Click on first activity
         onView(withId(R.id.rv_activities))

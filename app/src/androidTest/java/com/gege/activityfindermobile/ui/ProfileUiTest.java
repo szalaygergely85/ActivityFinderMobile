@@ -28,23 +28,22 @@ import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Functional UI tests for the Profile screen.
- * Tests are consolidated for efficiency - login/logout happens once per class.
+ * Each test does a hard reset and fresh login.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ProfileUiTest {
 
-    @ClassRule
-    public static GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.POST_NOTIFICATIONS
@@ -54,22 +53,24 @@ public class ProfileUiTest {
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    private static TestApiHelper apiHelper;
-    private static Long testUserId;
-    private static String testEmail;
-    private static String testPassword;
-    private static String testFullName;
-    private static boolean isLoggedIn = false;
+    private TestApiHelper apiHelper;
+    private Long testUserId;
+    private String testEmail;
+    private String testPassword;
+    private String testFullName;
 
-    @BeforeClass
-    public static void setUpClass() {
+    @Before
+    public void setUp() {
+        // Hard reset - clear preferences and recreate activity to ensure login screen
+        UiTestHelper.clearAppSharedPreferences();
+        activityRule.getScenario().recreate();
+        waitFor(1000);
+
         apiHelper = new TestApiHelper();
 
-        // Get device location
         DeviceLocationHelper locationHelper = new DeviceLocationHelper();
         locationHelper.acquireLocationAndSetForTests();
 
-        // Create test user once for all tests
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("ProfileUiTest");
         testEmail = testUser.email;
         testPassword = testUser.password;
@@ -89,132 +90,62 @@ public class ProfileUiTest {
         }
 
         apiHelper.waitMedium();
-    }
 
-    @AfterClass
-    public static void tearDownClass() {
-        // Clear app tokens
-        UiTestHelper.clearAppSharedPreferences();
-
-        // Delete test user once after all tests
-        if (testUserId != null) {
-            try {
-                apiHelper.clearSession();
-                apiHelper.waitShort();
-                apiHelper.loginWithRetry(testEmail, testPassword);
-                apiHelper.deleteUser(testUserId);
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
-        }
-        apiHelper.clearSession();
-        isLoggedIn = false;
-    }
-
-    private void ensureLoggedInAndOnProfile() {
-        // First ensure we're logged in
-        if (!isLoggedIn) {
-            try {
-                onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
-                isLoggedIn = true;
-            } catch (Exception e) {
-                // Need to login
-                try {
-                    onView(withId(R.id.et_email))
-                            .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-                    onView(withId(R.id.et_password))
-                            .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-                    onView(withId(R.id.btn_login))
-                            .perform(scrollTo(), click());
-                    waitFor(5000);
-                    isLoggedIn = true;
-                } catch (Exception ex) {
-                    isLoggedIn = true; // Assume already logged in
-                }
-            }
-        }
+        // Fresh login
+        onView(withId(R.id.et_email))
+                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
+        onView(withId(R.id.et_password))
+                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
+        onView(withId(R.id.btn_login))
+                .perform(scrollTo(), click());
+        waitFor(8000);
 
         // Navigate to profile
         onView(withId(R.id.nav_profile)).perform(click());
-        waitFor(1000);
+        waitFor(2000);
     }
 
-    // ==================== CONSOLIDATED TESTS ====================
+    @After
+    public void tearDown() {
+        UiTestHelper.clearAppSharedPreferences();
 
-    /**
-     * Tests profile display elements
-     */
+        if (testUserId != null) {
+            try {
+                apiHelper.loginWithRetry(testEmail, testPassword);
+                apiHelper.deleteUser(testUserId);
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+        apiHelper.clearSession();
+    }
+
     @Test
-    public void testProfileDisplayElements() {
-        ensureLoggedInAndOnProfile();
-
+    public void testProfileScreen() {
         // User's name
         onView(withText(testFullName)).check(matches(isDisplayed()));
 
-        // Edit button
-        onView(withId(R.id.btn_edit_profile))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
+        // Edit and settings buttons (in fixed header, no scroll needed)
+        onView(withId(R.id.btn_edit_profile)).check(matches(isDisplayed()));
+        onView(withId(R.id.btn_settings)).check(matches(isDisplayed()));
 
-        // Settings button
-        onView(withId(R.id.btn_settings))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
+        // Menu options
+        onView(withText("My Activities")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Participations")).perform(scrollTo()).check(matches(isDisplayed()));
 
-        // My Activities option
-        onView(withText("My Activities"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-
-        // Participations option
-        onView(withText("Participations"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-    }
-
-    /**
-     * Tests navigation to edit profile
-     */
-    @Test
-    public void testEditProfileNavigation() {
-        ensureLoggedInAndOnProfile();
-
-        onView(withId(R.id.btn_edit_profile))
-                .perform(scrollTo(), click());
+        // Navigate to edit profile
+        onView(withId(R.id.btn_edit_profile)).perform(click());
         waitFor(1000);
-
-        // Should show edit profile screen
         onView(withId(R.id.et_bio)).check(matches(isDisplayed()));
-
-        // Go back
         onView(withId(R.id.btn_back)).perform(click());
         waitFor(500);
-    }
-
-    /**
-     * Tests settings and logout options
-     */
-    @Test
-    public void testSettingsAndLogoutOptions() {
-        ensureLoggedInAndOnProfile();
 
         // Navigate to settings
-        onView(withId(R.id.btn_settings))
-                .perform(scrollTo(), click());
+        onView(withId(R.id.btn_settings)).perform(click());
         waitFor(1000);
-
-        // Log Out option exists
-        onView(withText("Log Out"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
-
-        // Delete Account option exists
-        onView(withText("Delete Account"))
-                .perform(scrollTo())
-                .check(matches(isDisplayed()));
+        onView(withText("Log Out")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Delete Account")).perform(scrollTo()).check(matches(isDisplayed()));
     }
-
-    // ==================== HELPER METHODS ====================
 
     private void waitFor(long millis) {
         onView(ViewMatchers.isRoot()).perform(waitForAction(millis));
