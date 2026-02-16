@@ -14,6 +14,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
@@ -119,9 +122,30 @@ public class EditProfileFragment extends Fragment {
 
         initViews(view);
         setupBackButton(view);
+        setupAppBarPadding(view);
+
         initPlacesClient();
         // setupCityAutocomplete();
         loadCurrentProfile();
+    }
+
+    private void setupAppBarPadding(View view) {
+        View appBar = view.findViewById(R.id.app_bar);
+        if (appBar == null) return;
+
+        final int originalPaddingTop = appBar.getPaddingTop();
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    appBar.setPadding(
+                            appBar.getPaddingLeft(),
+                            systemBars.top + originalPaddingTop,
+                            appBar.getPaddingRight(),
+                            appBar.getPaddingBottom());
+                    return insets;
+                });
     }
 
     @Override

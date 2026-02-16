@@ -68,9 +68,16 @@ public class MyActivitiesFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_my_activities, container, false);
     }
 
+    private void setupBackButton(View view) {
+        view.findViewById(R.id.btn_back)
+                .setOnClickListener(
+                        v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+setupBackButton(view);
 
         ViewCompat.setOnApplyWindowInsetsListener(
                 view,

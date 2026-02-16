@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -61,6 +64,8 @@ public class NotificationsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        setupAppBarPadding(view);
+
         notificationsRecyclerView = view.findViewById(R.id.notificationsRecyclerView);
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
@@ -73,6 +78,25 @@ public class NotificationsFragment extends Fragment {
         setupFilters();
         setupMarkAllRead();
         loadNotifications();
+    }
+
+    private void setupAppBarPadding(View view) {
+        View appBar = view.findViewById(R.id.app_bar);
+        if (appBar == null) return;
+
+        final int originalPaddingTop = appBar.getPaddingTop();
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    appBar.setPadding(
+                            appBar.getPaddingLeft(),
+                            systemBars.top + originalPaddingTop,
+                            appBar.getPaddingRight(),
+                            appBar.getPaddingBottom());
+                    return insets;
+                });
     }
 
     private void setupRecyclerView() {

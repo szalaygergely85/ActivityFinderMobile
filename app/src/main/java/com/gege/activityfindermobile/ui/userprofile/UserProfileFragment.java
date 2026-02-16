@@ -10,6 +10,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
@@ -61,9 +64,31 @@ public class UserProfileFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_user_profile, container, false);
     }
 
+    private void setupAppBarPadding(View view) {
+        View appBar = view.findViewById(R.id.app_bar);
+        if (appBar == null) return;
+
+        final int originalPaddingTop = appBar.getPaddingTop();
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    appBar.setPadding(
+                            appBar.getPaddingLeft(),
+                            systemBars.top + originalPaddingTop,
+                            appBar.getPaddingRight(),
+                            appBar.getPaddingBottom());
+                    return insets;
+                });
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+
+        setupAppBarPadding(view);
 
         // Initialize views
         btnBack = view.findViewById(R.id.btn_back);

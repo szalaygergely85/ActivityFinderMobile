@@ -25,7 +25,6 @@ import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -71,22 +70,29 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        setupAppBarPadding(view);
+        initViews(view);
+        setupListeners();
+        loadUserProfile();
+    }
+
+    private void setupAppBarPadding(View view) {
+        View appBar = view.findViewById(R.id.app_bar);
+        if (appBar == null) return;
+
+        final int originalPaddingTop = appBar.getPaddingTop();
+
         ViewCompat.setOnApplyWindowInsetsListener(
                 view,
                 (v, insets) -> {
                     Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-                    AppBarLayout appBar = v.findViewById(R.id.app_bar);
-                    if (appBar != null) {
-                        appBar.setPadding(0, systemBars.top, 0, 0);
-                    }
-
+                    appBar.setPadding(
+                            appBar.getPaddingLeft(),
+                            systemBars.top + originalPaddingTop,
+                            appBar.getPaddingRight(),
+                            appBar.getPaddingBottom());
                     return insets;
                 });
-
-        initViews(view);
-        setupListeners();
-        loadUserProfile();
     }
 
     @Override
