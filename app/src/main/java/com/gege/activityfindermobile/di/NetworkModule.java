@@ -4,6 +4,7 @@ import com.gege.activityfindermobile.data.api.ActivityApiService;
 import com.gege.activityfindermobile.data.api.ActivityPhotoApiService;
 import com.gege.activityfindermobile.data.api.CategoryApiService;
 import com.gege.activityfindermobile.data.api.CoverImageApiService;
+import com.gege.activityfindermobile.data.api.CrashLogApiService;
 import com.gege.activityfindermobile.data.api.MessageApiService;
 import com.gege.activityfindermobile.data.api.NotificationApiService;
 import com.gege.activityfindermobile.data.api.ParticipantApiService;
@@ -142,5 +143,11 @@ public class NetworkModule {
     @Singleton
     public CoverImageApiService provideCoverImageApiService(Retrofit retrofit) {
         return retrofit.create(CoverImageApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    public CrashLogApiService provideCrashLogApiService(Retrofit retrofit) {
+        return retrofit.create(CrashLogApiService.class);
     }
 }

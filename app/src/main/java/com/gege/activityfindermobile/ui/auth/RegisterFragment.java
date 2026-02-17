@@ -14,11 +14,14 @@ import androidx.navigation.Navigation;
 
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
+import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserRegistrationRequest;
+import com.gege.activityfindermobile.data.repository.NotificationRepository;
 import com.gege.activityfindermobile.data.repository.UserRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.gege.activityfindermobile.utils.UiUtil;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointBackward;
@@ -43,6 +46,8 @@ public class RegisterFragment extends Fragment {
     @Inject UserRepository userRepository;
 
     @Inject SharedPreferencesManager prefsManager;
+
+    @Inject NotificationRepository notificationRepository;
 
     private TextInputLayout tilFullName, tilEmail, tilBirthDate, tilPassword, tilConfirmPassword;
     private TextInputEditText etFullName, etEmail, etBirthDate, etPassword, etConfirmPassword;
@@ -252,6 +257,9 @@ public class RegisterFragment extends Fragment {
 
                         UiUtil.showToast(requireContext(), "Welcome, " + fullName + "!");
 
+                        // Register FCM token for push notifications
+                        registerFcmToken();
+
                         // Navigate to profile setup
                         NavController navController = Navigation.findNavController(requireView());
                         navController.navigate(
@@ -264,6 +272,29 @@ public class RegisterFragment extends Fragment {
                         UiUtil.showLongToast(
                                 requireContext(), "Registration failed: " + errorMessage);
                     }
+                });
+    }
+
+    private void registerFcmToken() {
+        FirebaseMessaging.getInstance()
+                .getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        android.util.Log.w("RegisterFragment", "Failed to get FCM token", task.getException());
+                        return;
+                    }
+                    String fcmToken = task.getResult();
+                    notificationRepository.registerDeviceToken(fcmToken, new ApiCallbackVoid() {
+                        @Override
+                        public void onSuccess() {
+                            android.util.Log.d("RegisterFragment", "FCM token registered successfully");
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            android.util.Log.e("RegisterFragment", "Failed to register FCM token: " + errorMessage);
+                        }
+                    });
                 });
     }
 
