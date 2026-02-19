@@ -4,20 +4,32 @@ import com.google.gson.annotations.SerializedName;
 
 /** Request to update notification preferences */
 public class NotificationPreferencesRequest {
-    @SerializedName("notificationsEnabled")
-    private Boolean notificationsEnabled;
+    @SerializedName("activityUpdatesEnabled")
+    private Boolean activityUpdatesEnabled;
+
+    @SerializedName("remindersEnabled")
+    private Boolean remindersEnabled;
 
     public NotificationPreferencesRequest() {}
 
-    public NotificationPreferencesRequest(Boolean notificationsEnabled) {
-        this.notificationsEnabled = notificationsEnabled;
+    public NotificationPreferencesRequest(Boolean activityUpdatesEnabled, Boolean remindersEnabled) {
+        this.activityUpdatesEnabled = activityUpdatesEnabled;
+        this.remindersEnabled = remindersEnabled;
     }
 
-    public Boolean getNotificationsEnabled() {
-        return notificationsEnabled;
+    public Boolean getActivityUpdatesEnabled() {
+        return activityUpdatesEnabled;
     }
 
-    public void setNotificationsEnabled(Boolean notificationsEnabled) {
-        this.notificationsEnabled = notificationsEnabled;
+    public void setActivityUpdatesEnabled(Boolean activityUpdatesEnabled) {
+        this.activityUpdatesEnabled = activityUpdatesEnabled;
+    }
+
+    public Boolean getRemindersEnabled() {
+        return remindersEnabled;
+    }
+
+    public void setRemindersEnabled(Boolean remindersEnabled) {
+        this.remindersEnabled = remindersEnabled;
     }
 }

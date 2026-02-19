@@ -62,8 +62,10 @@ public class NotificationRepository {
     }
 
     /** Update notification preferences */
-    public void updateNotificationPreferences(boolean enabled, ApiCallbackVoid callback) {
-        NotificationPreferencesRequest request = new NotificationPreferencesRequest(enabled);
+    public void updateNotificationPreferences(
+            boolean activityUpdatesEnabled, boolean remindersEnabled, ApiCallbackVoid callback) {
+        NotificationPreferencesRequest request =
+                new NotificationPreferencesRequest(activityUpdatesEnabled, remindersEnabled);
         notificationApiService
                 .updateNotificationPreferences(request)
                 .enqueue(

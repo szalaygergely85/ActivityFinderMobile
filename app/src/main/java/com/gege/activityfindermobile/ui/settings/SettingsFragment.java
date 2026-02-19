@@ -17,7 +17,11 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import android.util.Log;
+
 import com.gege.activityfindermobile.R;
+import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
+import com.gege.activityfindermobile.data.repository.NotificationRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -34,6 +38,7 @@ public class SettingsFragment extends Fragment {
     private static final String PREF_NOTIFY_REMINDERS = "notify_reminders";
 
     @Inject SharedPreferencesManager prefsManager;
+    @Inject NotificationRepository notificationRepository;
 
     private TextView tvEmail;
     private TextView tvDistanceUnit;
@@ -114,10 +119,12 @@ public class SettingsFragment extends Fragment {
         // Notification switches
         switchActivityUpdates.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefsManager.putBoolean(PREF_NOTIFY_ACTIVITY, isChecked);
+            syncNotificationPreferences();
         });
 
         switchReminders.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefsManager.putBoolean(PREF_NOTIFY_REMINDERS, isChecked);
+            syncNotificationPreferences();
         });
 
         // Help Center
@@ -144,6 +151,25 @@ public class SettingsFragment extends Fragment {
         view.findViewById(R.id.btn_delete_account).setOnClickListener(v -> {
             showDeleteAccountDialog();
         });
+    }
+
+    private void syncNotificationPreferences() {
+        boolean activityUpdates = prefsManager.getBoolean(PREF_NOTIFY_ACTIVITY, true);
+        boolean reminders = prefsManager.getBoolean(PREF_NOTIFY_REMINDERS, true);
+        notificationRepository.updateNotificationPreferences(
+                activityUpdates,
+                reminders,
+                new ApiCallbackVoid() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("SettingsFragment", "Notification preferences synced");
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("SettingsFragment", "Failed to sync preferences: " + errorMessage);
+                    }
+                });
     }
 
     private void showChangePasswordDialog() {

@@ -77,9 +77,36 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
-        // Show notification if we have content
-        if (title != null && !title.isEmpty()) {
+        // Show notification if we have content and user has not disabled this type
+        if (title != null && !title.isEmpty() && shouldShowNotification(data)) {
             showNotification(title, body, data);
+        }
+    }
+
+    private boolean shouldShowNotification(Map<String, String> data) {
+        if (prefsManager == null) return true;
+        String type = data != null ? data.get("type") : null;
+        if (type == null) return true;
+
+        if ("ACTIVITY_REMINDER".equals(type)) {
+            return prefsManager.getBoolean("notify_reminders", true);
+        }
+
+        switch (type) {
+            case "ACTIVITY_CREATED":
+            case "ACTIVITY_UPDATED":
+            case "ACTIVITY_CANCELLED":
+            case "ACTIVITY_COMPLETED":
+            case "PARTICIPANT_INTERESTED":
+            case "PARTICIPANT_ACCEPTED":
+            case "PARTICIPANT_DECLINED":
+            case "PARTICIPANT_JOINED":
+            case "PARTICIPANT_LEFT":
+            case "REVIEW_RECEIVED":
+            case "NEW_MESSAGE":
+                return prefsManager.getBoolean("notify_activity_updates", true);
+            default:
+                return true; // System notifications always shown
         }
     }
 
