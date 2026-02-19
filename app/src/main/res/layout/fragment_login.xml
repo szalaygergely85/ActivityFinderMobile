@@ -44,8 +44,7 @@
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_explore"
-                        app:tint="@color/white" />
+                        android:src="@drawable/vivento" />
 
                 </FrameLayout>
 

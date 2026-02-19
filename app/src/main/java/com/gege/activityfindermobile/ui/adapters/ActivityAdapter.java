@@ -18,12 +18,9 @@ import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.utils.CategoryManager;
-import com.gege.activityfindermobile.utils.Constants;
 import com.gege.activityfindermobile.utils.DateUtil;
 import com.gege.activityfindermobile.utils.DistanceFormatter;
 import com.gege.activityfindermobile.utils.ImageLoader;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
@@ -458,17 +455,8 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
         private void loadCategoryImage(String category, String coverImageUrl, Context context) {
             // Check if activity has a custom cover image
             if (coverImageUrl != null && !coverImageUrl.isEmpty()) {
-                // Load cover image from backend
-                String fullUrl = buildCoverImageUrl(coverImageUrl);
-                android.util.Log.d("ActivityAdapter", "Loading cover image from: " + fullUrl);
-
-                Glide.with(context)
-                        .load(fullUrl)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .centerCrop()
-                        .placeholder(R.drawable.activity_default)
-                        .error(R.drawable.activity_default)
-                        .into(ivActivityImage);
+                android.util.Log.d("ActivityAdapter", "Loading cover image from: " + coverImageUrl);
+                ImageLoader.loadCoverImage(context, coverImageUrl, ivActivityImage);
                 return;
             }
 
@@ -515,20 +503,6 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                         "Resource not found: " + imageResourceName + ", using default");
                 ivActivityImage.setImageResource(R.drawable.activity_default);
             }
-        }
-
-        private String buildCoverImageUrl(String imageUrl) {
-            if (imageUrl == null || imageUrl.isEmpty()) {
-                return "";
-            }
-            if (imageUrl.startsWith("http")) {
-                return imageUrl;
-            }
-            String baseUrl = Constants.BASE_URL;
-            if (baseUrl.endsWith("/")) {
-                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-            }
-            return baseUrl + (imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl);
         }
 
         private void displayCreatorRating(Double rating, TextView tvCreatorRating) {

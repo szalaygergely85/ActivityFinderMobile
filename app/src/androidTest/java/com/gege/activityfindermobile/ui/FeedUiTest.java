@@ -2,8 +2,8 @@ package com.gege.activityfindermobile.ui;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.swipeDown;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -30,6 +30,7 @@ import com.gege.activityfindermobile.ui.main.MainActivity;
 import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
+import com.gege.activityfindermobile.util.TestLoginHelper;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -95,20 +96,16 @@ public class FeedUiTest {
 
         apiHelper.waitMedium();
 
-        // Fresh login
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-        waitFor(8000);
+        // Programmatic login — no UI interaction needed
+        TestLoginHelper.loginAndOpenFeed(
+                activityRule.getScenario(), apiHelper, testEmail, testPassword);
+        waitFor(3000);
     }
 
     @After
     public void tearDown() {
-        // Clear app data
-        UiTestHelper.clearAppSharedPreferences();
+        // Clear session from SharedPreferences
+        TestLoginHelper.clearSession();
 
         // Delete test user
         if (testUserId != null) {

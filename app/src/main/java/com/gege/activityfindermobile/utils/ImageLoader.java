@@ -8,6 +8,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.gege.activityfindermobile.R;
 
 public class ImageLoader {
@@ -119,6 +120,39 @@ public class ImageLoader {
             // No token available, return plain GlideUrl
             return new GlideUrl(url);
         }
+    }
+
+    /**
+     * Load an activity cover image into an ImageView.
+     * Cover images are public (no auth header needed) and cached to disk.
+     *
+     * @param context  Context
+     * @param imageUrl Full or relative URL of the cover image
+     * @param imageView Target ImageView
+     */
+    public static void loadCoverImage(Context context, String imageUrl, ImageView imageView) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            imageView.setImageResource(R.drawable.activity_default);
+            return;
+        }
+
+        String fullUrl = imageUrl;
+        if (!imageUrl.startsWith("http")) {
+            String baseUrl = Constants.BASE_URL;
+            if (baseUrl.endsWith("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+            fullUrl = baseUrl + (imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl);
+        }
+
+        Glide.with(context)
+                .load(fullUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .centerCrop()
+                .placeholder(R.drawable.activity_default)
+                .error(R.drawable.activity_default)
+                .transition(DrawableTransitionOptions.withCrossFade(200))
+                .into(imageView);
     }
 
     /**
