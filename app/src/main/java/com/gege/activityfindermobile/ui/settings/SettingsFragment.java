@@ -13,6 +13,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -60,9 +63,31 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initViews(view);
+        setupAppBarPadding(view);
         loadSettings();
         setupListeners(view);
     }
+
+    private void setupAppBarPadding(View view) {
+        View appBar = view.findViewById(R.id.app_bar);
+        if (appBar == null) return;
+
+        final int originalPaddingTop = appBar.getPaddingTop();
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                view,
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    appBar.setPadding(
+                            appBar.getPaddingLeft(),
+                            systemBars.top + originalPaddingTop,
+                            appBar.getPaddingRight(),
+                            appBar.getPaddingBottom());
+                    return insets;
+                });
+    }
+
+
 
     private void initViews(View view) {
         tvEmail = view.findViewById(R.id.tv_email);

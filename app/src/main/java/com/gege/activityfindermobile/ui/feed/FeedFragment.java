@@ -136,6 +136,14 @@ public class FeedFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (debounceRunnable != null) {
+            debounceHandler.removeCallbacks(debounceRunnable);
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         // Refresh distance unit preference when returning from settings

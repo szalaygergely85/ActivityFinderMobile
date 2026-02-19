@@ -321,7 +321,7 @@ public class ProfileFragment extends Fragment {
             bundle.putBoolean("editMode", false);
 
             NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.photoViewerFragment, bundle);
+            navController.navigate(R.id.action_nav_profile_to_photoViewerFragment, bundle);
         } catch (Exception e) {
             // If navigation fails, show a toast
             Toast.makeText(requireContext(), "Unable to open photo viewer", Toast.LENGTH_SHORT)

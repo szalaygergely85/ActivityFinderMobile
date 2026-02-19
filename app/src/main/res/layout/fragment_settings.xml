@@ -8,8 +8,10 @@
 
     <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp"
         android:background="@color/background_dark">
@@ -58,7 +60,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"
-                android:text="ACCOUNT"
+                android:text="@string/account"
                 android:textSize="12sp"
                 android:textColor="@color/slate_500"
                 android:textStyle="bold"
@@ -109,7 +111,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Email"
+                                android:text="@string/email"
                                 android:textSize="16sp"
                                 android:textColor="@color/white" />
                             <TextView

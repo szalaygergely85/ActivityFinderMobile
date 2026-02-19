@@ -110,7 +110,13 @@ public class MainActivity extends AppCompatActivity {
                             || destination.getId() == R.id.profileSetupFragment
                             || destination.getId() == R.id.activityDetailFragment
                             || destination.getId() == R.id.createActivityFragment
-                            || destination.getId() == R.id.userProfileFragment) {
+                            || destination.getId() == R.id.userProfileFragment
+                            || destination.getId() == R.id.settingsFragment
+                            || destination.getId() == R.id.editProfileFragment
+                            || destination.getId() == R.id.photoViewerFragment
+                            || destination.getId() == R.id.activityGalleryFragment
+                            || destination.getId() == R.id.uploadPhotosFragment
+                            || destination.getId() == R.id.manageActivityFragment) {
                         bottomNavigationView.setVisibility(View.GONE);
                     } else {
                         bottomNavigationView.setVisibility(View.VISIBLE);
