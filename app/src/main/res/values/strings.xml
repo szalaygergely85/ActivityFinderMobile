@@ -4,24 +4,24 @@
     <!-- Bottom Navigation -->
     <string name="nav_explore">Explore</string>
     <string name="nav_recommended">Recommended</string>
-    <string name="nav_my_activities">My Activities</string>
+    <string name="nav_my_activities">My Events</string>
     <string name="nav_joined">Joined</string>
     <string name="nav_profile">Profile</string>
 
     <!-- Common -->
     <string name="save">Save</string>
 
-    <!-- Activities -->
-    <string name="no_activities">No activities around here yet</string>
-    <string name="no_activities_message">Why not be the first? Create an activity and invite others to join!</string>
-    <string name="no_recommended_activities">No recommended activities. Add interests to your profile to get personalized recommendations!</string>
-    <string name="create_activity">Create Activity</string>
-    <string name="activity_details">Activity Details</string>
+    <!-- Events -->
+    <string name="no_activities">No events around here yet</string>
+    <string name="no_activities_message">Why not be the first? Create an event and invite others to join!</string>
+    <string name="no_recommended_activities">No recommended events. Add interests to your profile to get personalized recommendations!</string>
+    <string name="create_activity">Create Event</string>
+    <string name="activity_details">Event Details</string>
     <string name="express_interest">Express Interest</string>
 
     <!-- Location Permission -->
     <string name="location_permission_required_title">Location Permission Required</string>
-    <string name="location_permission_required_message">To find activities near you, please enable location permission in your phone settings.</string>
+    <string name="location_permission_required_message">To find events near you, please enable location permission in your phone settings.</string>
     <string name="open_settings">Open Settings</string>
 
     <!-- Gallery -->
@@ -39,7 +39,7 @@
 
     <!-- Login/Register -->
 
-    <!-- Activity Fields -->
+    <!-- Event Fields -->
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="date">Date</string>
@@ -53,4 +53,60 @@
     <string name="comments">Comments</string>
     <string name="email">Email</string>
     <string name="account">ACCOUNT</string>
+
+    <!-- Feed / Filter -->
+    <string name="order_events_by">Choose how to order events</string>
+    <string name="find_events_near">Find events near your current location</string>
+    <string name="event_type">Event Type</string>
+
+    <!-- Event Detail -->
+    <string name="about_this_event">About this event</string>
+    <string name="manage_event">Manage Event</string>
+
+    <!-- Create / Edit Event -->
+    <string name="event_title_label">Event Title</string>
+    <string name="event_title_hint">Name your event</string>
+    <string name="save_event">Save Event</string>
+
+    <!-- My Events -->
+    <string name="no_events_created">No events created yet</string>
+    <string name="start_hosting">Start hosting your own events and connect with people nearby.</string>
+    <string name="create_first_event">Create Event</string>
+
+    <!-- Participations -->
+    <string name="no_joined_events">No joined events yet</string>
+    <string name="explore_join_events">Explore and join events!</string>
+
+    <!-- Notifications -->
+    <string name="notifications_empty">You\'re all caught up! Check back later\nfor updates on your local events.</string>
+
+    <!-- Profile -->
+    <string name="events_label">Events</string>
+    <string name="register_tagline">Join and discover amazing events</string>
+
+    <!-- Settings -->
+    <string name="event_updates">Event Updates</string>
+    <string name="event_reminders">Event Reminders</string>
+
+    <!-- Review Dialog -->
+    <string name="rate_event_hint">Tap a star to rate the event</string>
+    <string name="review_comment_hint">Tell others about the event, what did you like most?</string>
+
+    <!-- Toast messages -->
+    <string name="event_created">Event created successfully!</string>
+    <string name="event_updated">Event updated successfully!</string>
+    <string name="event_deleted">Event deleted successfully</string>
+    <string name="event_date_future">Event date must be in the future</string>
+    <string name="login_to_join">Please login to join events</string>
+    <string name="joined_event">Successfully joined the event!</string>
+    <string name="invalid_event">Invalid event</string>
+
+    <!-- Confirm Dialogs -->
+    <string name="delete_event_title">Delete Event</string>
+    <string name="delete_event_message">Are you sure you want to delete this event? This action cannot be undone.</string>
+    <string name="leave_event_title">Leave Event</string>
+    <string name="leave_event_message">Are you sure you want to leave this event?</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_leave">Leave</string>
+    <string name="btn_cancel">Cancel</string>
 </resources>

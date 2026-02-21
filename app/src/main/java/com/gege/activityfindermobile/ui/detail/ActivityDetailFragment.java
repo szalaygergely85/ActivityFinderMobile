@@ -536,12 +536,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private void expressInterest() {
         Long userId = prefsManager.getUserId();
         if (userId == null) {
-            UiUtil.showToast(requireContext(), "Please login to join activities");
+            UiUtil.showToast(requireContext(), getString(R.string.login_to_join));
             return;
         }
 
         if (activityId == null || activityId == 0L) {
-            UiUtil.showToast(requireContext(), "Invalid activity");
+            UiUtil.showToast(requireContext(), getString(R.string.invalid_event));
             return;
         }
 
@@ -570,7 +570,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                             updateButtonToAcceptedState();
                             // Don't add to participant list yet - only after JOINED
                         } else if ("JOINED".equals(status)) {
-                            UiUtil.showToast(requireContext(), "Successfully joined the activity!");
+                            UiUtil.showToast(requireContext(), getString(R.string.joined_event));
                             updateButtonToJoinedState();
                             // Reload participants to show yourself in the list
                             loadParticipants();
@@ -831,16 +831,14 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
 
     private void confirmDeleteActivity() {
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Delete Activity")
-                .setMessage(
-                        "Are you sure you want to delete this activity? This action cannot be"
-                                + " undone.")
+                .setTitle(getString(R.string.delete_event_title))
+                .setMessage(getString(R.string.delete_event_message))
                 .setPositiveButton(
-                        "Delete",
+                        getString(R.string.btn_delete),
                         (dialog, which) -> {
                             deleteActivity();
                         })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.btn_cancel), null)
                 .show();
     }
 
@@ -852,7 +850,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         }
 
         if (activityId == null || activityId == 0L) {
-            UiUtil.showToast(requireContext(), "Invalid activity");
+            UiUtil.showToast(requireContext(), getString(R.string.invalid_event));
             return;
         }
 
@@ -866,7 +864,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                     @Override
                     public void onSuccess() {
                         setLoading(false);
-                        UiUtil.showToast(requireContext(), "Activity deleted successfully");
+                        UiUtil.showToast(requireContext(), getString(R.string.event_deleted));
 
                         // Navigate back to previous screen
                         requireActivity().onBackPressed();
@@ -902,7 +900,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         }
 
         if (activityId == null || activityId == 0L) {
-            UiUtil.showToast(requireContext(), "Invalid activity");
+            UiUtil.showToast(requireContext(), getString(R.string.invalid_event));
             return;
         }
 
@@ -927,14 +925,14 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         }
 
         if (activityId == null || activityId == 0L) {
-            UiUtil.showToast(requireContext(), "Invalid activity");
+            UiUtil.showToast(requireContext(), getString(R.string.invalid_event));
             return;
         }
 
         // Show confirmation dialog
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Leave Activity")
-                .setMessage("Are you sure you want to leave this activity?")
+                .setTitle(getString(R.string.leave_event_title))
+                .setMessage(getString(R.string.leave_event_message))
                 .setPositiveButton(
                         "Leave",
                         (dialog, which) -> {
@@ -1007,7 +1005,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         }
 
         if (activityId == null || activityId == 0L) {
-            UiUtil.showToast(requireContext(), "Invalid activity");
+            UiUtil.showToast(requireContext(), getString(R.string.invalid_event));
             return;
         }
 

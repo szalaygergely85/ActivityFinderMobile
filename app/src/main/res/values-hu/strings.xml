@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vivento</string>
+
+    <!-- Alsó navigáció -->
+    <string name="nav_explore">Felfedezés</string>
+    <string name="nav_recommended">Ajánlott</string>
+    <string name="nav_my_activities">Eseményeim</string>
+    <string name="nav_joined">Csatlakozva</string>
+    <string name="nav_profile">Profil</string>
+
+    <!-- Közös -->
+    <string name="save">Mentés</string>
+
+    <!-- Események -->
+    <string name="no_activities">Még nincsenek események a közelben</string>
+    <string name="no_activities_message">Légy te az első! Hozz létre egy eseményt és hívj meg másokat!</string>
+    <string name="no_recommended_activities">Nincsenek ajánlott események. Adj hozzá érdeklődési köröket a profilodhoz a személyre szabott ajánlásokért!</string>
+    <string name="create_activity">Esemény létrehozása</string>
+    <string name="activity_details">Esemény részletei</string>
+    <string name="express_interest">Érdeklődés kifejezése</string>
+
+    <!-- Helymeghatározás engedély -->
+    <string name="location_permission_required_title">Helymeghatározás szükséges</string>
+    <string name="location_permission_required_message">Az eseményekhez a közelben kérjük, engedélyezd a helymeghatározást a telefon beállításaiban.</string>
+    <string name="open_settings">Beállítások megnyitása</string>
+
+    <!-- Galéria -->
+    <string name="event_gallery">Esemény galériája</string>
+    <string name="upload_photos">Fotók feltöltése</string>
+    <string name="select_photos">Fotók kiválasztása</string>
+    <string name="no_photos_yet">Még nincsenek fotók</string>
+    <string name="be_first_to_upload">Légy te az első, aki emlékeket oszt meg erről az eseményről!</string>
+    <string name="view_gallery">Galéria megtekintése</string>
+
+    <!-- Profil -->
+    <string name="profile">Profil</string>
+    <string name="edit_profile">Profil szerkesztése</string>
+    <string name="logout">Kijelentkezés</string>
+
+    <!-- Esemény mezők -->
+    <string name="title">Cím</string>
+    <string name="description">Leírás</string>
+    <string name="date">Dátum</string>
+    <string name="time">Időpont</string>
+    <string name="location">Helyszín</string>
+    <string name="category">Kategória</string>
+    <string name="total_spots">Összes hely</string>
+
+    <string name="comments">Hozzászólások</string>
+    <string name="email">E-mail</string>
+    <string name="account">FIÓK</string>
+
+    <!-- Szűrő / Feed -->
+    <string name="order_events_by">Válassz rendezési szempontot</string>
+    <string name="find_events_near">Keress eseményeket a jelenlegi helyed közelében</string>
+    <string name="event_type">Esemény típusa</string>
+
+    <!-- Esemény részletei -->
+    <string name="about_this_event">Erről az eseményről</string>
+    <string name="manage_event">Esemény kezelése</string>
+
+    <!-- Esemény létrehozása / szerkesztése -->
+    <string name="event_title_label">Esemény neve</string>
+    <string name="event_title_hint">Add meg az esemény nevét</string>
+    <string name="save_event">Esemény mentése</string>
+
+    <!-- Eseményeim -->
+    <string name="no_events_created">Még nem hoztál létre eseményt</string>
+    <string name="start_hosting">Kezdj el eseményeket szervezni és ismerj meg embereket a közeledben.</string>
+    <string name="create_first_event">Esemény létrehozása</string>
+
+    <!-- Részvételek -->
+    <string name="no_joined_events">Még nem csatlakoztál egyetlen eseményhez sem</string>
+    <string name="explore_join_events">Fedezz fel és csatlakozz eseményekhez!</string>
+
+    <!-- Értesítések -->
+    <string name="notifications_empty">Mindennel naprakész vagy! Nézz vissza később\na helyi eseményekkel kapcsolatos frissítésekért.</string>
+
+    <!-- Profil statisztikák -->
+    <string name="events_label">Esemény</string>
+    <string name="register_tagline">Csatlakozz és fedezz fel fantasztikus eseményeket</string>
+
+    <!-- Beállítások -->
+    <string name="event_updates">Eseményfrissítések</string>
+    <string name="event_reminders">Eseményemlékeztetők</string>
+
+    <!-- Értékelési párbeszédablak -->
+    <string name="rate_event_hint">Érintsd meg a csillagot az esemény értékeléséhez</string>
+    <string name="review_comment_hint">Mondd el másoknak az eseményről, mi tetszett legjobban?</string>
+
+    <!-- Toast üzenetek -->
+    <string name="event_created">Az esemény sikeresen létrehozva!</string>
+    <string name="event_updated">Az esemény sikeresen frissítve!</string>
+    <string name="event_deleted">Az esemény sikeresen törölve</string>
+    <string name="event_date_future">Az esemény dátumának a jövőben kell lennie</string>
+    <string name="login_to_join">Kérjük, jelentkezz be az eseményekhez való csatlakozáshoz</string>
+    <string name="joined_event">Sikeresen csatlakoztál az eseményhez!</string>
+    <string name="invalid_event">Érvénytelen esemény</string>
+
+    <!-- Megerősítő párbeszédablakok -->
+    <string name="delete_event_title">Esemény törlése</string>
+    <string name="delete_event_message">Biztosan törölni szeretnéd ezt az eseményt? Ez a művelet nem vonható vissza.</string>
+    <string name="leave_event_title">Kilépés az eseményből</string>
+    <string name="leave_event_message">Biztosan ki szeretnél lépni ebből az eseményből?</string>
+    <string name="btn_delete">Törlés</string>
+    <string name="btn_leave">Kilépés</string>
+    <string name="btn_cancel">Mégse</string>
+</resources>

@@ -125,12 +125,10 @@ public class ManageActivityFragment extends Fragment {
 
     private void showDeleteConfirmationDialog() {
         new AlertDialog.Builder(requireActivity())
-                .setTitle("Delete Activity")
-                .setMessage(
-                        "Are you sure you want to delete this activity? This action cannot be"
-                                + " undone.")
-                .setPositiveButton("Delete", (dialog, which) -> deleteActivity())
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .setTitle(getString(R.string.delete_event_title))
+                .setMessage(getString(R.string.delete_event_message))
+                .setPositiveButton(getString(R.string.btn_delete), (dialog, which) -> deleteActivity())
+                .setNegativeButton(getString(R.string.btn_cancel), (dialog, which) -> dialog.dismiss())
                 .show();
     }
 

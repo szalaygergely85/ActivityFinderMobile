@@ -64,7 +64,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tap a star to rate the activity"
+            android:text="@string/rate_event_hint"
             android:textSize="14sp"
             android:textColor="@color/slate_400"
             android:gravity="center"
@@ -275,7 +275,7 @@
                 android:gravity="top|start"
                 android:inputType="textMultiLine"
                 android:maxLength="500"
-                android:hint="Tell others about the activity, what did you like most?"
+                android:hint="@string/review_comment_hint"
                 android:textSize="16sp"
                 android:textColor="@color/white"
                 android:textColorHint="@color/slate_500" />

@@ -7,9 +7,9 @@
       "Bash(findstr:*)",
       "Bash(./gradlew compileDebugAndroidTestJavaWithJavac:*)",
       "Bash(del \"C:\\\\MyFiles\\\\CodingProjects\\\\ActivityFinderMobile\\\\app\\\\src\\\\androidTest\\\\java\\\\com\\\\gege\\\\activityfindermobile\\\\util\\\\MockLocationHelper.java\")",
-      "WebSearch",
-      "Bash(adb shell getprop:*)",
-      "WebFetch(domain:developers.google.com)"
+      "Bash(cmd /c \"dir C:\\\\MyFiles\\\\CodingProjects\")",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

@@ -168,7 +168,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Activities"
+                                android:text="@string/events_label"
                                 android:textSize="12sp"
                                 android:textColor="@color/slate_400" />
 

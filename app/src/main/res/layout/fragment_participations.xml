@@ -126,7 +126,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No joined activities yet"
+            android:text="@string/no_joined_events"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -136,7 +136,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Explore and join activities!"
+            android:text="@string/explore_join_events"
             android:textSize="14sp"
             android:textColor="@color/slate_400"
             android:gravity="center"

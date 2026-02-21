@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -84,6 +85,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
     private AutoCompleteTextView etCategory;
     private MaterialButton btnCreate;
     private CircularProgressIndicator progressLoading;
+    private NestedScrollView scrollView;
 
     // Cover image views
     private MaterialCardView cardCoverImage;
@@ -303,6 +305,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
 
         btnCreate = view.findViewById(R.id.btn_create);
         progressLoading = view.findViewById(R.id.progress_loading);
+        scrollView = view.findViewById(R.id.scroll_view);
 
         // Cover image views
         cardCoverImage = view.findViewById(R.id.card_cover_image);
@@ -651,6 +654,12 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         if (title.isEmpty()) {
             tilTitle.setError("Title is required");
             isValid = false;
+        } else if (title.length() < 3) {
+            tilTitle.setError("Title must be at least 3 characters");
+            isValid = false;
+        } else if (title.length() > 100) {
+            tilTitle.setError("Title cannot exceed 100 characters");
+            isValid = false;
         }
 
         if (description.isEmpty()) {
@@ -691,6 +700,9 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                 if (totalSpots < 1) {
                     tilTotalSpots.setError("Must be at least 1");
                     isValid = false;
+                } else if (totalSpots > 100) {
+                    tilTotalSpots.setError("Cannot exceed 100 spots");
+                    isValid = false;
                 }
             }
         } catch (NumberFormatException e) {
@@ -699,6 +711,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         }
 
         if (!isValid) {
+            scrollToFirstError();
             return;
         }
 
@@ -707,6 +720,25 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
             updateActivity(title, description, category, date, time, location, totalSpots);
         } else {
             createActivity(title, description, category, date, time, location, totalSpots);
+        }
+    }
+
+    private void scrollToFirstError() {
+        if (scrollView == null) return;
+        TextInputLayout[] fields = {
+            tilTitle, tilCategory, tilDescription, tilDate, tilTime, tilLocation, tilTotalSpots
+        };
+        for (TextInputLayout field : fields) {
+            if (field.getError() != null) {
+                scrollView.post(() -> {
+                    android.graphics.Rect rect = new android.graphics.Rect();
+                    field.getDrawingRect(rect);
+                    scrollView.offsetDescendantRectToMyCoords(field, rect);
+                    scrollView.smoothScrollTo(0, rect.top - 48);
+                });
+                field.requestFocus();
+                return;
+            }
         }
     }
 
@@ -758,7 +790,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                     @Override
                     public void onSuccess(Activity activity) {
                         setLoading(false);
-                        UiUtil.showToast(requireContext(), "Activity created successfully!");
+                        UiUtil.showToast(requireContext(), getString(R.string.event_created));
 
                         // Navigate back to feed
                         NavController navController = Navigation.findNavController(requireView());
@@ -792,7 +824,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
 
             // Check if date is in the future
             if (combined.getTimeInMillis() <= System.currentTimeMillis()) {
-                UiUtil.showToast(requireContext(), "Activity date must be in the future");
+                UiUtil.showToast(requireContext(), getString(R.string.event_date_future));
                 return null;
             }
 
@@ -918,7 +950,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         }
 
         if (editActivityId == null || editActivityId == 0L) {
-            UiUtil.showToast(requireContext(), "Invalid activity");
+            UiUtil.showToast(requireContext(), getString(R.string.invalid_event));
             return;
         }
 
@@ -957,7 +989,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                     public void onSuccess(
                             com.gege.activityfindermobile.data.model.Activity activity) {
                         setLoading(false);
-                        UiUtil.showToast(requireContext(), "Activity updated successfully!");
+                        UiUtil.showToast(requireContext(), getString(R.string.event_updated));
 
                         // Navigate back to activity detail or feed
                         NavController navController = Navigation.findNavController(requireView());

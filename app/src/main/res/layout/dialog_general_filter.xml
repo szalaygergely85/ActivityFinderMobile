@@ -77,7 +77,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Choose how to order activities"
+                    android:text="@string/order_events_by"
                     android:textSize="12sp"
                     android:textColor="@color/slate_400"
                     android:fontFamily="sans-serif-medium"
@@ -146,7 +146,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Find activities near your current location"
+                    android:text="@string/find_events_near"
                     android:textSize="12sp"
                     android:textColor="@color/slate_400"
                     android:fontFamily="sans-serif-medium"
@@ -226,7 +226,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Activity Type"
+                    android:text="@string/event_type"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"

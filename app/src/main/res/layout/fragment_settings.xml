@@ -222,7 +222,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="16dp"
-                            android:text="Activity Updates"
+                            android:text="@string/event_updates"
                             android:textSize="16sp"
                             android:textColor="@color/white" />
 
@@ -266,7 +266,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="16dp"
-                            android:text="Activity Reminders"
+                            android:text="@string/event_reminders"
                             android:textSize="16sp"
                             android:textColor="@color/white" />
 
