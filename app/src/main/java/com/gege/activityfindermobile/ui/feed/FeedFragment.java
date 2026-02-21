@@ -281,10 +281,12 @@ public class FeedFragment extends Fragment {
     }
 
     private void loadNearbyActivities() {
+        Long userId = prefsManager.getUserId();
         activityRepository.getNearbyActivities(
                 userLatitude,
                 userLongitude,
                 nearbyRadiusKm,
+                userId,
                 new ApiCallback<List<Activity>>() {
                     @Override
                     public void onSuccess(List<Activity> activities) {

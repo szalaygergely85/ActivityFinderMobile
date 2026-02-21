@@ -13,9 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gege.activityfindermobile.R;
-import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
-import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.utils.CategoryManager;
 import com.gege.activityfindermobile.utils.DateUtil;
@@ -207,21 +205,13 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
             // Display creator rating if available
             displayCreatorRating(activity.getCreatorRating(), tvCreatorRating);
 
-            // Get current participants count - fetch actual accepted count
+            // Display participants count from server response (no extra API call needed)
             int totalSpots = activity.getTotalSpots() != null ? activity.getTotalSpots() : 0;
-
-            if (participantRepository != null && activity.getId() != null) {
-                // Fetch actual participants and count only accepted ones
-                loadAcceptedParticipantsCount(
-                        activity.getId(), totalSpots, tvSpotsAvailable, tvSpotsDisplay);
-            } else {
-                // Fallback to server count
-                int currentParticipants = activity.getParticipantsCount();
-                String spotsText = currentParticipants + "/" + totalSpots + " spots";
-                tvSpotsAvailable.setText(spotsText);
-                if (tvSpotsDisplay != null) {
-                    tvSpotsDisplay.setText(spotsText);
-                }
+            int currentParticipants = activity.getParticipantsCount();
+            String spotsText = currentParticipants + "/" + totalSpots + " spots";
+            tvSpotsAvailable.setText(spotsText);
+            if (tvSpotsDisplay != null) {
+                tvSpotsDisplay.setText(spotsText);
             }
 
             // Set category with dynamic color
@@ -260,91 +250,19 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ViewHo
                 return;
             }
 
-            // Check participant status if repository is available
-            if (participantRepository != null && activity.getId() != null) {
-                loadParticipantStatus(activity.getId(), chipStatus, context);
+            // Use currentUserStatus from server response (no extra API call needed)
+            String status = activity.getCurrentUserStatus();
+            if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                chipStatus.setText("Joined");
+                chipStatus.setChipBackgroundColorResource(R.color.success);
+                chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                chipStatus.setVisibility(View.VISIBLE);
+            } else if ("PENDING".equals(status) || "INTERESTED".equals(status)) {
+                chipStatus.setText("Interested");
+                chipStatus.setChipBackgroundColorResource(R.color.warning);
+                chipStatus.setTextColor(context.getResources().getColor(R.color.white, null));
+                chipStatus.setVisibility(View.VISIBLE);
             }
-        }
-
-        private void loadParticipantStatus(Long activityId, Chip chipStatus, Context context) {
-            participantRepository.getActivityParticipants(
-                    activityId,
-                    new ApiCallback<List<Participant>>() {
-                        @Override
-                        public void onSuccess(List<Participant> participants) {
-                            if (participants != null && currentUserId != null) {
-                                for (Participant p : participants) {
-                                    if (p.getUserId() != null
-                                            && p.getUserId().equals(currentUserId)) {
-                                        String status = p.getStatus();
-                                        if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
-                                            chipStatus.setText("Joined");
-                                            chipStatus.setChipBackgroundColorResource(
-                                                    R.color.success);
-                                            chipStatus.setTextColor(
-                                                    context.getResources()
-                                                            .getColor(R.color.white, null));
-                                            chipStatus.setVisibility(View.VISIBLE);
-                                        } else if ("PENDING".equals(status)
-                                                || "INTERESTED".equals(status)) {
-                                            chipStatus.setText("Interested");
-                                            chipStatus.setChipBackgroundColorResource(
-                                                    R.color.warning);
-                                            chipStatus.setTextColor(
-                                                    context.getResources()
-                                                            .getColor(R.color.white, null));
-                                            chipStatus.setVisibility(View.VISIBLE);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            // Silently fail - don't show status chip
-                        }
-                    });
-        }
-
-        private void loadAcceptedParticipantsCount(
-                Long activityId,
-                int totalSpots,
-                TextView tvSpotsAvailable,
-                TextView tvSpotsDisplay) {
-            participantRepository.getActivityParticipants(
-                    activityId,
-                    new ApiCallback<List<Participant>>() {
-                        @Override
-                        public void onSuccess(List<Participant> participants) {
-                            // Count only ACCEPTED and JOINED participants
-                            int acceptedCount = 0;
-                            if (participants != null) {
-                                for (Participant p : participants) {
-                                    String status = p.getStatus();
-                                    if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
-                                        acceptedCount++;
-                                    }
-                                }
-                            }
-                            String spotsText = acceptedCount + "/" + totalSpots + " spots";
-                            tvSpotsAvailable.setText(spotsText);
-                            if (tvSpotsDisplay != null) {
-                                tvSpotsDisplay.setText(spotsText);
-                            }
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            // Silently fail - show 0 on error
-                            String spotsText = "0/" + totalSpots + " spots";
-                            tvSpotsAvailable.setText(spotsText);
-                            if (tvSpotsDisplay != null) {
-                                tvSpotsDisplay.setText(spotsText);
-                            }
-                        }
-                    });
         }
 
         private void setCategoryColor(TextView textView, String category, Context context) {

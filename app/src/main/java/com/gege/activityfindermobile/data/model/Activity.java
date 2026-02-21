@@ -88,6 +88,9 @@ public class Activity {
     @SerializedName("coverImageUrl")
     private String coverImageUrl; // User-selected cover image URL
 
+    @SerializedName("currentUserStatus")
+    private String currentUserStatus; // Current user's participation status (null if not participating)
+
     // Constructor
     public Activity() {}
 
@@ -387,5 +390,13 @@ public class Activity {
 
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
+    }
+
+    public String getCurrentUserStatus() {
+        return currentUserStatus;
+    }
+
+    public void setCurrentUserStatus(String currentUserStatus) {
+        this.currentUserStatus = currentUserStatus;
     }
 }

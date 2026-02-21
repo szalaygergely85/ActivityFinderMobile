@@ -445,9 +445,10 @@ public class ActivityRepository {
             double latitude,
             double longitude,
             float radiusKm,
+            Long userId,
             ApiCallback<List<Activity>> callback) {
         activityApiService
-                .getNearbyActivities(latitude, longitude, radiusKm)
+                .getNearbyActivities(latitude, longitude, radiusKm, userId)
                 .enqueue(
                         new Callback<List<Activity>>() {
                             @Override
@@ -481,9 +482,9 @@ public class ActivityRepository {
 
     /** Get nearby activities with default radius (10 km) */
     public void getNearbyActivitiesDefaultRadius(
-            double latitude, double longitude, ApiCallback<List<Activity>> callback) {
+            double latitude, double longitude, Long userId, ApiCallback<List<Activity>> callback) {
         activityApiService
-                .getNearbyActivitiesDefaultRadius(latitude, longitude)
+                .getNearbyActivitiesDefaultRadius(latitude, longitude, userId)
                 .enqueue(
                         new Callback<List<Activity>>() {
                             @Override
