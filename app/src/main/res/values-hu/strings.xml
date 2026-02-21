@@ -18,7 +18,7 @@
     <string name="no_recommended_activities">Nincsenek ajánlott események. Adj hozzá érdeklődési köröket a profilodhoz a személyre szabott ajánlásokért!</string>
     <string name="create_activity">Esemény létrehozása</string>
     <string name="activity_details">Esemény részletei</string>
-    <string name="express_interest">Érdeklődés kifejezése</string>
+    <string name="express_interest">Érdekel</string>
 
     <!-- Helymeghatározás engedély -->
     <string name="location_permission_required_title">Helymeghatározás szükséges</string>

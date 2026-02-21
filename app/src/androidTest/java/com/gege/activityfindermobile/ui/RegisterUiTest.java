@@ -63,7 +63,7 @@ public class RegisterUiTest {
         waitFor(1000);
 
         // Verify we're on the register screen
-        onView(withId(R.id.btn_register)).check(matches(isDisplayed()));
+        onView(withId(R.id.btn_register)).perform(scrollTo()).check(matches(isDisplayed()));
     }
 
     // ==================== UI ELEMENT VISIBILITY TESTS ====================

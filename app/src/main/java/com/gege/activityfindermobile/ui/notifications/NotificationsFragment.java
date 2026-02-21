@@ -73,6 +73,9 @@ public class NotificationsFragment extends Fragment {
         chipAll = view.findViewById(R.id.chipAll);
         chipUnread = view.findViewById(R.id.chipUnread);
 
+        view.findViewById(R.id.btn_back).setOnClickListener(
+                v -> Navigation.findNavController(v).navigateUp());
+
         setupRecyclerView();
         setupSwipeRefresh();
         setupFilters();

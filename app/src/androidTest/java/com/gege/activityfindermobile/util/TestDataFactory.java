@@ -257,14 +257,14 @@ public class TestDataFactory {
 
     // ==================== Categories ====================
 
-    public static final String CATEGORY_SPORTS = "SPORTS";
-    public static final String CATEGORY_MUSIC = "MUSIC";
-    public static final String CATEGORY_FOOD = "FOOD";
-    public static final String CATEGORY_OUTDOORS = "OUTDOORS";
-    public static final String CATEGORY_GAMES = "GAMES";
-    public static final String CATEGORY_ARTS = "ARTS";
-    public static final String CATEGORY_SOCIAL = "SOCIAL";
-    public static final String CATEGORY_LEARNING = "LEARNING";
+    public static final String CATEGORY_SPORTS = "Sports";
+    public static final String CATEGORY_MUSIC = "Music";
+    public static final String CATEGORY_FOOD = "Food";
+    public static final String CATEGORY_OUTDOORS = "Outdoors";
+    public static final String CATEGORY_GAMES = "Games";
+    public static final String CATEGORY_ARTS = "Arts";
+    public static final String CATEGORY_SOCIAL = "Social";
+    public static final String CATEGORY_LEARNING = "Learning";
 
     // ==================== Location Presets ====================
 
