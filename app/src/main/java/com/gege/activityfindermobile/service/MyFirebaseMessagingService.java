@@ -163,10 +163,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
+        int requestCode = (int) System.currentTimeMillis();
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(
                         this,
-                        0,
+                        requestCode,
                         intent,
                         PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
