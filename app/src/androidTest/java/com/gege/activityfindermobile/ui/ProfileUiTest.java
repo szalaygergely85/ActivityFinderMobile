@@ -26,6 +26,7 @@ import com.gege.activityfindermobile.ui.main.MainActivity;
 import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
+import com.gege.activityfindermobile.util.TestLoginHelper;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -61,46 +62,32 @@ public class ProfileUiTest {
 
     @Before
     public void setUp() {
-        // Hard reset - clear preferences and recreate activity to ensure login screen
         UiTestHelper.clearAppSharedPreferences();
-        activityRule.getScenario().recreate();
-        waitFor(1000);
 
         apiHelper = new TestApiHelper();
 
         DeviceLocationHelper locationHelper = new DeviceLocationHelper();
         locationHelper.acquireLocationAndSetForTests();
 
+        // 1. Create test user via API
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("ProfileUiTest");
         testEmail = testUser.email;
         testPassword = testUser.password;
         testFullName = testUser.fullName;
 
-        var response = apiHelper.createUser(
-                testUser.fullName,
-                testUser.email,
-                testUser.password,
-                testUser.birthDate
-        );
-
-        if (response != null) {
-            testUserId = response.getUserId();
-        } else {
+        var createResponse = apiHelper.createUser(
+                testUser.fullName, testUser.email, testUser.password, testUser.birthDate);
+        if (createResponse == null) {
             throw new RuntimeException("Failed to create test user via API");
         }
+        testUserId = createResponse.getUserId();
 
-        apiHelper.waitMedium();
+        // 2. Login via API — writes session to SharedPreferences and navigates to feed
+        TestLoginHelper.loginAndOpenFeed(
+                activityRule.getScenario(), apiHelper, testEmail, testPassword);
+        waitFor(2000);
 
-        // Fresh login
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-        waitFor(8000);
-
-        // Navigate to profile
+        // 3. Navigate to profile
         onView(withId(R.id.nav_profile)).perform(click());
         waitFor(2000);
     }

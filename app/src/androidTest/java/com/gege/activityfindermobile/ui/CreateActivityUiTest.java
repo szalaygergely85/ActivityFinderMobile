@@ -28,6 +28,7 @@ import com.gege.activityfindermobile.ui.main.MainActivity;
 import com.gege.activityfindermobile.util.DeviceLocationHelper;
 import com.gege.activityfindermobile.util.TestApiHelper;
 import com.gege.activityfindermobile.util.TestDataFactory;
+import com.gege.activityfindermobile.util.TestLoginHelper;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -62,45 +63,31 @@ public class CreateActivityUiTest {
 
     @Before
     public void setUp() {
-        // Hard reset - clear preferences and recreate activity to ensure login screen
         UiTestHelper.clearAppSharedPreferences();
-        activityRule.getScenario().recreate();
-        waitFor(1000);
 
         apiHelper = new TestApiHelper();
 
         DeviceLocationHelper locationHelper = new DeviceLocationHelper();
         locationHelper.acquireLocationAndSetForTests();
 
+        // 1. Create test user via API
         TestDataFactory.TestUser testUser = TestDataFactory.createTestUser("CreateActivityUiTest");
         testEmail = testUser.email;
         testPassword = testUser.password;
 
-        var response = apiHelper.createUser(
-                testUser.fullName,
-                testUser.email,
-                testUser.password,
-                testUser.birthDate
-        );
-
-        if (response != null) {
-            testUserId = response.getUserId();
-        } else {
+        var createResponse = apiHelper.createUser(
+                testUser.fullName, testUser.email, testUser.password, testUser.birthDate);
+        if (createResponse == null) {
             throw new RuntimeException("Failed to create test user via API");
         }
+        testUserId = createResponse.getUserId();
 
-        apiHelper.waitMedium();
+        // 2. Login via API — writes session to SharedPreferences, recreates activity on feed
+        TestLoginHelper.loginAndOpenFeed(
+                activityRule.getScenario(), apiHelper, testEmail, testPassword);
+        waitFor(2000);
 
-        // Fresh login
-        onView(withId(R.id.et_email))
-                .perform(scrollTo(), replaceText(testEmail), closeSoftKeyboard());
-        onView(withId(R.id.et_password))
-                .perform(scrollTo(), replaceText(testPassword), closeSoftKeyboard());
-        onView(withId(R.id.btn_login))
-                .perform(scrollTo(), click());
-        waitFor(8000);
-
-        // Navigate to create activity
+        // 3. Open create activity
         onView(withId(R.id.fab_create)).perform(click());
         waitFor(1000);
     }
@@ -144,8 +131,8 @@ public class CreateActivityUiTest {
         onView(withText("When & Where")).perform(scrollTo()).check(matches(isDisplayed()));
         onView(withText("Capacity")).perform(scrollTo()).check(matches(isDisplayed()));
 
-        // Create button (in fixed footer, always visible)
-        onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
+        // Create button
+        onView(withId(R.id.btn_create)).perform(scrollTo()).check(matches(isDisplayed()));
         onView(withId(R.id.btn_create)).check(matches(isEnabled()));
 
         // Progress hidden

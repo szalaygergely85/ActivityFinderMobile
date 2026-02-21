@@ -1,6 +1,7 @@
 package com.gege.activityfindermobile.ui;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
@@ -65,10 +66,7 @@ public class FeedUiTest {
 
     @Before
     public void setUp() {
-        // Hard reset - clear preferences and recreate activity to ensure login screen
         UiTestHelper.clearAppSharedPreferences();
-        activityRule.getScenario().recreate();
-        waitFor(1000);
 
         apiHelper = new TestApiHelper();
 
@@ -154,17 +152,16 @@ public class FeedUiTest {
         onView(withId(R.id.btn_search)).perform(click());
         waitFor(500);
 
-        // Filter dialog
+        // Filter dialog — open and dismiss with back (applyButton is in a non-scrollable dialog)
         onView(withId(R.id.btn_filter)).perform(click());
-        waitFor(500);
-        // Dismiss filter dialog by clicking Apply
-        onView(withId(R.id.applyButton)).perform(click());
+        waitFor(1000);
+        pressBack();
         waitFor(500);
 
         // Navigate to create activity and back
         onView(withId(R.id.fab_create)).perform(click());
         waitFor(1000);
-        onView(withId(R.id.btn_create)).check(matches(isDisplayed()));
+        onView(withId(R.id.btn_create)).perform(scrollTo()).check(matches(isDisplayed()));
         onView(withId(R.id.btn_back)).perform(click());
         waitFor(1000);
         onView(withId(R.id.rv_activities)).check(matches(isDisplayed()));
