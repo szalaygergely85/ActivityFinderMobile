@@ -1,6 +1,8 @@
 package com.gege.activityfindermobile.utils;
 
 import android.Manifest;
+
+import com.gege.activityfindermobile.utils.Constants;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,7 +16,7 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.Task;
 
 public class LocationManager {
-    private static final float DEFAULT_RADIUS_KM = 250f;
+    private static final float DEFAULT_RADIUS_KM = Constants.DEFAULT_MAX_DISTANCE;
     private static final int EARTH_RADIUS_KM = 6371;
     private static final String PREFS_NAME = "LocationPrefs";
     private static final String KEY_LAST_LATITUDE = "last_latitude";

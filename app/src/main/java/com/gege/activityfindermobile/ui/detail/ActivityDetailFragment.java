@@ -25,6 +25,7 @@ import com.gege.activityfindermobile.data.dto.ExpressInterestRequest;
 import com.gege.activityfindermobile.data.model.ActivityGalleryAccess;
 import com.gege.activityfindermobile.data.model.ActivityMessage;
 import com.gege.activityfindermobile.data.model.Participant;
+import com.gege.activityfindermobile.data.model.Review;
 import com.gege.activityfindermobile.data.repository.ActivityPhotoRepository;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
 import com.gege.activityfindermobile.data.repository.MessageRepository;
@@ -51,7 +52,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -86,6 +89,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     private MaterialButton btnManage;
     private MaterialButton btnEditActivity;
     private MaterialButton btnDeleteActivity;
+    private MaterialButton btnUseAsTemplate;
     private View cardGallery;
     private RecyclerView rvGalleryPreview;
     private com.gege.activityfindermobile.ui.adapters.GalleryPreviewAdapter galleryPreviewAdapter;
@@ -137,23 +141,30 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
 
         if (currentUserId != null && currentUserId.equals(creatorId)) {
             Log.d("ActivityDetailFragment", "User IS the creator - showing edit/delete buttons");
-            // Show edit and delete buttons for creator
-            btnEditActivity.setVisibility(View.VISIBLE);
-            btnEditActivity.setEnabled(true);
 
             // Hide join button for creator
             btnExpressInterest.setVisibility(View.GONE);
             btnExpressInterest.setEnabled(false);
             // Hide report button for creator
             btnReportActivity.setVisibility(View.GONE);
-            // Hide manage button (we have edit/delete now)
+            // Show manage button for creator
             btnManage.setVisibility(View.VISIBLE);
             btnManage.setEnabled(true);
 
             if (isExpired) {
+                // Event ended - show template button, hide edit and delete
+                btnEditActivity.setVisibility(View.GONE);
+                btnEditActivity.setEnabled(false);
+                btnUseAsTemplate.setVisibility(View.VISIBLE);
                 btnDeleteActivity.setVisibility(View.GONE);
                 btnDeleteActivity.setEnabled(false);
+                // Load reviews to grey out already-reviewed users
+                loadReviewsAndUpdateButtons();
             } else {
+                // Event still active - show edit and delete
+                btnEditActivity.setVisibility(View.VISIBLE);
+                btnEditActivity.setEnabled(true);
+                btnUseAsTemplate.setVisibility(View.GONE);
                 btnDeleteActivity.setVisibility(View.VISIBLE);
                 btnDeleteActivity.setEnabled(true);
             }
@@ -178,6 +189,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
             // Hide join button if activity is expired
             if (isExpired) {
                 btnExpressInterest.setVisibility(View.GONE);
+                // Load reviews to grey out already-reviewed users
+                loadReviewsAndUpdateButtons();
             }
             // Check if user has already joined this activity
             checkUserParticipationStatus();
@@ -224,6 +237,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         btnManage = view.findViewById(R.id.btn_manage);
         btnEditActivity = view.findViewById(R.id.btn_edit_activity);
         btnDeleteActivity = view.findViewById(R.id.btn_delete_activity);
+        btnUseAsTemplate = view.findViewById(R.id.btn_use_as_template);
         cardGallery = view.findViewById(R.id.card_gallery);
         rvGalleryPreview = view.findViewById(R.id.rv_gallery_preview);
         progressLoading = view.findViewById(R.id.progress_loading);
@@ -275,11 +289,14 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
             displayActivityData(view, args);
         }
 
+        // Capture as effectively final for use in lambdas
+        final String activityDate = activityDateStr;
+
         // Set activity date on participant adapter for review button visibility
-        participantAdapter.setActivityDate(activityDateStr);
+        participantAdapter.setActivityDate(activityDate);
 
         // Check if activity is expired and hide join button if it is
-        boolean isExpired = isActivityExpired(activityDateStr);
+        boolean isExpired = isActivityExpired(activityDate);
 
         // Setup join button
         btnExpressInterest.setOnClickListener(v -> expressInterest());
@@ -288,10 +305,13 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         btnReportActivity.setOnClickListener(v -> showReportActivityDialog());
 
         // Setup manage button
-        btnManage.setOnClickListener(v -> navigateToManageActivity());
+        btnManage.setOnClickListener(v -> navigateToManageActivity(activityDate));
 
         // Setup edit button
         btnEditActivity.setOnClickListener(v -> navigateToEditActivity());
+
+        // Setup use as template button
+        btnUseAsTemplate.setOnClickListener(v -> navigateToTemplate());
 
         // Setup delete button
         btnDeleteActivity.setOnClickListener(v -> confirmDeleteActivity());
@@ -807,11 +827,12 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
         hideCommentSection();
     }
 
-    private void navigateToManageActivity() {
+    private void navigateToManageActivity(String activityDate) {
         Bundle bundle = new Bundle();
         bundle.putLong("activityId", activityId);
         bundle.putLong("currentUserId", prefsManager.getUserId());
         bundle.putLong("creatorId", creatorId);
+        bundle.putString("activityDate", activityDate != null ? activityDate : "");
 
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(
@@ -1085,10 +1106,60 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                         participant.getUserId(), participant.getUserName(), activityIdParam);
         reviewDialog.setOnReviewSubmittedListener(
                 () -> {
-                    // Refresh participants list after review is submitted
                     loadParticipants();
+                    loadReviewsAndUpdateButtons();
                 });
         reviewDialog.show(getChildFragmentManager(), "ReviewDialog");
+    }
+
+    private void loadReviewsAndUpdateButtons() {
+        if (activityId == null || activityId == 0L) return;
+        Long currentUserId = prefsManager.getUserId();
+        if (currentUserId == null) return;
+
+        reviewRepository.getReviewsForActivity(
+                activityId,
+                new ApiCallback<List<Review>>() {
+                    @Override
+                    public void onSuccess(List<Review> reviews) {
+                        Set<Long> reviewedIds = new HashSet<>();
+                        if (reviews != null) {
+                            for (Review review : reviews) {
+                                if (currentUserId.equals(review.getReviewerId())) {
+                                    reviewedIds.add(review.getReviewedUserId());
+                                }
+                            }
+                        }
+
+                        // Grey out already-reviewed participants
+                        participantAdapter.setAlreadyReviewedUserIds(reviewedIds);
+
+                        // Update creator review button
+                        View v = getView();
+                        if (v != null) {
+                            MaterialButton btnReviewCreator = v.findViewById(R.id.btn_review_creator);
+                            if (btnReviewCreator != null && btnReviewCreator.getVisibility() == View.VISIBLE) {
+                                boolean alreadyReviewed = reviewedIds.contains(creatorId);
+                                btnReviewCreator.setEnabled(!alreadyReviewed);
+                                btnReviewCreator.setAlpha(alreadyReviewed ? 0.4f : 1.0f);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Silently fail — buttons stay active
+                    }
+                });
+    }
+
+    private void navigateToTemplate() {
+        Bundle bundle = new Bundle();
+        bundle.putLong("templateActivityId", activityId);
+
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(
+                R.id.action_activityDetailFragment_to_createActivityFragment, bundle);
     }
 
     private void showReportActivityDialog() {

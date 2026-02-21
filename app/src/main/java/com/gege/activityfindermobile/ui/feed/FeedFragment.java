@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.gege.activityfindermobile.R;
+import com.gege.activityfindermobile.utils.Constants;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Activity;
 import com.gege.activityfindermobile.data.repository.ActivityRepository;
@@ -88,7 +89,7 @@ public class FeedFragment extends Fragment {
     private boolean useNearbyFilter = false;
     private double userLatitude = 0.0;
     private double userLongitude = 0.0;
-    private float nearbyRadiusKm = 250f;
+    private float nearbyRadiusKm = Constants.DEFAULT_MAX_DISTANCE;
 
     // Search and filter variables
     private String currentSearchQuery = "";
@@ -819,7 +820,7 @@ public class FeedFragment extends Fragment {
                     } else if (selectedDistanceId == R.id.chip_distance_50) {
                         maxDistanceKm = 50;
                     } else if (selectedDistanceId == R.id.chip_distance_anywhere) {
-                        maxDistanceKm = 250;
+                        maxDistanceKm = Constants.DEFAULT_MAX_DISTANCE;
                     }
 
                     // Get selected category

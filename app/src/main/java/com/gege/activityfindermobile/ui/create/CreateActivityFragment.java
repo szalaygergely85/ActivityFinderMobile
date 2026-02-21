@@ -159,12 +159,17 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         setupListeners();
         setDefaultDateTime();
 
-        // Check if we're in edit mode
+        // Check if we're in edit mode or template mode
         if (getArguments() != null) {
             editActivityId = getArguments().getLong("activityId", 0L);
             if (editActivityId != 0L) {
                 isEditMode = true;
                 loadActivityForEditing(editActivityId);
+            } else {
+                Long templateActivityId = getArguments().getLong("templateActivityId", 0L);
+                if (templateActivityId != 0L) {
+                    loadActivityAsTemplate(templateActivityId);
+                }
             }
         }
     }
@@ -388,6 +393,11 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                         if (isSelectingItem) {
                             return;
                         }
+
+                        // User manually edited the text — clear previously selected place
+                        selectedPlaceId = null;
+                        selectedLatitude = 0.0;
+                        selectedLongitude = 0.0;
 
                         // Remove any pending callbacks
                         if (debounceRunnable != null) {
@@ -685,6 +695,9 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         if (location.isEmpty()) {
             tilLocation.setError("Location is required");
             isValid = false;
+        } else if (selectedPlaceId == null) {
+            tilLocation.setError("Please select a location from the suggestions");
+            isValid = false;
         }
 
         if (totalSpotsStr.isEmpty()) {
@@ -930,6 +943,58 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
                                 requireContext(), "Failed to load activity: " + errorMessage);
                         NavController navController = Navigation.findNavController(requireView());
                         navController.navigateUp();
+                    }
+                });
+    }
+
+    private void loadActivityAsTemplate(Long activityId) {
+        setLoading(true);
+
+        activityRepository.getActivityById(
+                activityId,
+                new ApiCallback<com.gege.activityfindermobile.data.model.Activity>() {
+                    @Override
+                    public void onSuccess(
+                            com.gege.activityfindermobile.data.model.Activity activity) {
+                        setLoading(false);
+
+                        // Pre-fill form with template data (excluding date/time)
+                        etTitle.setText(activity.getTitle());
+                        etDescription.setText(activity.getDescription());
+                        etCategory.setText(activity.getCategory(), false);
+
+                        isSelectingItem = true;
+                        actvLocation.setText(activity.getLocation());
+                        isSelectingItem = false;
+
+                        etTotalSpots.setText(String.valueOf(activity.getTotalSpots()));
+
+                        selectedPlaceId = activity.getPlaceId();
+                        if (activity.getLatitude() != null) {
+                            selectedLatitude = activity.getLatitude();
+                        }
+                        if (activity.getLongitude() != null) {
+                            selectedLongitude = activity.getLongitude();
+                        }
+                        selectedLocationName = activity.getLocation();
+
+                        if (selectedLatitude != 0.0 && selectedLongitude != 0.0) {
+                            updateMapLocation(selectedLatitude, selectedLongitude, selectedLocationName);
+                        }
+
+                        selectedCoverImageUrl = activity.getCoverImageUrl();
+                        updateCoverImagePreview();
+
+                        // Date and time are intentionally left blank for the user to choose
+                        etDate.setText("");
+                        etTime.setText("");
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        setLoading(false);
+                        UiUtil.showLongToast(
+                                requireContext(), "Failed to load template: " + errorMessage);
                     }
                 });
     }

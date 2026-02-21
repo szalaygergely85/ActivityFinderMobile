@@ -16,7 +16,7 @@ public class Constants {
 
     // Filter constants
 
-    public static final int DEFAULT_MAX_DISTANCE = 1000; // km
+    public static final int DEFAULT_MAX_DISTANCE = 500; // km
     public static final int[] DISTANCE_FILTER_OPTIONS = {5, 10, 25, 50, DEFAULT_MAX_DISTANCE}; // km
 
 

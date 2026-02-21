@@ -2,46 +2,34 @@ package com.gege.activityfindermobile.ui.manage;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.gege.activityfindermobile.R;
-import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
-import com.gege.activityfindermobile.data.repository.ActivityRepository;
-import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
-
-import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ManageActivityFragment extends Fragment {
 
-    @Inject ActivityRepository activityRepository;
-    @Inject SharedPreferencesManager prefsManager;
-
     private Long activityId;
     private Long creatorId;
     private String activityTitle;
     private String activityStatus;
+    private String activityDate;
 
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
@@ -78,11 +66,11 @@ public class ManageActivityFragment extends Fragment {
             creatorId = getArguments().getLong("creatorId", 0L);
             activityTitle = getArguments().getString("activityTitle", "Manage Activity");
             activityStatus = getArguments().getString("activityStatus", "ACTIVE");
+            activityDate = getArguments().getString("activityDate", "");
         }
 
         MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
-        toolbar.setOnMenuItemClickListener(this::onMenuItemClick);
 
         // Set activity title and status in the custom toolbar
         android.widget.TextView tvActivityTitle = view.findViewById(R.id.tv_activity_title);
@@ -98,7 +86,7 @@ public class ManageActivityFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tab_layout);
 
         // Setup ViewPager
-        ManagePagerAdapter adapter = new ManagePagerAdapter(this, activityId, creatorId);
+        ManagePagerAdapter adapter = new ManagePagerAdapter(this, activityId, creatorId, activityDate);
         viewPager.setAdapter(adapter);
 
         // Link TabLayout and ViewPager
@@ -115,65 +103,17 @@ public class ManageActivityFragment extends Fragment {
                 .attach();
     }
 
-    private boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.action_delete_activity) {
-            showDeleteConfirmationDialog();
-            return true;
-        }
-        return false;
-    }
-
-    private void showDeleteConfirmationDialog() {
-        new AlertDialog.Builder(requireActivity())
-                .setTitle(getString(R.string.delete_event_title))
-                .setMessage(getString(R.string.delete_event_message))
-                .setPositiveButton(getString(R.string.btn_delete), (dialog, which) -> deleteActivity())
-                .setNegativeButton(getString(R.string.btn_cancel), (dialog, which) -> dialog.dismiss())
-                .show();
-    }
-
-    private void deleteActivity() {
-        Long userId = prefsManager.getUserId();
-        if (userId == null) {
-            Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        activityRepository.cancelActivity(
-                activityId,
-                userId,
-                new ApiCallbackVoid() {
-                    @Override
-                    public void onSuccess() {
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Activity deleted successfully",
-                                        Toast.LENGTH_SHORT)
-                                .show();
-                        // Navigate back to my activities
-                        NavController navController = Navigation.findNavController(requireView());
-                        navController.popBackStack();
-                    }
-
-                    @Override
-                    public void onError(String errorMessage) {
-                        Toast.makeText(
-                                        requireContext(),
-                                        "Failed to delete activity: " + errorMessage,
-                                        Toast.LENGTH_SHORT)
-                                .show();
-                    }
-                });
-    }
 
     private static class ManagePagerAdapter extends FragmentStateAdapter {
         private final Long activityId;
         private final Long creatorId;
+        private final String activityDate;
 
-        public ManagePagerAdapter(@NonNull Fragment fragment, Long activityId, Long creatorId) {
+        public ManagePagerAdapter(@NonNull Fragment fragment, Long activityId, Long creatorId, String activityDate) {
             super(fragment);
             this.activityId = activityId;
             this.creatorId = creatorId;
+            this.activityDate = activityDate;
         }
 
         @NonNull
@@ -182,7 +122,7 @@ public class ManageActivityFragment extends Fragment {
             if (position == 0) {
                 return RequestsTabFragment.newInstance(activityId);
             } else {
-                return ParticipantsTabFragment.newInstance(activityId, creatorId);
+                return ParticipantsTabFragment.newInstance(activityId, creatorId, activityDate);
             }
         }
 

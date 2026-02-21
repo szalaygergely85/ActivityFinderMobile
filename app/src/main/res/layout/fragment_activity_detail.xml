@@ -906,7 +906,7 @@
                     app:iconTint="@color/error"
                     android:visibility="visible" />
 
-                <!-- Edit Button (for creators) -->
+                <!-- Edit Button (for creators, hidden when expired) -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_activity"
                     android:layout_width="0dp"
@@ -914,6 +914,22 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="@dimen/margin_small"
                     android:text="Edit"
+                    android:textColor="@color/white"
+                    android:paddingVertical="16dp"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/primary_blue"
+                    app:icon="@drawable/ic_edit"
+                    app:iconTint="@color/white"
+                    android:visibility="gone" />
+
+                <!-- Use as Template Button (for creators, shown when expired) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_use_as_template"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="@dimen/margin_small"
+                    android:text="Use as Template"
                     android:textColor="@color/white"
                     android:paddingVertical="16dp"
                     app:cornerRadius="12dp"

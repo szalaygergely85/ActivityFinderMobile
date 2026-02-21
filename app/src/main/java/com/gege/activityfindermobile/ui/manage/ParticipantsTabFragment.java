@@ -18,6 +18,7 @@ import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.model.Participant;
 import com.gege.activityfindermobile.data.repository.ParticipantRepository;
 import com.gege.activityfindermobile.ui.adapters.ParticipantAdapter;
+import com.gege.activityfindermobile.ui.review.ReviewDialog;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 
 import java.util.ArrayList;
@@ -35,16 +36,18 @@ public class ParticipantsTabFragment extends Fragment {
     @Inject SharedPreferencesManager prefsManager;
     private Long activityId;
     private Long creatorId;
+    private String activityDate;
     private RecyclerView rvParticipants;
     private View layoutEmpty;
     private SwipeRefreshLayout swipeRefresh;
     private ParticipantAdapter adapter;
 
-    public static ParticipantsTabFragment newInstance(Long activityId, Long creatorId) {
+    public static ParticipantsTabFragment newInstance(Long activityId, Long creatorId, String activityDate) {
         ParticipantsTabFragment fragment = new ParticipantsTabFragment();
         Bundle args = new Bundle();
         args.putLong("activityId", activityId);
         args.putLong("creatorId", creatorId);
+        args.putString("activityDate", activityDate != null ? activityDate : "");
         fragment.setArguments(args);
         return fragment;
     }
@@ -65,20 +68,32 @@ public class ParticipantsTabFragment extends Fragment {
         if (getArguments() != null) {
             activityId = getArguments().getLong("activityId");
             creatorId = getArguments().getLong("creatorId");
+            activityDate = getArguments().getString("activityDate", "");
         }
 
         rvParticipants = view.findViewById(R.id.rv_participants);
         layoutEmpty = view.findViewById(R.id.layout_empty);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
 
-        // Setup adapter with remove listener
+        // Setup adapter with remove and review listeners
         adapter = new ParticipantAdapter(ParticipantAdapter.Owner.ParticipantsTabFragment);
+        adapter.setActivityId(activityId);
+        adapter.setActivityDate(activityDate);
         adapter.setRemoveListener(
                 new ParticipantAdapter.OnRemoveClickListener() {
                     @Override
                     public void onRemoveClick(Participant participant) {
                         removeParticipant(participant);
                     }
+                });
+        adapter.setReviewListener(
+                (participant, activityIdParam) -> {
+                    ReviewDialog reviewDialog = ReviewDialog.newInstance(
+                            participant.getUserId(),
+                            participant.getUserName(),
+                            activityIdParam);
+                    reviewDialog.setOnReviewSubmittedListener(this::loadParticipants);
+                    reviewDialog.show(getChildFragmentManager(), "ReviewDialog");
                 });
         rvParticipants.setAdapter(adapter);
 

@@ -18,6 +18,7 @@ import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.ViewHolder> {
 
@@ -29,6 +30,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
     private String activityDate;
     private Long currentUserId;
     private Long creatorId;
+    private Set<Long> alreadyReviewedUserIds;
 
     private final Owner owner;
 
@@ -91,6 +93,11 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         this.creatorId = creatorId;
     }
 
+    public void setAlreadyReviewedUserIds(Set<Long> alreadyReviewedUserIds) {
+        this.alreadyReviewedUserIds = alreadyReviewedUserIds;
+        notifyDataSetChanged();
+    }
+
     public void removeParticipant(Long participantId) {
         for (int i = 0; i < participants.size(); i++) {
             if (participants.get(i).getId().equals(participantId)) {
@@ -122,7 +129,8 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                 activityDate,
                 currentUserId,
                 creatorId,
-                owner);
+                owner,
+                alreadyReviewedUserIds);
     }
 
     @Override
@@ -161,7 +169,8 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                 String activityDate,
                 Long currentUserId,
                 Long creatorId,
-                Owner owner) {
+                Owner owner,
+                Set<Long> alreadyReviewedUserIds) {
             // Load user avatar
             ImageLoader.loadCircularProfileImage(
                     itemView.getContext(), participant.getUserAvatar(), ivUserAvatar);
@@ -216,40 +225,28 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                 chipStatus.setVisibility(View.GONE);
             }
 
-            // Show review button only for:
-            // 1. Joined participants (JOINED or ACCEPTED status)
+            // Show review button when:
+            // 1. Participant is JOINED or ACCEPTED
             // 2. Activity is expired
             // 3. Not reviewing yourself
             boolean isActivityExpired = isActivityExpired(activityDate);
             boolean isCurrentUser =
                     currentUserId != null && currentUserId.equals(participant.getUserId());
-            boolean isParticipantTabFragment =
-                    owner == ParticipantAdapter.Owner.ParticipantsTabFragment;
-
-            if (("JOINED".equals(status) || "ACCEPTED".equals(status))
-                    && isParticipantTabFragment
+            boolean showReview = ("JOINED".equals(status) || "ACCEPTED".equals(status))
                     && isActivityExpired
-                    && !isCurrentUser) {
+                    && !isCurrentUser;
+
+            if (showReview) {
+                boolean alreadyReviewed = alreadyReviewedUserIds != null
+                        && alreadyReviewedUserIds.contains(participant.getUserId());
                 btnReview.setVisibility(View.VISIBLE);
                 divParticipant.setVisibility(View.VISIBLE);
+                btnReview.setEnabled(!alreadyReviewed);
+                btnReview.setAlpha(alreadyReviewed ? 0.4f : 1.0f);
                 btnReview.setOnClickListener(
                         v -> {
-                            Log.d(
-                                    "ParticipantAdapter",
-                                    "Review button clicked - reviewListener: "
-                                            + (reviewListener != null)
-                                            + ", activityId: "
-                                            + activityId);
-                            if (reviewListener != null && activityId != null) {
-                                Log.d(
-                                        "ParticipantAdapter",
-                                        "Calling onReviewClick for user: "
-                                                + participant.getUserName());
+                            if (reviewListener != null && activityId != null && !alreadyReviewed) {
                                 reviewListener.onReviewClick(participant, activityId);
-                            } else {
-                                Log.e(
-                                        "ParticipantAdapter",
-                                        "ReviewListener or activityId is null!");
                             }
                         });
             } else {
@@ -266,7 +263,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
             if (isCreator
                     && !isCurrentUserParticipant
                     && ("ACCEPTED".equals(status) || "JOINED".equals(status))
-                    && isParticipantTabFragment) {
+                    && owner == Owner.ParticipantsTabFragment) {
                 btnRemove.setVisibility(View.VISIBLE);
                 divParticipant.setVisibility(View.VISIBLE);
                 btnRemove.setOnClickListener(
