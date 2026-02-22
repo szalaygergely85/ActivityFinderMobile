@@ -480,8 +480,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                         if (participants != null) {
                             for (Participant p : participants) {
                                 String status = p.getStatus();
-                                // Show ACCEPTED and JOINED to everyone
-                                if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                                // Show ACCEPTED to everyone
+                                if ("ACCEPTED".equals(status)) {
                                     displayParticipants.add(p);
                                 }
                                 // Also show PENDING and INTERESTED to creator
@@ -514,13 +514,13 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                                 getView() != null ? getView().findViewById(R.id.tv_spots) : null;
                         if (tvSpots != null && getArguments() != null) {
                             int totalSpots = getArguments().getInt("totalSpots", 0);
-                            // Count only ACCEPTED and JOINED
+                            // Count only ACCEPTED
                             int confirmedCount = 0;
                             int pendingCount = 0;
                             if (participants != null) {
                                 for (Participant p : participants) {
                                     String status = p.getStatus();
-                                    if ("ACCEPTED".equals(status) || "JOINED".equals(status)) {
+                                    if ("ACCEPTED".equals(status)) {
                                         confirmedCount++;
                                     } else if ("PENDING".equals(status)
                                             || "INTERESTED".equals(status)) {
@@ -583,7 +583,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
 
                         // Check the status returned from server
                         String status = participant.getStatus();
-                        if ("JOINED".equals(status) || "ACCEPTED".equals(status)) {
+                        if ("ACCEPTED".equals(status)) {
                             UiUtil.showToast(requireContext(), getString(R.string.joined_event));
                             updateButtonToJoinedState();
                             // Reload participants to show yourself in the list
@@ -685,9 +685,10 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                                             "Found participation with status: " + status);
 
                                     // Update button based on participation status
-                                    if ("JOINED".equals(status) || "ACCEPTED".equals(status)) {
-                                        // Fully joined - show leave option
+                                    if ("ACCEPTED".equals(status)) {
+                                        // Accepted - show leave option
                                         updateButtonToJoinedState();
+                                        showCommentSection();
                                     } else if ("PENDING".equals(status)
                                             || "INTERESTED".equals(status)) {
                                         // Waiting for approval - show cancel option
@@ -973,6 +974,8 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
     }
 
     private void showCommentSection() {
+        mcvComments.setVisibility(View.VISIBLE);
+        tvComments.setVisibility(View.VISIBLE);
         tilComment.setVisibility(View.VISIBLE);
         rvComments.setVisibility(View.VISIBLE);
         // Load comments when showing the section
