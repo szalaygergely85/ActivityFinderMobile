@@ -136,7 +136,7 @@ public class RequestsTabFragment extends Fragment {
         participantRepository.updateParticipantStatus(
                 participant.getId(),
                 creatorId,
-                "ACCEPTED",
+                "JOINED",
                 new ApiCallback<Participant>() {
                     @Override
                     public void onSuccess(Participant updatedParticipant) {

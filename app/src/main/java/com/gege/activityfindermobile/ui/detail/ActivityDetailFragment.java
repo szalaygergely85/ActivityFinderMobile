@@ -583,13 +583,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
 
                         // Check the status returned from server
                         String status = participant.getStatus();
-                        if ("ACCEPTED".equals(status)) {
-                            UiUtil.showToast(
-                                    requireContext(),
-                                    "You've been accepted! You can now join the activity.");
-                            updateButtonToAcceptedState();
-                            // Don't add to participant list yet - only after JOINED
-                        } else if ("JOINED".equals(status)) {
+                        if ("JOINED".equals(status) || "ACCEPTED".equals(status)) {
                             UiUtil.showToast(requireContext(), getString(R.string.joined_event));
                             updateButtonToJoinedState();
                             // Reload participants to show yourself in the list
@@ -691,10 +685,7 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                                             "Found participation with status: " + status);
 
                                     // Update button based on participation status
-                                    if ("ACCEPTED".equals(status)) {
-                                        // Accepted but not yet joined - show leave option
-                                        updateButtonToAcceptedState();
-                                    } else if ("JOINED".equals(status)) {
+                                    if ("JOINED".equals(status) || "ACCEPTED".equals(status)) {
                                         // Fully joined - show leave option
                                         updateButtonToJoinedState();
                                     } else if ("PENDING".equals(status)
@@ -737,20 +728,6 @@ public class ActivityDetailFragment extends Fragment implements OnMapReadyCallba
                                 "Failed to check participation status: " + errorMessage);
                     }
                 });
-    }
-
-    private void updateButtonToAcceptedState() {
-        btnExpressInterest.setText("Leave Activity");
-        btnExpressInterest.setEnabled(true);
-        btnExpressInterest.setBackgroundTintList(
-                getResources().getColorStateList(R.color.error, null));
-        btnExpressInterest.setIcon(requireContext().getDrawable(R.drawable.ic_close));
-
-        // Change click listener to leave
-        btnExpressInterest.setOnClickListener(v -> leaveActivity());
-
-        // Show comment section for accepted users
-        showCommentSection();
     }
 
     private void updateButtonToJoinedState() {
