@@ -20,9 +20,12 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.gege.activityfindermobile.R;
+import com.gege.activityfindermobile.utils.NotificationHelper;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.repository.NotificationRepository;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
@@ -167,6 +170,20 @@ public class SettingsFragment extends Fragment {
             openUrl("https://vivento.fun/terms");
         });
 
+        // Version text — tap 5 times to fire test notifications
+        final int[] tapCount = {0};
+        final Handler tapHandler = new Handler(Looper.getMainLooper());
+        final Runnable resetTaps = () -> tapCount[0] = 0;
+        tvVersion.setOnClickListener(v -> {
+            tapCount[0]++;
+            tapHandler.removeCallbacks(resetTaps);
+            tapHandler.postDelayed(resetTaps, 3000);
+            if (tapCount[0] >= 5) {
+                tapCount[0] = 0;
+                showTestNotificationsDialog();
+            }
+        });
+
         // Logout
         view.findViewById(R.id.btn_logout).setOnClickListener(v -> {
             showLogoutDialog();
@@ -195,6 +212,18 @@ public class SettingsFragment extends Fragment {
                         Log.e("SettingsFragment", "Failed to sync preferences: " + errorMessage);
                     }
                 });
+    }
+
+    private void showTestNotificationsDialog() {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Test Notifications")
+                .setMessage("This will fire all 11 notification types one by one, 1.5s apart. Check they all arrive and look correct.")
+                .setPositiveButton("Fire All", (dialog, which) -> {
+                    NotificationHelper.sendAllTestNotifications(requireContext());
+                    Toast.makeText(requireContext(), "Sending test notifications...", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void showChangePasswordDialog() {

@@ -305,7 +305,7 @@ public class TestApiHelper {
     public java.util.List<Activity> getNearbyActivities(double latitude, double longitude, float radiusKm) {
         try {
             Response<java.util.List<Activity>> response = activityApiService
-                    .getNearbyActivities(latitude, longitude, radiusKm).execute();
+                    .getNearbyActivities(latitude, longitude, radiusKm, currentUserId).execute();
 
             if (response.isSuccessful() && response.body() != null) {
                 Log.d(TAG, "Found " + response.body().size() + " nearby activities");

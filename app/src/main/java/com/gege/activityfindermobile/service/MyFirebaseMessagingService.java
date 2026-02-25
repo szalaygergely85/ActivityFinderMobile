@@ -1,25 +1,17 @@
 package com.gege.activityfindermobile.service;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
 
-import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.repository.NotificationRepository;
-import com.gege.activityfindermobile.ui.main.MainActivity;
+import com.gege.activityfindermobile.utils.NotificationHelper;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -28,8 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FCMService";
-    public static final String CHANNEL_ID = "vivento_notifications";
-    public static final String CHANNEL_NAME = "Vivento Notifications";
+    public static final String CHANNEL_ID = NotificationHelper.CHANNEL_ID;
 
     @Inject
     NotificationRepository notificationRepository;
@@ -79,7 +70,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Show notification if we have content and user has not disabled this type
         if (title != null && !title.isEmpty() && shouldShowNotification(data)) {
-            showNotification(title, body, data);
+            NotificationHelper.show(this, title, body, data);
         }
     }
 
@@ -131,58 +122,4 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 });
     }
 
-    private void showNotification(String title, String body, Map<String, String> data) {
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        // Create notification channel for Android O+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel =
-                    new NotificationChannel(
-                            CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Notifications for Vivento activities and updates");
-            channel.enableVibration(true);
-            channel.enableLights(true);
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        // Create intent to open app when notification is clicked
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        // Add navigation data if present
-        if (data != null) {
-            if (data.containsKey("screen")) {
-                intent.putExtra("navigate_to", data.get("screen"));
-            }
-            if (data.containsKey("activityId")) {
-                intent.putExtra("activityId", data.get("activityId"));
-            }
-            if (data.containsKey("notificationId")) {
-                intent.putExtra("notificationId", data.get("notificationId"));
-            }
-        }
-
-        int requestCode = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent =
-                PendingIntent.getActivity(
-                        this,
-                        requestCode,
-                        intent,
-                        PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
-
-        // Build notification
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.vivento)
-                        .setContentTitle(title)
-                        .setContentText(body)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setContentIntent(pendingIntent);
-
-        // Show notification with unique ID
-        int notificationId = (int) System.currentTimeMillis();
-        notificationManager.notify(notificationId, notificationBuilder.build());
-    }
 }

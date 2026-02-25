@@ -9,7 +9,14 @@
       "Bash(del \"C:\\\\MyFiles\\\\CodingProjects\\\\ActivityFinderMobile\\\\app\\\\src\\\\androidTest\\\\java\\\\com\\\\gege\\\\activityfindermobile\\\\util\\\\MockLocationHelper.java\")",
       "Bash(cmd /c \"dir C:\\\\MyFiles\\\\CodingProjects\")",
       "Bash(cmd /c:*)",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(git -C /home/me/dev/projects/ActivityFinderMobile remote add origin https://github.com/szalaygergely85/ActivityFinderMobile.git)",
+      "Bash(export SSH_AUTH_SOCK:*)",
+      "Bash(flatpak list:*)",
+      "Bash(flatpak override:*)",
+      "Bash(gh auth:*)",
+      "Bash(docker info:*)",
+      "Bash(docker login:*)"
     ]
   }
 }

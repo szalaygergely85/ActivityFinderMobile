@@ -10,7 +10,7 @@ import com.gege.activityfindermobile.data.api.CrashLogApiService;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.repository.NotificationRepository;
 import com.gege.activityfindermobile.service.CrashReportService;
-import com.gege.activityfindermobile.service.MyFirebaseMessagingService;
+import com.gege.activityfindermobile.utils.NotificationHelper;
 import com.gege.activityfindermobile.utils.CategoryManager;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -92,8 +92,8 @@ public class ActivityFinderApp extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel =
                     new NotificationChannel(
-                            MyFirebaseMessagingService.CHANNEL_ID,
-                            MyFirebaseMessagingService.CHANNEL_NAME,
+                            NotificationHelper.CHANNEL_ID,
+                            NotificationHelper.CHANNEL_NAME,
                             NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("Notifications for Vivento activities and updates");
             channel.enableVibration(true);
