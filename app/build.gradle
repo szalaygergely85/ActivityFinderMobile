@@ -2,19 +2,24 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
     alias(libs.plugins.spotless)
 }
 
 android {
     namespace 'com.gege.activityfindermobile'
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileSdk 36
 
     defaultConfig {
         applicationId "com.gege.activityfindermobile"
         minSdk 26
         targetSdk 36
-        versionCode 17
-        versionName "1.16 alpha"
+        versionCode 21
+        versionName "1.0.0 beta"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -28,7 +33,11 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -45,6 +54,10 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.firebase.messaging
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.crashlytics
+    implementation libs.firebase.analytics
+    implementation libs.timber
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.test.core

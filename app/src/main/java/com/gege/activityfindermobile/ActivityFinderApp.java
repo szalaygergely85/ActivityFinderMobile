@@ -9,11 +9,15 @@ import android.util.Log;
 import com.gege.activityfindermobile.data.api.CrashLogApiService;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
 import com.gege.activityfindermobile.data.repository.NotificationRepository;
+import com.gege.activityfindermobile.logging.ActivityLifecycleLogger;
+import com.gege.activityfindermobile.logging.BreadcrumbTree;
+import com.gege.activityfindermobile.logging.ReleaseTree;
 import com.gege.activityfindermobile.service.CrashReportService;
-import com.gege.activityfindermobile.utils.NotificationHelper;
 import com.gege.activityfindermobile.utils.CategoryManager;
+import com.gege.activityfindermobile.utils.NotificationHelper;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
 import com.google.firebase.messaging.FirebaseMessaging;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -32,6 +36,17 @@ public class ActivityFinderApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Initialize Timber logging
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        } else {
+            Timber.plant(new ReleaseTree());
+        }
+        Timber.plant(new BreadcrumbTree());
+
+        // Register activity lifecycle logging
+        registerActivityLifecycleCallbacks(new ActivityLifecycleLogger());
 
         // Initialize crash reporting
         initializeCrashReporting();

@@ -8,7 +8,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.gege.activityfindermobile.data.api.CrashLogApiService;
+import com.gege.activityfindermobile.logging.BreadcrumbLogger;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -60,6 +62,9 @@ public class CrashReportService implements Thread.UncaughtExceptionHandler {
         Log.e(TAG, "Uncaught exception in thread: " + thread.getName(), throwable);
 
         try {
+            // Send to Firebase Crashlytics first (most reliable)
+            recordCrashToFirebase(throwable);
+
             // Build crash report
             Map<String, Object> crashReport = buildCrashReport(throwable);
 
@@ -79,6 +84,25 @@ public class CrashReportService implements Thread.UncaughtExceptionHandler {
         }
     }
 
+    private void recordCrashToFirebase(Throwable throwable) {
+        try {
+            FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+
+            String breadcrumbs = BreadcrumbLogger.getInstance().getBreadcrumbsAsString();
+            crashlytics.setCustomKey("breadcrumbs", breadcrumbs);
+
+            Runtime runtime = Runtime.getRuntime();
+            crashlytics.setCustomKey("memory_total_mb", runtime.totalMemory() / 1024 / 1024);
+            crashlytics.setCustomKey("memory_free_mb", runtime.freeMemory() / 1024 / 1024);
+            crashlytics.setCustomKey("device_model", Build.MODEL);
+            crashlytics.setCustomKey("android_version", Build.VERSION.RELEASE);
+
+            crashlytics.recordException(throwable);
+        } catch (Exception ex) {
+            Log.e(TAG, "Failed to record crash to Firebase", ex);
+        }
+    }
+
     private Map<String, Object> buildCrashReport(Throwable throwable) {
         Map<String, Object> report = new HashMap<>();
 
@@ -93,6 +117,9 @@ public class CrashReportService implements Thread.UncaughtExceptionHandler {
         // Error info
         report.put("errorMessage", throwable.getMessage() != null ? throwable.getMessage() : throwable.getClass().getSimpleName());
         report.put("stackTrace", getStackTraceString(throwable));
+
+        // Breadcrumbs
+        report.put("breadcrumbs", BreadcrumbLogger.getInstance().getBreadcrumbsAsString());
 
         // Timestamp
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

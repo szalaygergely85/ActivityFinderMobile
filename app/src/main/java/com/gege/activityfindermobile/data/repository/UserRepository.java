@@ -5,6 +5,7 @@ import android.util.Log;
 import com.gege.activityfindermobile.data.api.UserApiService;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.callback.ApiCallbackVoid;
+import com.gege.activityfindermobile.data.dto.ForgotPasswordRequest;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.UserProfileUpdateRequest;
@@ -123,6 +124,27 @@ public class UserRepository {
 
                             @Override
                             public void onFailure(Call<LoginResponse> call, Throwable t) {
+                                String errorMsg = "Network error: " + t.getMessage();
+                                Log.e(TAG, errorMsg, t);
+                                callback.onError(errorMsg);
+                            }
+                        });
+    }
+
+    /** Send forgot password email */
+    public void forgotPassword(String email, ApiCallbackVoid callback) {
+        userApiService
+                .forgotPassword(new ForgotPasswordRequest(email))
+                .enqueue(
+                        new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                // Always treat as success — server never reveals if email exists
+                                callback.onSuccess();
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
                                 String errorMsg = "Network error: " + t.getMessage();
                                 Log.e(TAG, errorMsg, t);
                                 callback.onError(errorMsg);

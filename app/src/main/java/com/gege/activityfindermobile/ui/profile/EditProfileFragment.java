@@ -35,9 +35,6 @@ import com.gege.activityfindermobile.utils.CategoryManager;
 import com.gege.activityfindermobile.ui.adapters.PhotoGalleryAdapter;
 import com.gege.activityfindermobile.utils.ImageLoader;
 import com.gege.activityfindermobile.utils.SharedPreferencesManager;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -83,8 +80,6 @@ public class EditProfileFragment extends Fragment {
     private ActivityResultLauncher<String> photoPickerLauncher;
     private PhotoGalleryAdapter photoGalleryAdapter;
     private List<UserPhoto> userPhotos = new ArrayList<>();
-    private PlacesClient placesClient;
-    private AutocompleteSessionToken sessionToken;
     private android.os.Handler debounceHandler = new android.os.Handler();
     private Runnable debounceRunnable;
     private boolean isSelectingItem = false;
@@ -124,7 +119,6 @@ public class EditProfileFragment extends Fragment {
         setupBackButton(view);
         setupAppBarPadding(view);
 
-        initPlacesClient();
         // setupCityAutocomplete();
         loadCurrentProfile();
     }
@@ -155,14 +149,6 @@ public class EditProfileFragment extends Fragment {
         if (debounceRunnable != null) {
             debounceHandler.removeCallbacks(debounceRunnable);
         }
-    }
-
-    private void initPlacesClient() {
-        if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), getString(R.string.google_maps_key));
-        }
-        placesClient = Places.createClient(requireContext());
-        sessionToken = AutocompleteSessionToken.newInstance();
     }
 
     private void initViews(View view) {

@@ -1,21 +1,29 @@
 # Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve line numbers and source file names for crash analysis
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep data models used with Gson (Retrofit response deserialization)
+-keep class com.gege.activityfindermobile.data.model.** { *; }
+-keep class com.gege.activityfindermobile.data.dto.** { *; }
+-keep class com.gege.activityfindermobile.data.api.ParticipantStatusUpdateRequest { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Gson generic type handling
+-keepattributes Signature
+-keepattributes *Annotation*
+
+# Keep RecyclerView LayoutManagers used via XML reflection (app:layoutManager attribute)
+-keep class androidx.recyclerview.widget.GridLayoutManager { *; }
+-keep class androidx.recyclerview.widget.LinearLayoutManager { *; }
+-keep class * extends androidx.recyclerview.widget.RecyclerView$LayoutManager { *; }
+
+# Keep CircleImageView used in XML layouts (instantiated via reflection during inflation)
+-keep class de.hdodenhof.circleimageview.CircleImageView { *; }
+
+# Keep inner class DTO used with Gson serialization (not covered by data.dto.** rule)
+-keep class com.gege.activityfindermobile.data.api.UserPhotoApiService$PhotoReorderRequest { *; }
+
+# Keep Google Places SDK — uses ServiceLoader internally, R8 strips the provider constructors
+-keep class com.google.android.libraries.places.** { *; }
+-dontwarn com.google.android.libraries.places.**

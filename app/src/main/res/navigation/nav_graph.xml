@@ -17,7 +17,15 @@
             app:destination="@id/nav_feed"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
+            app:destination="@id/forgotPasswordFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.gege.activityfindermobile.ui.auth.ForgotPasswordFragment"
+        android:label="Forgot Password" />
 
     <fragment
         android:id="@+id/registerFragment"

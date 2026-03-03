@@ -1,5 +1,6 @@
 package com.gege.activityfindermobile.data.api;
 
+import com.gege.activityfindermobile.data.dto.ForgotPasswordRequest;
 import com.gege.activityfindermobile.data.dto.LoginRequest;
 import com.gege.activityfindermobile.data.dto.LoginResponse;
 import com.gege.activityfindermobile.data.dto.RefreshTokenRequest;
@@ -41,6 +42,9 @@ public interface UserApiService {
 
     @POST("api/users/refresh-token")
     Call<LoginResponse> refreshToken(@Body RefreshTokenRequest request);
+
+    @POST("api/users/forgot-password")
+    Call<Void> forgotPassword(@Body ForgotPasswordRequest request);
 
     @GET("api/users/{id}")
     Call<User> getUserById(@Path("id") Long id);

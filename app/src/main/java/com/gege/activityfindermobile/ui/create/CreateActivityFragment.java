@@ -56,6 +56,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
@@ -276,9 +277,13 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
             googleMap.clear();
 
             // Add marker at the location
-            googleMap.addMarker(new MarkerOptions()
-                    .position(location)
-                    .title(locationName));
+            Marker marker =
+                    googleMap.addMarker(
+                            new MarkerOptions().position(location).title(locationName));
+
+            if (marker != null) {
+                marker.showInfoWindow();
+            }
 
             // Animate camera to the location
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 14f));

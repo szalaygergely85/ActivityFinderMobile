@@ -85,7 +85,8 @@ public class LoginFragment extends Fragment {
 
         tvForgotPassword.setOnClickListener(
                 v -> {
-                    UiUtil.showToast(requireContext(), "Forgot password feature coming soon!");
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.action_loginFragment_to_forgotPasswordFragment);
                 });
     }
 
