@@ -23,6 +23,7 @@ import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.gege.activityfindermobile.BuildConfig;
 import com.gege.activityfindermobile.R;
 import com.gege.activityfindermobile.data.callback.ApiCallback;
 import com.gege.activityfindermobile.data.dto.ActivityCreateRequest;
@@ -237,7 +238,7 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
 
     private void initPlacesClient() {
         if (!Places.isInitialized()) {
-            Places.initializeWithNewPlacesApiEnabled(requireContext(), getString(R.string.google_maps_key));
+            Places.initializeWithNewPlacesApiEnabled(requireContext(), BuildConfig.GOOGLE_MAPS_API_KEY);
         }
         placesClient = Places.createClient(requireContext());
         sessionToken = AutocompleteSessionToken.newInstance();
@@ -700,8 +701,8 @@ public class CreateActivityFragment extends Fragment implements OnMapReadyCallba
         if (location.isEmpty()) {
             tilLocation.setError("Location is required");
             isValid = false;
-        } else if (selectedPlaceId == null) {
-            tilLocation.setError("Please select a location from the suggestions");
+        } else if (selectedLatitude == 0.0 && selectedLongitude == 0.0) {
+            tilLocation.setError("Please choose a proper location from the suggestions so we can show it on the map");
             isValid = false;
         }
 

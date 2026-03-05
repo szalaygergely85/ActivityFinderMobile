@@ -16,7 +16,8 @@
       "Bash(flatpak override:*)",
       "Bash(gh auth:*)",
       "Bash(docker info:*)",
-      "Bash(docker login:*)"
+      "Bash(docker login:*)",
+      "Bash(kubectl get:*)"
     ]
   }
 }

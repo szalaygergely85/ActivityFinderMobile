@@ -18,8 +18,8 @@ android {
         applicationId "com.gege.activityfindermobile"
         minSdk 26
         targetSdk 36
-        versionCode 21
-        versionName "1.0.0 beta"
+        versionCode 22
+        versionName "1.0.1 beta"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -28,7 +28,9 @@ android {
         if (rootProject.file("local.properties").exists()) {
             properties.load(rootProject.file("local.properties").newDataInputStream())
         }
-        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: properties.getProperty("GOOGLE_MAPS_API_KEY", "")]
+        def mapsApiKey = properties.getProperty("GOOGLE_MAPS_API_KEY", "")
+        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: mapsApiKey]
+        buildConfigField "String", "GOOGLE_MAPS_API_KEY", "\"${mapsApiKey}\""
     }
 
     buildTypes {

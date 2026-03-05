@@ -178,7 +178,7 @@ public class ParticipantsTabFragment extends Fragment {
                             participantRepository.updateParticipantStatus(
                                     participant.getId(),
                                     creatorId,
-                                    "REMOVED",
+                                    "DECLINED",
                                     new ApiCallback<Participant>() {
                                         @Override
                                         public void onSuccess(Participant updatedParticipant) {
